@@ -4,6 +4,7 @@ const LevelLoader := preload("res://scripts/level_loader.gd")
 const MarioAnimator := preload("res://scripts/mario_animator.gd")
 const LevelManagerScript := preload("res://scripts/level_manager.gd")
 const SoundBankScript := preload("res://scripts/sound_bank.gd")
+const SaveDataScript := preload("res://scripts/save_data.gd")
 const MARIO_MESH_JSON := "res://extracted/actors/mario/mesh.json"
 const ANIMS_DIR := "res://extracted/actors/mario/anims"
 const BOOT_LEVEL := "castle_inside"   # SM64-canonical boot: castle hub
@@ -60,6 +61,7 @@ var _cam_distance: float = CAM_DISTANCE_DEFAULT
 var _animator: RefCounted
 var _level_manager: Node
 var _sound_bank: Node
+var _save: Node
 var _death_pending: bool = false
 # Animation cache keyed by decomp ID (MARIO_ANIM_* integer). Loaded lazily
 # the first time a state requests it.
@@ -84,12 +86,21 @@ func _ready() -> void:
     if mario.has_method("bind_sound_bank"):
         mario.bind_sound_bank(_sound_bank)
 
+    _save = SaveDataScript.new()
+    _save.name = "Save"
+    add_child(_save)
+    _save.load_file()
+    mario.lives = _save.lives
+    mario.coin_count = _save.coins
+    mario.star_count = _save.stars
+
     _level_manager = LevelManagerScript.new()
     _level_manager.name = "LevelManager"
     add_child(_level_manager)
     _level_manager.setup(world, mario)
     _level_manager.sound_bank = _sound_bank
-    _level_manager.load_level(BOOT_LEVEL, BOOT_AREA)
+    _level_manager.save_data = _save
+    _level_manager.load_level(_save.last_level, _save.last_area)
 
     mario.set_camera(camera)
     # Hold on the title screen; the first key press closes it and captures
@@ -140,6 +151,8 @@ func _on_mario_died() -> void:
 
 
 func _on_star_collected() -> void:
+    if _save != null:
+        _save.record_star(_level_manager.current_level)
     _respawn_after(2.5)
     # Override the next respawn to land in castle_grounds rather than the
     # current level's spawn. The simplest approach: change the current
@@ -154,8 +167,18 @@ func _on_star_collected() -> void:
 
 func _go_to_castle() -> void:
     if _level_manager != null:
-        _level_manager.current_level = "castle_grounds"
+        _level_manager.current_level = "castle_inside"
         _level_manager.current_area = 1
+
+
+func _save_progress() -> void:
+    if _save == null or _level_manager == null:
+        return
+    _save.stars = mario.star_count
+    _save.coins = mario.coin_count
+    _save.lives = mario.lives
+    _save.record_level(_level_manager.current_level, _level_manager.current_area)
+    _save.save_file()
 
 
 func _cycle_level(direction: int) -> void:

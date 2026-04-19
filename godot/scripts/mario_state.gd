@@ -143,6 +143,9 @@ var wall_normal: Vector3 = Vector3.ZERO
 # time, "metal" makes Mario impervious and slightly slower, "vanish"
 # currently cosmetic only.
 var power_cap: String = ""
+# Name of the surface body Mario's last move_and_slide() ended on. Owner
+# sets this each tick; walking/braking physics use it to pick friction.
+var floor_surface: String = "default"
 # Water detection — owner sets water_level_y each tick; if our feet dip
 # below it we transition into swim mode. Simple single-volume model.
 var water_level_y: float = -INF
@@ -238,6 +241,13 @@ func step(delta: float) -> void:
             break
         safety -= 1
     action_time += delta
+    # Hazardous floor side-effects (lava, death plane). We surface these
+    # as flags the owner can read and apply damage — the state machine
+    # itself stays focused on movement.
+    if floor_surface == "burning":
+        vel.y = max(vel.y, 14.0)  # kick Mario off the lava
+    elif floor_surface == "death":
+        pos.y = -100.0  # force fall-plane trigger
 
 
 # ---- Actions ------------------------------------------------------------
@@ -305,15 +315,21 @@ func _act_walking(delta: float) -> bool:
         var target_yaw := atan2(-stick_dir.x, -stick_dir.z)
         face_yaw = _approach_angle(face_yaw, target_yaw, TURN_RATE * delta)
     var target_vel: float = stick_mag * WALK_MAX_VEL
-    # Let the player push past WALK_MAX toward RUN_MAX by holding at full.
-    # Actual decomp uses a different curve; this is an approximation that
-    # still crosses into running territory.
     if stick_mag > 0.95:
         target_vel = RUN_MAX_VEL
+    # Surface-dependent acceleration. On ice / slippery surfaces you build
+    # and shed speed slowly, matching SM64's classic skating feel.
+    var accel_mult: float = 1.0
+    match floor_surface:
+        "ice":             accel_mult = 0.15
+        "very_slippery":   accel_mult = 0.25
+        "slippery":        accel_mult = 0.5
+        "shallow_quicksand", "deep_quicksand": accel_mult = 0.7
+    var accel: float = WALK_ACCEL * accel_mult
     if forward_vel < target_vel:
-        forward_vel = min(forward_vel + WALK_ACCEL * delta, target_vel)
+        forward_vel = min(forward_vel + accel * delta, target_vel)
     else:
-        forward_vel = max(forward_vel - WALK_ACCEL * delta, target_vel)
+        forward_vel = max(forward_vel - accel * delta, target_vel)
 
     # Apply horizontal velocity along face_yaw.
     vel.x = -sin(face_yaw) * forward_vel
@@ -333,7 +349,12 @@ func _act_braking(delta: float) -> bool:
     if input_jump_pressed:
         return set_action(ACT_JUMP)
     _request_anim(MARIO_ANIM_SKID_ON_GROUND, 1.0)
-    forward_vel = max(forward_vel - BRAKE_DECEL * delta, 0.0)
+    var decel: float = BRAKE_DECEL
+    match floor_surface:
+        "ice":           decel *= 0.1
+        "very_slippery": decel *= 0.2
+        "slippery":      decel *= 0.5
+    forward_vel = max(forward_vel - decel * delta, 0.0)
     vel.x = -sin(face_yaw) * forward_vel
     vel.z = -cos(face_yaw) * forward_vel
     vel.y = -1.0

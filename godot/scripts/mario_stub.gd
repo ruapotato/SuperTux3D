@@ -230,6 +230,20 @@ func _physics_process(delta: float) -> void:
     velocity = _state.vel
     move_and_slide()
     _state.pos = global_position
+    # Pick the surface kind we're standing on (each surface type got its
+    # own collision body in level_loader). Default if we weren't touching
+    # anything tagged — e.g. safety floor or pickups.
+    _state.floor_surface = "default"
+    for i in range(get_slide_collision_count()):
+        var c := get_slide_collision(i)
+        if c == null:
+            continue
+        var normal := c.get_normal()
+        if normal.y > 0.5:  # floor-ish
+            var collider := c.get_collider()
+            if collider is Node and collider.has_meta("surface_kind"):
+                _state.floor_surface = collider.get_meta("surface_kind")
+                break
 
     if _actor_anchor != null:
         _actor_anchor.rotation.y = _state.face_yaw

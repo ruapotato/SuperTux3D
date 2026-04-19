@@ -56,8 +56,12 @@ func _ready() -> void:
 static func _mode_for_bhv(bhv: String) -> String:
     match bhv:
         "bhvBobomb":        return "bomb"
+        # Chuckya grabs Mario in the decomp; we don't have the grab
+        # animation ported so approximate with an aggressive chase.
         "bhvChuckya":       return "chase"
-        "bhvKoopa":         return "chase"
+        # Koopas walk patrols in SM64 and only attack if bumped into —
+        # use a calm patrol, not chase.
+        "bhvKoopa":         return "patrol"
         "bhvPiranhaPlant":  return "pop"
         "bhvMrBlizzard", "bhvMrBlizzardHidden": return "static"
         "bhvSnufit", "bhvFlyGuy":               return "static"
@@ -78,7 +82,8 @@ func _build_visual() -> void:
             var actor_anchor := Node3D.new()
             actor_anchor.name = "ActorAnchor"
             add_child(actor_anchor)
-            LevelLoader.load_actor(mesh_path, actor_anchor)
+            # Rigid mode: no Mario-specific baked-in animation rotation.
+            LevelLoader.load_actor(mesh_path, actor_anchor, "rigid")
             _mesh = actor_anchor
         else:
             _build_placeholder_mesh()

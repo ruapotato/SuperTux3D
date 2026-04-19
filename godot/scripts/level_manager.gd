@@ -55,6 +55,9 @@ const FALLBACK_SPAWN := Vector3(0, 5, 0)
 var world_root: Node3D
 var mario: CharacterBody3D
 var sound_bank: Node     # optional — set by main.gd so we can swap BGM on load
+var save_data: Node      # optional — set by main.gd so we auto-save on load
+
+signal level_loaded(level_name: String, area: int)
 
 # The currently-loaded level name + area (1-based), null when no level.
 var current_level: String = ""
@@ -109,9 +112,16 @@ func load_level(level_name: String, area: int = 1) -> bool:
         var track: String = LEVEL_BGM.get(level_name, "bgm_course")
         if sound_bank.has_method("play_bgm"):
             sound_bank.play_bgm(track)
-    # Tell Mario whether this level has a water volume.
     var water_y: float = LEVEL_WATER_Y.get(level_name, -INF)
     mario.water_level_y = water_y
+    if save_data != null:
+        save_data.last_level = level_name
+        save_data.last_area = area
+        save_data.coins = mario.coin_count
+        save_data.stars = mario.star_count
+        save_data.lives = mario.lives
+        save_data.save_file()
+    emit_signal("level_loaded", level_name, area)
     print("[level_manager] loaded %s area %d, spawn=%s water=%s" % [
         level_name, area, spawn, water_y])
     return true

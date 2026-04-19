@@ -228,7 +228,7 @@ static func _make_pickup(kind: String) -> Node3D:
             anchor.name = "ActorAnchor"
             anchor.set_script(PickupBobScript)
             body.add_child(anchor)
-            LevelLoader.load_actor(mesh_path, anchor)
+            LevelLoader.load_actor(mesh_path, anchor, "rigid")
             return body
 
     var mesh_inst := MeshInstance3D.new()

@@ -63,7 +63,8 @@ static func _read_json(path: String) -> Variant:
     return parsed
 
 
-static func load_actor(mesh_json_path: String, parent: Node3D) -> Dictionary:
+static func load_actor(mesh_json_path: String, parent: Node3D,
+                       animation_mode: String = "mario") -> Dictionary:
     """Load an articulated actor into `parent`. Returns a dictionary with
     `bone_root` (the Node3D that owns the whole rig), `bones` (array of
     Node3D indexed by bone index, matching the decomp's traversal order
@@ -79,35 +80,32 @@ static func load_actor(mesh_json_path: String, parent: Node3D) -> Dictionary:
     var model: Variant = _read_json(mesh_json_path)
     if not (model is Dictionary):
         return {}
-    return _build_articulated_actor(model, parent)
+    return _build_articulated_actor(model, parent, animation_mode)
 
 
-static func _build_articulated_actor(model: Dictionary, parent: Node3D) -> Dictionary:
+static func _build_articulated_actor(
+    model: Dictionary, parent: Node3D, animation_mode: String = "mario"
+) -> Dictionary:
     var bones_data: Array = model.bones
-    var bones: Array = []       # Node3D per bone
-    var mesh_instances: Array = []  # MeshInstance3D per bone (or null)
+    var bones: Array = []
+    var mesh_instances: Array = []
     bones.resize(bones_data.size())
     mesh_instances.resize(bones_data.size())
 
-    # Actor→Godot axis remap. Every decomp Mario animation applies these
-    # combined rotations to put Mario upright in world space:
-    #   - Bone 0 rotation Ry(+90°)       (standard across all animations)
-    #   - Bone 1 (butt) rotation Rz(+90°) (standard across all animations)
-    # After walking the chain, a face-vertex ends up flipped so the
-    # character reads as "nose down, head forward" in our frame. We
-    # compose an Rx(+90°) into the remap to re-tip Mario head-up. The
-    # simplified matrix below equals `Rx(+90°) * [actor→Godot basis]`:
-    #   actor +X → Godot -X
-    #   actor +Y → Godot +Y
-    #   actor +Z → Godot -Z
-    # Once applied, the animation's standard bone0+butt rotations land
-    # Mario upright and facing -Z (Godot forward) with head at +Y.
     var s: float = ACTOR_SCALE * WORLD_SCALE
-    var axis_remap := Basis(
-        Vector3(-1, 0, 0),
-        Vector3(0, 1, 0),
-        Vector3(0, 0, -1),
-    ).scaled(Vector3(s, s, s))
+    var axis_remap: Basis
+    if animation_mode == "rigid":
+        axis_remap = Basis(
+            Vector3(0, 1, 0),
+            Vector3(0, 0, -1),
+            Vector3(-1, 0, 0),
+        ).scaled(Vector3(s, s, s))
+    else:
+        axis_remap = Basis(
+            Vector3(-1, 0, 0),
+            Vector3(0, 1, 0),
+            Vector3(0, 0, -1),
+        ).scaled(Vector3(s, s, s))
 
     var bone_root := Node3D.new()
     bone_root.name = "BoneRoot"
@@ -169,9 +167,9 @@ static func _build_articulated_actor(model: Dictionary, parent: Node3D) -> Dicti
         if min_y != INF:
             bone_root.position.y = -min_y
 
-    print("[level_loader] articulated actor: ", bones_data.size(), " bones, ",
-          textured, " textured sub-meshes, ", untextured,
-          " untextured, min_y=", min_y, " -> shifted up ", -min_y)
+    print("[level_loader] articulated actor [%s]: %d bones, %d textured, %d untextured, min_y=%.3f" % [
+        animation_mode, bones_data.size(), textured, untextured, min_y,
+    ])
     return {
         "bone_root": bone_root,
         "bones": bones,
@@ -421,44 +419,67 @@ static func _color_for_layer(layer: String) -> Color:
 
 
 static func _build_static_body(coll: Dictionary) -> StaticBody3D:
-    var body := StaticBody3D.new()
-    body.name = "LevelCollision"
+    # Bucket triangles by surface-kind and emit one child StaticBody3D per
+    # kind, each tagged with `surface_kind` metadata. Mario's movement
+    # inspects that tag after move_and_slide() so walking/braking can pick
+    # the right friction for ice / slippery / sand / default.
+    var container := StaticBody3D.new()
+    container.name = "LevelCollision"
+    container.collision_layer = 1
+    container.collision_mask = 1
 
     var verts: Array = coll.vertices
-    # Flatten per-group triangles into one triangle soup for ConcavePolygonShape3D.
-    # Surface types get preserved by mapping triangle index → surface_id in a
-    # side array stored as metadata, so gameplay can query it later.
-    var tri_points: PackedVector3Array = PackedVector3Array()
-    var surface_ids: PackedInt32Array = PackedInt32Array()
+    var buckets: Dictionary = {}
     for group in coll.triangle_groups:
         var sid: int = group.surface_id
+        var kind := _surface_id_to_kind(sid)
+        if not buckets.has(kind):
+            buckets[kind] = PackedVector3Array()
+        var bucket: PackedVector3Array = buckets[kind]
         for tri in group.triangles:
-            # Flip winding: decomp triangles are wound such that the cross
-            # product of (V1-V0) x (V2-V0) points into the surface (N64/F3D
-            # left-handed convention). Godot's ConcavePolygonShape3D is
-            # one-sided and expects CCW-front (right-handed), so swapping
-            # the 2nd and 3rd vertices inverts the effective normal and makes
-            # floor triangles catch a ray coming down from above.
             var v0: Array = verts[tri[0]]
             var v1: Array = verts[tri[1]]
             var v2: Array = verts[tri[2]]
-            tri_points.append(Vector3(v0[0], v0[1], v0[2]) * WORLD_SCALE)
-            tri_points.append(Vector3(v2[0], v2[1], v2[2]) * WORLD_SCALE)
-            tri_points.append(Vector3(v1[0], v1[1], v1[2]) * WORLD_SCALE)
-            surface_ids.append(sid)
+            # Flipped winding — see the earlier N64→Godot CCW note.
+            bucket.append(Vector3(v0[0], v0[1], v0[2]) * WORLD_SCALE)
+            bucket.append(Vector3(v2[0], v2[1], v2[2]) * WORLD_SCALE)
+            bucket.append(Vector3(v1[0], v1[1], v1[2]) * WORLD_SCALE)
+        buckets[kind] = bucket
 
-    var shape := ConcavePolygonShape3D.new()
-    shape.set_faces(tri_points)
+    var total_tris := 0
+    for kind in buckets.keys():
+        var tris: PackedVector3Array = buckets[kind]
+        if tris.size() == 0:
+            continue
+        var sub := StaticBody3D.new()
+        sub.name = "Collision_" + kind
+        sub.collision_layer = 1
+        sub.collision_mask = 1
+        sub.set_meta("surface_kind", kind)
+        var shape := ConcavePolygonShape3D.new()
+        shape.set_faces(tris)
+        var cs := CollisionShape3D.new()
+        cs.shape = shape
+        sub.add_child(cs)
+        container.add_child(sub)
+        total_tris += tris.size() / 3
+    print("[level_loader] built %d surface-kind bodies with %d total tris"
+          % [buckets.size(), total_tris])
+    return container
 
-    var cs := CollisionShape3D.new()
-    cs.shape = shape
-    cs.name = "LevelShape"
-    body.add_child(cs)
-    body.set_meta("surface_ids", surface_ids)
-    body.set_meta("triangle_count", tri_points.size() / 3)
-    # Explicit collision layer + mask in case project defaults differ.
-    body.collision_layer = 1
-    body.collision_mask = 1
-    print("[level_loader] built StaticBody3D '%s' with %d collision tris (layer=%d mask=%d)"
-        % [body.name, tri_points.size() / 3, body.collision_layer, body.collision_mask])
-    return body
+
+static func _surface_id_to_kind(sid: int) -> String:
+    # Map decomp SURFACE_* ids to coarse movement categories. Full list in
+    # include/surface_terrains.h; we only distinguish the buckets that
+    # change the physics meaningfully.
+    match sid:
+        0x0001:                  return "burning"
+        0x000A:                  return "death"
+        0x002E:                  return "ice"
+        0x0013:                  return "very_slippery"
+        0x0014:                  return "slippery"
+        0x0015:                  return "not_slippery"
+        0x0021, 0x0024, 0x0025:  return "shallow_quicksand"
+        0x0022, 0x0023, 0x0027:  return "deep_quicksand"
+        0x000D, 0x000E:          return "water"
+        _:                       return "default"
