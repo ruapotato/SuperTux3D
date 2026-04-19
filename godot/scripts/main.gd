@@ -32,10 +32,13 @@ const LEVEL_SHORTCUTS := {
 
 # Orbit camera settings (Godot world scale ~= meters).
 # Lakitu-ish defaults: ~7 units behind Mario, pitched slightly down.
-const CAM_DISTANCE := 7.0
+const CAM_DISTANCE_DEFAULT := 7.0
+const CAM_DISTANCE_MIN := 2.0
+const CAM_DISTANCE_MAX := 20.0
 const MOUSE_SENSITIVITY := 0.005
 # Focus point offset from Mario's feet (~chest height).
 const FOCUS_OFFSET := Vector3(0, 1.0, 0)
+var _cam_distance: float = CAM_DISTANCE_DEFAULT
 
 @onready var world: Node3D = $World
 @onready var camera: Camera3D = $CameraRig/Camera3D
@@ -158,6 +161,11 @@ func _input(event: InputEvent) -> void:
     elif event is InputEventKey and event.pressed and LEVEL_SHORTCUTS.has(event.keycode):
         var spec: Array = LEVEL_SHORTCUTS[event.keycode]
         _level_manager.load_level(spec[0], spec[1])
+    elif event is InputEventMouseButton and event.pressed:
+        if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+            _cam_distance = max(_cam_distance - 0.7, CAM_DISTANCE_MIN)
+        elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+            _cam_distance = min(_cam_distance + 0.7, CAM_DISTANCE_MAX)
 
 
 func _respawn() -> void:
@@ -204,7 +212,7 @@ func _process(delta: float) -> void:
         sin(_cam_yaw) * cos(_cam_pitch),
         sin(_cam_pitch),
         cos(_cam_yaw) * cos(_cam_pitch),
-    ) * CAM_DISTANCE
+    ) * _cam_distance
     camera_rig.global_position = focus + offset
     camera_rig.look_at(focus, Vector3.UP)
     # Auto-respawn on fall-plane crossing (Mario dropped below the level).
@@ -242,15 +250,16 @@ func _process(delta: float) -> void:
         ]
     hud_label.text = (
         "%s\n"
-        + "pos: %.2f,%.2f,%.2f   floor: %s   vel: (%.2f,%.2f,%.2f)\n"
-        + "action: %s  anim: %s\n"
         + "%s\n"
-        + "[R] respawn  [F1] collision  [Esc] cursor  [1-9,0] swap level"
+        + "action: %s\n"
+        + "%s\n"
+        + "WASD move  Space jump  Ctrl crouch  Shift attack/dive\n"
+        + "Wheel zoom  1-9 swap level  0 castle  R respawn  F1 collision"
     ) % [
         level_info,
-        mario.global_position.x, mario.global_position.y, mario.global_position.z,
-        str(mario.is_on_floor()),
-        mario.velocity.x, mario.velocity.y, mario.velocity.z,
-        action_name, anim_state,
         stats,
+        action_name,
+        "pos: (%.1f, %.1f, %.1f)" % [
+            mario.global_position.x, mario.global_position.y, mario.global_position.z,
+        ],
     ]
