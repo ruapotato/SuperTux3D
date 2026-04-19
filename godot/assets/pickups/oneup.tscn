@@ -1,0 +1,95 @@
+[gd_scene load_steps=8 format=3 uid="uid://pkuponeup"]
+
+; Clean-room 1-up. Green mushroom with cap + stem, two eyes.
+; Total height ~0.4m. Origin at mid-height.
+
+[sub_resource type="SphereMesh" id="cap_mesh"]
+radius = 0.18
+height = 0.28
+radial_segments = 16
+rings = 10
+is_hemisphere = true
+
+[sub_resource type="StandardMaterial3D" id="cap_mat"]
+albedo_color = Color(0.15, 0.85, 0.25, 1)
+shading_mode = 0
+
+[sub_resource type="SphereMesh" id="spot_mesh"]
+radius = 0.05
+height = 0.04
+radial_segments = 10
+rings = 6
+is_hemisphere = true
+
+[sub_resource type="StandardMaterial3D" id="white_mat"]
+albedo_color = Color(0.98, 0.98, 0.94, 1)
+shading_mode = 0
+
+[sub_resource type="CylinderMesh" id="stem_mesh"]
+top_radius = 0.11
+bottom_radius = 0.12
+height = 0.18
+radial_segments = 14
+
+[sub_resource type="SphereMesh" id="eye_white_mesh"]
+radius = 0.035
+height = 0.07
+radial_segments = 10
+rings = 6
+
+[sub_resource type="SphereMesh" id="pupil_mesh"]
+radius = 0.015
+height = 0.03
+radial_segments = 8
+rings = 6
+
+[sub_resource type="StandardMaterial3D" id="pupil_mat"]
+albedo_color = Color(0.05, 0.05, 0.15, 1)
+shading_mode = 0
+
+[node name="OneUp" type="Node3D"]
+
+[node name="Cap" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.07, 0)
+mesh = SubResource("cap_mesh")
+surface_material_override/0 = SubResource("cap_mat")
+
+[node name="Spot1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19, 0.12)
+mesh = SubResource("spot_mesh")
+surface_material_override/0 = SubResource("white_mat")
+
+[node name="Spot2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.5, 0, -0.866, 0, 1, 0, 0.866, 0, 0.5, -0.11, 0.18, -0.05)
+mesh = SubResource("spot_mesh")
+surface_material_override/0 = SubResource("white_mat")
+
+[node name="Spot3" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.5, 0, 0.866, 0, 1, 0, -0.866, 0, 0.5, 0.11, 0.18, -0.05)
+mesh = SubResource("spot_mesh")
+surface_material_override/0 = SubResource("white_mat")
+
+[node name="Stem" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+mesh = SubResource("stem_mesh")
+surface_material_override/0 = SubResource("white_mat")
+
+[node name="EyeWhiteL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, -0.05, 0.1)
+mesh = SubResource("eye_white_mesh")
+surface_material_override/0 = SubResource("white_mat")
+
+[node name="EyeWhiteR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, -0.05, 0.1)
+mesh = SubResource("eye_white_mesh")
+surface_material_override/0 = SubResource("white_mat")
+
+[node name="PupilL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, -0.05, 0.135)
+mesh = SubResource("pupil_mesh")
+surface_material_override/0 = SubResource("pupil_mat")
+
+[node name="PupilR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, -0.05, 0.135)
+mesh = SubResource("pupil_mesh")
+surface_material_override/0 = SubResource("pupil_mat")

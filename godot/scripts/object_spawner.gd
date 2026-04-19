@@ -29,9 +29,6 @@ const CANNON_BEHAVIORS := [
 # behaviors get ported incrementally. Coins and stars are the first real
 # implementations because they're the gameplay core of SM64.
 
-const LevelLoader := preload("res://scripts/level_loader.gd")
-
-
 # Behaviors we implement fully. Everything else spawns a debug marker.
 const BHV_IMPLEMENTATIONS := {
     # Coins
@@ -108,7 +105,10 @@ static func spawn_area_objects(
         if node == null:
             node = _make_debug_marker(bhv)
         var p: Array = obj.pos
-        node.position = Vector3(p[0], p[1], p[2]) * LevelLoader.WORLD_SCALE
+        # Legacy decomp-scaled positions (N64 units → Godot meters = 0.01×).
+        # Only used if a non-tscn caller ever invokes spawn_area_objects;
+        # the clean-room path places objects directly in level .tscns.
+        node.position = Vector3(p[0], p[1], p[2]) * 0.01
         var a: Array = obj.angle
         var to_rad: float = (TAU / 65536.0) if abs(a[1]) > 360 else (PI / 180.0)
         node.rotation.y = a[1] * to_rad
@@ -228,16 +228,16 @@ static func _make_enemy(bhv: String) -> Node3D:
     return e
 
 
-# pickup_kind → extracted actor mesh subdir, when we have one.
-const PICKUP_ACTORS := {
-    "coin_yellow": "coin_yellow",
-    "coin_blue":   "coin_blue",
-    "coin_red":    "coin_yellow",
-    "star":        "star",
-    "oneup":       "oneup",
-    "cap_wing":    "cap_wing",
-    "cap_metal":   "cap_metal",
-    "cap_vanish":  "cap_normal",
+# pickup_kind → path of the clean-room pickup scene.
+const PICKUP_SCENES := {
+    "coin_yellow": "res://assets/pickups/coin_yellow.tscn",
+    "coin_blue":   "res://assets/pickups/coin_blue.tscn",
+    "coin_red":    "res://assets/pickups/coin_red.tscn",
+    "star":        "res://assets/pickups/star.tscn",
+    "oneup":       "res://assets/pickups/oneup.tscn",
+    "cap_wing":    "res://assets/pickups/cap_wing.tscn",
+    "cap_metal":   "res://assets/pickups/cap_metal.tscn",
+    "cap_vanish":  "res://assets/pickups/cap_normal.tscn",
 }
 
 
@@ -252,31 +252,24 @@ static func _make_pickup(kind: String) -> Node3D:
     shape.shape = sphere
     body.add_child(shape)
 
-    # Prefer a real actor mesh where we have one extracted. The anchor node
-    # carries a small spin + bob animation so collectibles read clearly.
-    var actor_sub: String = PICKUP_ACTORS.get(kind, "")
-    if actor_sub != "":
-        var mesh_path := "res://extracted/actors/%s/mesh.json" % actor_sub
-        if FileAccess.file_exists(mesh_path):
-            var anchor := Node3D.new()
-            anchor.name = "ActorAnchor"
-            anchor.set_script(PickupBobScript)
-            body.add_child(anchor)
-            LevelLoader.load_actor(mesh_path, anchor, "rigid")
-            return body
-
-    var mesh_inst := MeshInstance3D.new()
-    var sphere_mesh := SphereMesh.new()
-    sphere_mesh.radius = 0.3
-    sphere_mesh.height = 0.6
-    mesh_inst.mesh = sphere_mesh
-    var mat := StandardMaterial3D.new()
-    mat.albedo_color = _pickup_color(kind)
-    mat.emission_enabled = true
-    mat.emission = mat.albedo_color * 0.5
-    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-    mesh_inst.material_override = mat
-    body.add_child(mesh_inst)
+    var scene_path: String = PICKUP_SCENES.get(kind, "")
+    if scene_path != "" and ResourceLoader.exists(scene_path):
+        var scene: PackedScene = load(scene_path)
+        var visual: Node3D = scene.instantiate()
+        body.add_child(visual)
+    else:
+        var mesh_inst := MeshInstance3D.new()
+        var sphere_mesh := SphereMesh.new()
+        sphere_mesh.radius = 0.3
+        sphere_mesh.height = 0.6
+        mesh_inst.mesh = sphere_mesh
+        var mat := StandardMaterial3D.new()
+        mat.albedo_color = _pickup_color(kind)
+        mat.emission_enabled = true
+        mat.emission = mat.albedo_color * 0.5
+        mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+        mesh_inst.material_override = mat
+        body.add_child(mesh_inst)
     return body
 
 

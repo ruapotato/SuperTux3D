@@ -1,0 +1,161 @@
+[gd_scene load_steps=17 format=3]
+
+[sub_resource type="ProceduralSkyMaterial" id="Sky_1"]
+sky_top_color = Color(0.3, 0.55, 0.85, 1)
+sky_horizon_color = Color(0.85, 0.85, 0.7, 1)
+ground_bottom_color = Color(0.2, 0.35, 0.55, 1)
+ground_horizon_color = Color(0.5, 0.6, 0.65, 1)
+
+[sub_resource type="Sky" id="Sky_2"]
+sky_material = SubResource("Sky_1")
+
+[sub_resource type="Environment" id="Env_1"]
+background_mode = 2
+sky = SubResource("Sky_2")
+ambient_light_source = 2
+ambient_light_color = Color(0.6, 0.7, 0.8, 1)
+ambient_light_energy = 0.8
+
+[sub_resource type="StandardMaterial3D" id="Mat_Sand"]
+shading_mode = 0
+albedo_color = Color(0.88, 0.82, 0.55, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Water"]
+shading_mode = 0
+albedo_color = Color(0.25, 0.55, 0.85, 0.75)
+transparency = 1
+
+[sub_resource type="StandardMaterial3D" id="Mat_Stone"]
+shading_mode = 0
+albedo_color = Color(0.55, 0.52, 0.48, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Hull"]
+shading_mode = 0
+albedo_color = Color(0.35, 0.22, 0.15, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Mast"]
+shading_mode = 0
+albedo_color = Color(0.5, 0.35, 0.2, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Sail"]
+shading_mode = 0
+albedo_color = Color(0.92, 0.88, 0.8, 1)
+
+[sub_resource type="BoxMesh" id="Box_Floor"]
+material = SubResource("Mat_Sand")
+size = Vector3(60, 1, 60)
+
+[sub_resource type="BoxShape3D" id="BS_Floor"]
+size = Vector3(60, 1, 60)
+
+[sub_resource type="BoxMesh" id="Box_Beach"]
+material = SubResource("Mat_Sand")
+size = Vector3(60, 2, 15)
+
+[sub_resource type="BoxShape3D" id="BS_Beach"]
+size = Vector3(60, 2, 15)
+
+[sub_resource type="BoxMesh" id="Box_WaterSurf"]
+material = SubResource("Mat_Water")
+size = Vector3(60, 0.05, 45)
+
+[sub_resource type="CylinderMesh" id="Cyl_Pillar"]
+material = SubResource("Mat_Stone")
+top_radius = 1.2
+bottom_radius = 1.4
+height = 5
+
+[sub_resource type="CylinderShape3D" id="CS_Pillar"]
+height = 5
+radius = 1.4
+
+[sub_resource type="BoxMesh" id="Box_Hull"]
+material = SubResource("Mat_Hull")
+size = Vector3(10, 2, 3)
+
+[sub_resource type="BoxShape3D" id="BS_Hull"]
+size = Vector3(10, 2, 3)
+
+[sub_resource type="CylinderMesh" id="Cyl_Mast"]
+material = SubResource("Mat_Mast")
+top_radius = 0.15
+bottom_radius = 0.2
+height = 6
+
+[sub_resource type="BoxMesh" id="Box_Sail"]
+material = SubResource("Mat_Sail")
+size = Vector3(0.1, 4, 3)
+
+[node name="LevelRoot" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env_1")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 25, 0)
+light_color = Color(1, 0.97, 0.85, 1)
+
+[node name="SeaFloorMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.5, 0)
+mesh = SubResource("Box_Floor")
+
+[node name="SeaFloorBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="SeaFloorBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.5, 0)
+shape = SubResource("BS_Floor")
+
+[node name="BeachMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 25)
+mesh = SubResource("Box_Beach")
+
+[node name="BeachBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="BeachBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 25)
+shape = SubResource("BS_Beach")
+
+[node name="WaterSurface" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.5)
+mesh = SubResource("Box_WaterSurf")
+
+[node name="PillarMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, -0.5, -8)
+mesh = SubResource("Cyl_Pillar")
+
+[node name="PillarBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="PillarBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, -0.5, -8)
+shape = SubResource("CS_Pillar")
+
+[node name="HullMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.5, -12)
+mesh = SubResource("Box_Hull")
+
+[node name="HullBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="HullBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.5, -12)
+shape = SubResource("BS_Hull")
+
+[node name="MastMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 4.5, -12)
+mesh = SubResource("Cyl_Mast")
+
+[node name="SailMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 4.5, -12)
+mesh = SubResource("Box_Sail")
+
+[node name="SpawnArea" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 0
+metadata/spawn_point = Vector3(0, 2, 25)

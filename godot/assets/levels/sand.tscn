@@ -1,0 +1,150 @@
+[gd_scene load_steps=14 format=3]
+
+[sub_resource type="ProceduralSkyMaterial" id="Sky_1"]
+sky_top_color = Color(0.45, 0.65, 0.85, 1)
+sky_horizon_color = Color(0.95, 0.8, 0.55, 1)
+ground_bottom_color = Color(0.75, 0.6, 0.35, 1)
+ground_horizon_color = Color(0.9, 0.78, 0.55, 1)
+
+[sub_resource type="Sky" id="Sky_2"]
+sky_material = SubResource("Sky_1")
+
+[sub_resource type="Environment" id="Env_1"]
+background_mode = 2
+sky = SubResource("Sky_2")
+ambient_light_source = 2
+ambient_light_color = Color(0.95, 0.85, 0.6, 1)
+ambient_light_energy = 0.85
+
+[sub_resource type="StandardMaterial3D" id="Mat_Sand"]
+shading_mode = 0
+albedo_color = Color(0.92, 0.82, 0.55, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Pyramid"]
+shading_mode = 0
+albedo_color = Color(0.82, 0.72, 0.45, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Cactus"]
+shading_mode = 0
+albedo_color = Color(0.3, 0.55, 0.28, 1)
+
+[sub_resource type="BoxMesh" id="Box_Ground"]
+material = SubResource("Mat_Sand")
+size = Vector3(60, 1, 60)
+
+[sub_resource type="BoxShape3D" id="BS_Ground"]
+size = Vector3(60, 1, 60)
+
+[sub_resource type="PrismMesh" id="Prism_Pyramid"]
+material = SubResource("Mat_Pyramid")
+size = Vector3(16, 14, 16)
+
+[sub_resource type="ConvexPolygonShape3D" id="CPS_Pyramid"]
+points = PackedVector3Array(-8, -7, -8, 8, -7, -8, 8, -7, 8, -8, -7, 8, 0, 7, 0)
+
+[sub_resource type="SphereMesh" id="Sph_Dune"]
+material = SubResource("Mat_Sand")
+radius = 4
+height = 2
+
+[sub_resource type="SphereShape3D" id="SS_Dune"]
+radius = 3
+
+[sub_resource type="CylinderMesh" id="Cyl_CactusBody"]
+material = SubResource("Mat_Cactus")
+top_radius = 0.4
+bottom_radius = 0.5
+height = 3
+
+[sub_resource type="CylinderShape3D" id="CS_CactusBody"]
+height = 3
+radius = 0.5
+
+[sub_resource type="CylinderMesh" id="Cyl_CactusArm"]
+material = SubResource("Mat_Cactus")
+top_radius = 0.25
+bottom_radius = 0.3
+height = 1.2
+
+[node name="LevelRoot" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env_1")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 25, 0)
+light_color = Color(1, 0.92, 0.75, 1)
+light_energy = 1.2
+
+[node name="GroundMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+mesh = SubResource("Box_Ground")
+
+[node name="GroundBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="GroundBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("BS_Ground")
+
+[node name="PyramidMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 7, -10)
+mesh = SubResource("Prism_Pyramid")
+
+[node name="PyramidBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="PyramidBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 7, -10)
+shape = SubResource("CPS_Pyramid")
+
+[node name="Dune1Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 8)
+mesh = SubResource("Sph_Dune")
+
+[node name="Dune1Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="Dune1Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, -0.5, 8)
+shape = SubResource("SS_Dune")
+
+[node name="Dune2Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0, -14)
+mesh = SubResource("Sph_Dune")
+
+[node name="Dune2Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="Dune2Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, -0.5, -14)
+shape = SubResource("SS_Dune")
+
+[node name="CactusBodyMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.5, 12)
+mesh = SubResource("Cyl_CactusBody")
+
+[node name="CactusBodyStatic" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="CactusBodyStatic"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.5, 12)
+shape = SubResource("CS_CactusBody")
+
+[node name="CactusArmL" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 5.2, 2, 12)
+mesh = SubResource("Cyl_CactusArm")
+
+[node name="CactusArmR" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, 6.8, 2.2, 12)
+mesh = SubResource("Cyl_CactusArm")
+
+[node name="SpawnArea" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 0
+metadata/spawn_point = Vector3(0, 1, 15)

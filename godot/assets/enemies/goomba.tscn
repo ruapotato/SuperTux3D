@@ -1,0 +1,91 @@
+[gd_scene load_steps=10 format=3 uid="uid://bgoomba001"]
+
+; Clean-room Goomba visual. Brown mushroom body with angry eyes + feet.
+; Feet at y=0, faces -Z.
+
+[sub_resource type="SphereMesh" id="body_mesh"]
+radius = 0.3
+height = 0.6
+radial_segments = 16
+rings = 10
+
+[sub_resource type="StandardMaterial3D" id="body_mat"]
+albedo_color = Color(0.45, 0.25, 0.12, 1)
+shading_mode = 0
+
+[sub_resource type="SphereMesh" id="eye_mesh"]
+radius = 0.06
+height = 0.12
+radial_segments = 10
+rings = 8
+
+[sub_resource type="StandardMaterial3D" id="eye_white_mat"]
+albedo_color = Color(0.98, 0.98, 0.98, 1)
+shading_mode = 0
+
+[sub_resource type="SphereMesh" id="pupil_mesh"]
+radius = 0.025
+height = 0.05
+radial_segments = 8
+rings = 6
+
+[sub_resource type="StandardMaterial3D" id="pupil_mat"]
+albedo_color = Color(0.05, 0.05, 0.08, 1)
+shading_mode = 0
+
+[sub_resource type="BoxMesh" id="brow_mesh"]
+size = Vector3(0.14, 0.03, 0.03)
+
+[sub_resource type="BoxMesh" id="foot_mesh"]
+size = Vector3(0.16, 0.1, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="foot_mat"]
+albedo_color = Color(0.9, 0.72, 0.35, 1)
+shading_mode = 0
+
+[node name="EnemyVisual" type="Node3D"]
+
+[node name="Body" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+mesh = SubResource("body_mesh")
+surface_material_override/0 = SubResource("body_mat")
+
+[node name="EyeL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0.42, 0.23)
+mesh = SubResource("eye_mesh")
+surface_material_override/0 = SubResource("eye_white_mat")
+
+[node name="EyeR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0.42, 0.23)
+mesh = SubResource("eye_mesh")
+surface_material_override/0 = SubResource("eye_white_mat")
+
+[node name="PupilL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.09, 0.4, 0.28)
+mesh = SubResource("pupil_mesh")
+surface_material_override/0 = SubResource("pupil_mat")
+
+[node name="PupilR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09, 0.4, 0.28)
+mesh = SubResource("pupil_mesh")
+surface_material_override/0 = SubResource("pupil_mat")
+
+[node name="BrowL" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.95, 0.31, 0, -0.31, 0.95, 0, 0, 0, 1, -0.1, 0.52, 0.26)
+mesh = SubResource("brow_mesh")
+surface_material_override/0 = SubResource("pupil_mat")
+
+[node name="BrowR" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.95, -0.31, 0, 0.31, 0.95, 0, 0, 0, 1, 0.1, 0.52, 0.26)
+mesh = SubResource("brow_mesh")
+surface_material_override/0 = SubResource("pupil_mat")
+
+[node name="FootL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0.05, 0.02)
+mesh = SubResource("foot_mesh")
+surface_material_override/0 = SubResource("foot_mat")
+
+[node name="FootR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0.05, 0.02)
+mesh = SubResource("foot_mesh")
+surface_material_override/0 = SubResource("foot_mat")

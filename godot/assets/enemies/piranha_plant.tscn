@@ -1,0 +1,126 @@
+[gd_scene load_steps=13 format=3 uid="uid://bpiranha005"]
+
+; Clean-room Piranha Plant. Green stalk, red pot/mouth with white dots, leaves.
+; Base at y=0, faces -Z (mouth opens toward -Z).
+
+[sub_resource type="CylinderMesh" id="pot_mesh"]
+top_radius = 0.22
+bottom_radius = 0.18
+height = 0.25
+radial_segments = 16
+
+[sub_resource type="StandardMaterial3D" id="pot_mat"]
+albedo_color = Color(0.45, 0.28, 0.15, 1)
+shading_mode = 0
+
+[sub_resource type="CylinderMesh" id="stalk_mesh"]
+top_radius = 0.08
+bottom_radius = 0.1
+height = 0.5
+radial_segments = 10
+
+[sub_resource type="StandardMaterial3D" id="stalk_mat"]
+albedo_color = Color(0.15, 0.62, 0.2, 1)
+shading_mode = 0
+
+[sub_resource type="SphereMesh" id="head_mesh"]
+radius = 0.25
+height = 0.5
+radial_segments = 16
+rings = 10
+
+[sub_resource type="StandardMaterial3D" id="head_mat"]
+albedo_color = Color(0.92, 0.15, 0.18, 1)
+shading_mode = 0
+
+[sub_resource type="SphereMesh" id="dot_mesh"]
+radius = 0.04
+height = 0.08
+radial_segments = 8
+rings = 6
+
+[sub_resource type="StandardMaterial3D" id="dot_mat"]
+albedo_color = Color(0.98, 0.98, 0.98, 1)
+shading_mode = 0
+
+[sub_resource type="BoxMesh" id="mouth_mesh"]
+size = Vector3(0.3, 0.06, 0.12)
+
+[sub_resource type="StandardMaterial3D" id="mouth_mat"]
+albedo_color = Color(0.15, 0.03, 0.05, 1)
+shading_mode = 0
+
+[sub_resource type="SphereMesh" id="leaf_mesh"]
+radius = 0.12
+height = 0.1
+radial_segments = 10
+rings = 6
+
+[sub_resource type="StandardMaterial3D" id="leaf_mat"]
+albedo_color = Color(0.2, 0.75, 0.25, 1)
+shading_mode = 0
+
+[sub_resource type="BoxMesh" id="rim_mesh"]
+size = Vector3(0.46, 0.05, 0.46)
+
+[node name="EnemyVisual" type="Node3D"]
+
+[node name="Pot" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.125, 0)
+mesh = SubResource("pot_mesh")
+surface_material_override/0 = SubResource("pot_mat")
+
+[node name="PotRim" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+mesh = SubResource("rim_mesh")
+surface_material_override/0 = SubResource("pot_mat")
+
+[node name="Stalk" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("stalk_mesh")
+surface_material_override/0 = SubResource("stalk_mat")
+
+[node name="LeafL" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.5, 0.5, 0, -0.5, 0.5, 0, 0, 0, 1, -0.18, 0.55, 0)
+mesh = SubResource("leaf_mesh")
+surface_material_override/0 = SubResource("leaf_mat")
+
+[node name="LeafR" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.5, -0.5, 0, 0.5, 0.5, 0, 0, 0, 1, 0.18, 0.55, 0)
+mesh = SubResource("leaf_mesh")
+surface_material_override/0 = SubResource("leaf_mat")
+
+[node name="Head" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+mesh = SubResource("head_mesh")
+surface_material_override/0 = SubResource("head_mat")
+
+[node name="Mouth" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.92, -0.22)
+mesh = SubResource("mouth_mesh")
+surface_material_override/0 = SubResource("mouth_mat")
+
+[node name="Dot1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.12, 1.05, -0.18)
+mesh = SubResource("dot_mesh")
+surface_material_override/0 = SubResource("dot_mat")
+
+[node name="Dot2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.12, 1.05, -0.18)
+mesh = SubResource("dot_mesh")
+surface_material_override/0 = SubResource("dot_mat")
+
+[node name="Dot3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.12, -0.2)
+mesh = SubResource("dot_mesh")
+surface_material_override/0 = SubResource("dot_mat")
+
+[node name="Dot4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.18, 0.82, -0.12)
+mesh = SubResource("dot_mesh")
+surface_material_override/0 = SubResource("dot_mat")
+
+[node name="Dot5" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.18, 0.82, -0.12)
+mesh = SubResource("dot_mesh")
+surface_material_override/0 = SubResource("dot_mat")

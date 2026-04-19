@@ -1,0 +1,30 @@
+[gd_scene load_steps=3 format=3 uid="uid://pkupcapmetl"]
+
+; Clean-room metal cap. Plumber-style cap shape but rendered in metallic grey.
+; Uses a subtle shaded material (shading_mode default) so metallic sheen reads.
+
+[sub_resource type="CylinderMesh" id="cap_mesh"]
+top_radius = 0.18
+bottom_radius = 0.19
+height = 0.11
+radial_segments = 16
+
+[sub_resource type="BoxMesh" id="brim_mesh"]
+size = Vector3(0.42, 0.04, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="metal_mat"]
+albedo_color = Color(0.72, 0.74, 0.78, 1)
+metallic = 0.9
+metallic_specular = 0.9
+roughness = 0.25
+
+[node name="CapMetal" type="Node3D"]
+
+[node name="Cap" type="MeshInstance3D" parent="."]
+mesh = SubResource("cap_mesh")
+surface_material_override/0 = SubResource("metal_mat")
+
+[node name="Brim" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.04, 0.11)
+mesh = SubResource("brim_mesh")
+surface_material_override/0 = SubResource("metal_mat")

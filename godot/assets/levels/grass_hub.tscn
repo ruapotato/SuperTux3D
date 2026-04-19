@@ -1,0 +1,162 @@
+[gd_scene load_steps=20 format=3]
+
+[sub_resource type="ProceduralSkyMaterial" id="Sky_1"]
+sky_top_color = Color(0.35, 0.6, 0.9, 1)
+sky_horizon_color = Color(0.75, 0.85, 0.95, 1)
+ground_bottom_color = Color(0.2, 0.35, 0.18, 1)
+ground_horizon_color = Color(0.55, 0.65, 0.45, 1)
+
+[sub_resource type="Sky" id="Sky_2"]
+sky_material = SubResource("Sky_1")
+
+[sub_resource type="Environment" id="Env_1"]
+background_mode = 2
+sky = SubResource("Sky_2")
+ambient_light_source = 2
+ambient_light_color = Color(0.6, 0.62, 0.58, 1)
+ambient_light_energy = 0.7
+
+[sub_resource type="StandardMaterial3D" id="Mat_Grass"]
+shading_mode = 0
+albedo_color = Color(0.35, 0.65, 0.28, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Stone"]
+shading_mode = 0
+albedo_color = Color(0.72, 0.7, 0.66, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Roof"]
+shading_mode = 0
+albedo_color = Color(0.55, 0.22, 0.18, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Wood"]
+shading_mode = 0
+albedo_color = Color(0.45, 0.28, 0.15, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Leaves"]
+shading_mode = 0
+albedo_color = Color(0.22, 0.55, 0.22, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Water"]
+shading_mode = 0
+albedo_color = Color(0.25, 0.45, 0.75, 1)
+
+[sub_resource type="BoxMesh" id="Box_Ground"]
+material = SubResource("Mat_Grass")
+size = Vector3(30, 1, 30)
+
+[sub_resource type="BoxShape3D" id="BS_Ground"]
+size = Vector3(30, 1, 30)
+
+[sub_resource type="BoxMesh" id="Box_Castle"]
+material = SubResource("Mat_Stone")
+size = Vector3(10, 8, 6)
+
+[sub_resource type="BoxShape3D" id="BS_Castle"]
+size = Vector3(10, 8, 6)
+
+[sub_resource type="PrismMesh" id="Prism_Roof"]
+material = SubResource("Mat_Roof")
+size = Vector3(11, 4, 7)
+
+[sub_resource type="BoxMesh" id="Box_Bridge"]
+material = SubResource("Mat_Wood")
+size = Vector3(3, 0.3, 6)
+
+[sub_resource type="BoxShape3D" id="BS_Bridge"]
+size = Vector3(3, 0.3, 6)
+
+[sub_resource type="BoxMesh" id="Box_Water"]
+material = SubResource("Mat_Water")
+size = Vector3(30, 0.1, 4)
+
+[sub_resource type="CylinderMesh" id="Cyl_Trunk"]
+material = SubResource("Mat_Wood")
+top_radius = 0.4
+bottom_radius = 0.5
+height = 2.5
+
+[sub_resource type="SphereMesh" id="Sph_Leaves"]
+material = SubResource("Mat_Leaves")
+radius = 1.6
+height = 3.2
+
+[node name="LevelRoot" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env_1")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 20, 0)
+
+[node name="GroundMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+mesh = SubResource("Box_Ground")
+
+[node name="GroundBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="GroundBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("BS_Ground")
+
+[node name="CastleMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -10)
+mesh = SubResource("Box_Castle")
+
+[node name="CastleBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="CastleBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -10)
+shape = SubResource("BS_Castle")
+
+[node name="RoofMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, -10)
+mesh = SubResource("Prism_Roof")
+
+[node name="BridgeMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 2)
+mesh = SubResource("Box_Bridge")
+
+[node name="BridgeBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="BridgeBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 2)
+shape = SubResource("BS_Bridge")
+
+[node name="Moat" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.4, 2)
+mesh = SubResource("Box_Water")
+
+[node name="Tree1Trunk" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 1.25, 8)
+mesh = SubResource("Cyl_Trunk")
+
+[node name="Tree1Leaves" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 3.5, 8)
+mesh = SubResource("Sph_Leaves")
+
+[node name="Tree2Trunk" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 1.25, 9)
+mesh = SubResource("Cyl_Trunk")
+
+[node name="Tree2Leaves" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 3.5, 9)
+mesh = SubResource("Sph_Leaves")
+
+[node name="Tree3Trunk" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.25, -6)
+mesh = SubResource("Cyl_Trunk")
+
+[node name="Tree3Leaves" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 3.5, -6)
+mesh = SubResource("Sph_Leaves")
+
+[node name="SpawnArea" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 0
+metadata/spawn_point = Vector3(0, 1, 6)

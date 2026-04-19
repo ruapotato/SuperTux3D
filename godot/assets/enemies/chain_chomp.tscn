@@ -1,0 +1,121 @@
+[gd_scene load_steps=9 format=3 uid="uid://bchomp006"]
+
+; Clean-room Chain Chomp. Big black spiky ball, white teeth ring, single red eye.
+; Base at y=0, faces -Z (mouth toward -Z).
+
+[sub_resource type="SphereMesh" id="ball_mesh"]
+radius = 0.4
+height = 0.8
+radial_segments = 20
+rings = 12
+
+[sub_resource type="StandardMaterial3D" id="ball_mat"]
+albedo_color = Color(0.06, 0.06, 0.08, 1)
+shading_mode = 0
+
+[sub_resource type="BoxMesh" id="spike_mesh"]
+size = Vector3(0.06, 0.12, 0.06)
+
+[sub_resource type="BoxMesh" id="tooth_mesh"]
+size = Vector3(0.05, 0.09, 0.05)
+
+[sub_resource type="StandardMaterial3D" id="tooth_mat"]
+albedo_color = Color(0.98, 0.98, 0.95, 1)
+shading_mode = 0
+
+[sub_resource type="SphereMesh" id="eye_mesh"]
+radius = 0.07
+height = 0.14
+radial_segments = 10
+rings = 8
+
+[sub_resource type="StandardMaterial3D" id="eye_white_mat"]
+albedo_color = Color(0.98, 0.98, 0.95, 1)
+shading_mode = 0
+
+[sub_resource type="SphereMesh" id="pupil_mesh"]
+radius = 0.03
+height = 0.06
+radial_segments = 8
+rings = 6
+
+[sub_resource type="StandardMaterial3D" id="pupil_mat"]
+albedo_color = Color(0.85, 0.1, 0.1, 1)
+shading_mode = 0
+
+[node name="EnemyVisual" type="Node3D"]
+
+[node name="Ball" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+mesh = SubResource("ball_mesh")
+surface_material_override/0 = SubResource("ball_mat")
+
+[node name="SpikeTop" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.82, 0)
+mesh = SubResource("spike_mesh")
+surface_material_override/0 = SubResource("ball_mat")
+
+[node name="SpikeBack" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.4, 0.42)
+mesh = SubResource("spike_mesh")
+surface_material_override/0 = SubResource("ball_mat")
+
+[node name="SpikeUpperL" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.7, 0.7, 0, -0.7, 0.7, 0, 0, 0, 1, -0.3, 0.72, 0)
+mesh = SubResource("spike_mesh")
+surface_material_override/0 = SubResource("ball_mat")
+
+[node name="SpikeUpperR" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.7, -0.7, 0, 0.7, 0.7, 0, 0, 0, 1, 0.3, 0.72, 0)
+mesh = SubResource("spike_mesh")
+surface_material_override/0 = SubResource("ball_mat")
+
+[node name="SpikeSideL" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, -0.42, 0.4, 0)
+mesh = SubResource("spike_mesh")
+surface_material_override/0 = SubResource("ball_mat")
+
+[node name="SpikeSideR" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0.42, 0.4, 0)
+mesh = SubResource("spike_mesh")
+surface_material_override/0 = SubResource("ball_mat")
+
+[node name="Tooth1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.18, 0.25, -0.36)
+mesh = SubResource("tooth_mesh")
+surface_material_override/0 = SubResource("tooth_mat")
+
+[node name="Tooth2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.06, 0.22, -0.39)
+mesh = SubResource("tooth_mesh")
+surface_material_override/0 = SubResource("tooth_mat")
+
+[node name="Tooth3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.06, 0.22, -0.39)
+mesh = SubResource("tooth_mesh")
+surface_material_override/0 = SubResource("tooth_mat")
+
+[node name="Tooth4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.18, 0.25, -0.36)
+mesh = SubResource("tooth_mesh")
+surface_material_override/0 = SubResource("tooth_mat")
+
+[node name="ToothUpper1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, -1, -0.12, 0.5, -0.36)
+mesh = SubResource("tooth_mesh")
+surface_material_override/0 = SubResource("tooth_mat")
+
+[node name="ToothUpper2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, -1, 0.12, 0.5, -0.36)
+mesh = SubResource("tooth_mesh")
+surface_material_override/0 = SubResource("tooth_mat")
+
+[node name="Eye" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.58, -0.32)
+mesh = SubResource("eye_mesh")
+surface_material_override/0 = SubResource("eye_white_mat")
+
+[node name="Pupil" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.58, -0.38)
+mesh = SubResource("pupil_mesh")
+surface_material_override/0 = SubResource("pupil_mat")

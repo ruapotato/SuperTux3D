@@ -1,0 +1,101 @@
+[gd_scene load_steps=13 format=3 uid="uid://bkoopa002"]
+
+; Clean-room Koopa Troopa. Green domed shell, yellow plastron, head forward.
+; Feet at y=0, faces -Z.
+
+[sub_resource type="SphereMesh" id="shell_mesh"]
+radius = 0.32
+height = 0.4
+radial_segments = 16
+rings = 10
+is_hemisphere = true
+
+[sub_resource type="StandardMaterial3D" id="shell_mat"]
+albedo_color = Color(0.15, 0.65, 0.2, 1)
+shading_mode = 0
+
+[sub_resource type="SphereMesh" id="plastron_mesh"]
+radius = 0.28
+height = 0.18
+radial_segments = 14
+rings = 8
+
+[sub_resource type="StandardMaterial3D" id="plastron_mat"]
+albedo_color = Color(0.98, 0.85, 0.32, 1)
+shading_mode = 0
+
+[sub_resource type="SphereMesh" id="head_mesh"]
+radius = 0.14
+height = 0.28
+radial_segments = 12
+rings = 8
+
+[sub_resource type="StandardMaterial3D" id="skin_mat"]
+albedo_color = Color(0.92, 0.82, 0.38, 1)
+shading_mode = 0
+
+[sub_resource type="SphereMesh" id="eye_mesh"]
+radius = 0.025
+height = 0.05
+radial_segments = 8
+rings = 6
+
+[sub_resource type="StandardMaterial3D" id="eye_mat"]
+albedo_color = Color(0.05, 0.05, 0.08, 1)
+shading_mode = 0
+
+[sub_resource type="BoxMesh" id="beak_mesh"]
+size = Vector3(0.08, 0.04, 0.06)
+
+[sub_resource type="StandardMaterial3D" id="beak_mat"]
+albedo_color = Color(0.95, 0.6, 0.15, 1)
+shading_mode = 0
+
+[sub_resource type="BoxMesh" id="foot_mesh"]
+size = Vector3(0.14, 0.1, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="foot_mat"]
+albedo_color = Color(0.85, 0.45, 0.1, 1)
+shading_mode = 0
+
+[node name="EnemyVisual" type="Node3D"]
+
+[node name="Shell" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, -0.02)
+mesh = SubResource("shell_mesh")
+surface_material_override/0 = SubResource("shell_mat")
+
+[node name="Plastron" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0.1)
+mesh = SubResource("plastron_mesh")
+surface_material_override/0 = SubResource("plastron_mat")
+
+[node name="Head" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.38, 0.3)
+mesh = SubResource("head_mesh")
+surface_material_override/0 = SubResource("skin_mat")
+
+[node name="EyeL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, 0.42, 0.42)
+mesh = SubResource("eye_mesh")
+surface_material_override/0 = SubResource("eye_mat")
+
+[node name="EyeR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, 0.42, 0.42)
+mesh = SubResource("eye_mesh")
+surface_material_override/0 = SubResource("eye_mat")
+
+[node name="Beak" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.36, 0.44)
+mesh = SubResource("beak_mesh")
+surface_material_override/0 = SubResource("beak_mat")
+
+[node name="FootL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0.05, 0.05)
+mesh = SubResource("foot_mesh")
+surface_material_override/0 = SubResource("foot_mat")
+
+[node name="FootR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0.05, 0.05)
+mesh = SubResource("foot_mesh")
+surface_material_override/0 = SubResource("foot_mat")

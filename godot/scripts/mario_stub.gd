@@ -1,15 +1,15 @@
 extends CharacterBody3D
 
-# Adapter between Godot's CharacterBody3D + Input + the decomp-style
-# MarioState dispatcher in mario_state.gd. Reads input, hands it to the
-# state, applies resulting velocity to CharacterBody3D, feeds floor/anim-end
-# signals back for the next tick. Also routes animation requests to the
-# MarioAnimator through a `main` reference.
+# Adapter between Godot's CharacterBody3D + Input + the MarioState
+# dispatcher in mario_state.gd. Reads input, hands it to the state,
+# applies resulting velocity to CharacterBody3D, feeds floor/anim-end
+# signals back for the next tick. Routes animation requests to the
+# clean-room procedural animator via a `main` reference.
 
 const MarioStateScript := preload("res://scripts/mario_state.gd")
 
 var _state: RefCounted
-var _animator: RefCounted          # mario_animator.gd
+var _animator: RefCounted          # clean_character_anim.gd
 var _anim_owner                    # main.gd, for anim lookup by ID
 var _camera_node: Camera3D
 var _ray_down: RayCast3D
@@ -245,9 +245,10 @@ func _physics_process(delta: float) -> void:
     velocity = _state.vel
     move_and_slide()
     _state.pos = global_position
-    # Pick the surface kind we're standing on (each surface type got its
-    # own collision body in level_loader). Default if we weren't touching
-    # anything tagged — e.g. safety floor or pickups.
+    # Pick the surface kind we're standing on. Level .tscn files can tag
+    # their StaticBody3Ds with set_meta("surface_kind", "ice"/"slippery"/
+    # "very_slippery"/"burning"/"water"/...) to change Mario's friction
+    # or apply damage. Default when nothing is tagged.
     _state.floor_surface = "default"
     for i in range(get_slide_collision_count()):
         var c := get_slide_collision(i)

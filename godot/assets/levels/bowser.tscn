@@ -1,0 +1,152 @@
+[gd_scene load_steps=13 format=3]
+
+[sub_resource type="ProceduralSkyMaterial" id="Sky_1"]
+sky_top_color = Color(0.08, 0.04, 0.08, 1)
+sky_horizon_color = Color(0.35, 0.08, 0.1, 1)
+ground_bottom_color = Color(0.05, 0.02, 0.03, 1)
+ground_horizon_color = Color(0.2, 0.05, 0.05, 1)
+
+[sub_resource type="Sky" id="Sky_2"]
+sky_material = SubResource("Sky_1")
+
+[sub_resource type="Environment" id="Env_1"]
+background_mode = 2
+sky = SubResource("Sky_2")
+ambient_light_source = 2
+ambient_light_color = Color(0.5, 0.15, 0.1, 1)
+ambient_light_energy = 0.6
+
+[sub_resource type="StandardMaterial3D" id="Mat_Arena"]
+shading_mode = 0
+albedo_color = Color(0.35, 0.2, 0.22, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Lava"]
+shading_mode = 0
+albedo_color = Color(1, 0.35, 0.1, 1)
+emission_enabled = true
+emission = Color(1, 0.3, 0.05, 1)
+emission_energy_multiplier = 2
+
+[sub_resource type="StandardMaterial3D" id="Mat_Spike"]
+shading_mode = 0
+albedo_color = Color(0.5, 0.3, 0.12, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Throne"]
+shading_mode = 0
+albedo_color = Color(0.3, 0.15, 0.18, 1)
+
+[sub_resource type="CylinderMesh" id="Cyl_Arena"]
+material = SubResource("Mat_Arena")
+top_radius = 6
+bottom_radius = 6
+height = 1.2
+radial_segments = 8
+
+[sub_resource type="ConvexPolygonShape3D" id="CPS_Arena"]
+points = PackedVector3Array(6, -0.6, 0, 4.243, -0.6, 4.243, 0, -0.6, 6, -4.243, -0.6, 4.243, -6, -0.6, 0, -4.243, -0.6, -4.243, 0, -0.6, -6, 4.243, -0.6, -4.243, 6, 0.6, 0, 4.243, 0.6, 4.243, 0, 0.6, 6, -4.243, 0.6, 4.243, -6, 0.6, 0, -4.243, 0.6, -4.243, 0, 0.6, -6, 4.243, 0.6, -4.243)
+
+[sub_resource type="CylinderMesh" id="Cyl_LavaRing"]
+material = SubResource("Mat_Lava")
+top_radius = 14
+bottom_radius = 14
+height = 0.2
+
+[sub_resource type="PrismMesh" id="Prism_Spike"]
+material = SubResource("Mat_Spike")
+size = Vector3(0.5, 1.5, 0.5)
+
+[sub_resource type="BoxMesh" id="Box_ThroneSeat"]
+material = SubResource("Mat_Throne")
+size = Vector3(1.8, 1, 1.8)
+
+[sub_resource type="BoxShape3D" id="BS_ThroneSeat"]
+size = Vector3(1.8, 1, 1.8)
+
+[sub_resource type="PrismMesh" id="Prism_ThroneBack"]
+material = SubResource("Mat_Throne")
+size = Vector3(2, 3, 0.6)
+
+[node name="LevelRoot" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env_1")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 15, 0)
+light_color = Color(1, 0.4, 0.3, 1)
+light_energy = 0.8
+
+[node name="LavaGlow" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
+light_color = Color(1, 0.3, 0.1, 1)
+light_energy = 2.5
+omni_range = 25
+
+[node name="LavaRing" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
+mesh = SubResource("Cyl_LavaRing")
+
+[node name="ArenaMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("Cyl_Arena")
+
+[node name="ArenaBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="ArenaBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+shape = SubResource("CPS_Arena")
+
+[node name="Spike1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 1.35, 0)
+mesh = SubResource("Prism_Spike")
+
+[node name="Spike2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.707, 0, 0.707, 0, 1, 0, -0.707, 0, 0.707, 3.9, 1.35, 3.9)
+mesh = SubResource("Prism_Spike")
+
+[node name="Spike3" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 1.35, 5.5)
+mesh = SubResource("Prism_Spike")
+
+[node name="Spike4" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.707, 0, 0.707, 0, 1, 0, -0.707, 0, -0.707, -3.9, 1.35, 3.9)
+mesh = SubResource("Prism_Spike")
+
+[node name="Spike5" type="MeshInstance3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -5.5, 1.35, 0)
+mesh = SubResource("Prism_Spike")
+
+[node name="Spike6" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.707, 0, -0.707, 0, 1, 0, 0.707, 0, -0.707, -3.9, 1.35, -3.9)
+mesh = SubResource("Prism_Spike")
+
+[node name="Spike7" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 1.35, -5.5)
+mesh = SubResource("Prism_Spike")
+
+[node name="Spike8" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.707, 0, -0.707, 0, 1, 0, 0.707, 0, 0.707, 3.9, 1.35, -3.9)
+mesh = SubResource("Prism_Spike")
+
+[node name="ThroneSeatMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, -3.5)
+mesh = SubResource("Box_ThroneSeat")
+
+[node name="ThroneSeatBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="ThroneSeatBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, -3.5)
+shape = SubResource("BS_ThroneSeat")
+
+[node name="ThroneBackMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.1, -4.2)
+mesh = SubResource("Prism_ThroneBack")
+
+[node name="SpawnArea" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 0
+metadata/spawn_point = Vector3(0, 1.5, 3)

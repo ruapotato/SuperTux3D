@@ -1,0 +1,238 @@
+[gd_scene load_steps=24 format=3 uid="uid://bclhero1"]
+
+; Clean-room player scene. Plumber silhouette built from primitives —
+; distinct enough from Mario trade dress (different cap emblem, rounder
+; proportions) but recognisable. Child bone-nodes named to match
+; clean_character_anim.gd's bone dictionary keys.
+
+[sub_resource type="SphereMesh" id="head_mesh"]
+radius = 0.17
+height = 0.34
+radial_segments = 16
+rings = 10
+
+[sub_resource type="StandardMaterial3D" id="skin_mat"]
+albedo_color = Color(0.98, 0.80, 0.62, 1)
+shading_mode = 0
+
+[sub_resource type="CapsuleMesh" id="body_mesh"]
+radius = 0.19
+height = 0.45
+radial_segments = 12
+
+[sub_resource type="StandardMaterial3D" id="overalls_mat"]
+albedo_color = Color(0.16, 0.30, 0.78, 1)
+shading_mode = 0
+
+[sub_resource type="BoxMesh" id="strap_mesh"]
+size = Vector3(0.08, 0.25, 0.04)
+
+[sub_resource type="SphereMesh" id="button_mesh"]
+radius = 0.025
+height = 0.05
+radial_segments = 8
+rings = 6
+
+[sub_resource type="StandardMaterial3D" id="button_mat"]
+albedo_color = Color(0.95, 0.85, 0.15, 1)
+shading_mode = 0
+
+[sub_resource type="CylinderMesh" id="cap_mesh"]
+top_radius = 0.18
+bottom_radius = 0.19
+height = 0.11
+radial_segments = 14
+
+[sub_resource type="StandardMaterial3D" id="cap_mat"]
+albedo_color = Color(0.72, 0.14, 0.14, 1)
+shading_mode = 0
+
+[sub_resource type="BoxMesh" id="brim_mesh"]
+size = Vector3(0.42, 0.04, 0.2)
+
+[sub_resource type="SphereMesh" id="emblem_mesh"]
+radius = 0.05
+height = 0.05
+radial_segments = 12
+rings = 8
+is_hemisphere = true
+
+[sub_resource type="StandardMaterial3D" id="emblem_mat"]
+albedo_color = Color(1, 1, 1, 1)
+shading_mode = 0
+
+[sub_resource type="BoxMesh" id="mustache_mesh"]
+size = Vector3(0.18, 0.04, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="hair_mat"]
+albedo_color = Color(0.2, 0.12, 0.07, 1)
+shading_mode = 0
+
+[sub_resource type="SphereMesh" id="nose_mesh"]
+radius = 0.035
+height = 0.07
+radial_segments = 8
+rings = 6
+
+[sub_resource type="CapsuleMesh" id="limb_mesh"]
+radius = 0.07
+height = 0.3
+radial_segments = 10
+
+[sub_resource type="SphereMesh" id="glove_mesh"]
+radius = 0.1
+height = 0.2
+radial_segments = 10
+rings = 6
+
+[sub_resource type="StandardMaterial3D" id="glove_mat"]
+albedo_color = Color(0.98, 0.98, 0.98, 1)
+shading_mode = 0
+
+[sub_resource type="CapsuleMesh" id="leg_mesh"]
+radius = 0.08
+height = 0.36
+radial_segments = 10
+
+[sub_resource type="BoxMesh" id="shoe_mesh"]
+size = Vector3(0.17, 0.1, 0.22)
+
+[sub_resource type="StandardMaterial3D" id="shoe_mat"]
+albedo_color = Color(0.25, 0.14, 0.08, 1)
+shading_mode = 0
+
+[sub_resource type="SphereMesh" id="eye_mesh"]
+radius = 0.022
+height = 0.044
+radial_segments = 8
+rings = 6
+
+[sub_resource type="StandardMaterial3D" id="eye_mat"]
+albedo_color = Color(0.05, 0.05, 0.1, 1)
+shading_mode = 0
+
+[node name="Rig" type="Node3D"]
+
+[node name="pelvis" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+
+[node name="torso" type="Node3D" parent="pelvis"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+
+[node name="TorsoMesh" type="MeshInstance3D" parent="pelvis/torso"]
+mesh = SubResource("body_mesh")
+surface_material_override/0 = SubResource("overalls_mat")
+
+[node name="StrapL" type="MeshInstance3D" parent="pelvis/torso"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.08, 0.13, 0.15)
+mesh = SubResource("strap_mesh")
+surface_material_override/0 = SubResource("overalls_mat")
+
+[node name="StrapR" type="MeshInstance3D" parent="pelvis/torso"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.08, 0.13, 0.15)
+mesh = SubResource("strap_mesh")
+surface_material_override/0 = SubResource("overalls_mat")
+
+[node name="ButtonL" type="MeshInstance3D" parent="pelvis/torso"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.08, 0.01, 0.19)
+mesh = SubResource("button_mesh")
+surface_material_override/0 = SubResource("button_mat")
+
+[node name="ButtonR" type="MeshInstance3D" parent="pelvis/torso"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.08, 0.01, 0.19)
+mesh = SubResource("button_mesh")
+surface_material_override/0 = SubResource("button_mat")
+
+[node name="head" type="Node3D" parent="pelvis/torso"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+
+[node name="HeadMesh" type="MeshInstance3D" parent="pelvis/torso/head"]
+mesh = SubResource("head_mesh")
+surface_material_override/0 = SubResource("skin_mat")
+
+[node name="Cap" type="MeshInstance3D" parent="pelvis/torso/head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.13, 0)
+mesh = SubResource("cap_mesh")
+surface_material_override/0 = SubResource("cap_mat")
+
+[node name="Brim" type="MeshInstance3D" parent="pelvis/torso/head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09, 0.11)
+mesh = SubResource("brim_mesh")
+surface_material_override/0 = SubResource("cap_mat")
+
+[node name="Emblem" type="MeshInstance3D" parent="pelvis/torso/head"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.145, 0.17)
+mesh = SubResource("emblem_mesh")
+surface_material_override/0 = SubResource("emblem_mat")
+
+[node name="Mustache" type="MeshInstance3D" parent="pelvis/torso/head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.04, 0.16)
+mesh = SubResource("mustache_mesh")
+surface_material_override/0 = SubResource("hair_mat")
+
+[node name="Nose" type="MeshInstance3D" parent="pelvis/torso/head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 0.18)
+mesh = SubResource("nose_mesh")
+surface_material_override/0 = SubResource("skin_mat")
+
+[node name="EyeL" type="MeshInstance3D" parent="pelvis/torso/head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.055, 0.04, 0.155)
+mesh = SubResource("eye_mesh")
+surface_material_override/0 = SubResource("eye_mat")
+
+[node name="EyeR" type="MeshInstance3D" parent="pelvis/torso/head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.055, 0.04, 0.155)
+mesh = SubResource("eye_mesh")
+surface_material_override/0 = SubResource("eye_mat")
+
+[node name="arm_l" type="Node3D" parent="pelvis/torso"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.24, 0.18, 0)
+
+[node name="ArmMesh" type="MeshInstance3D" parent="pelvis/torso/arm_l"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14, 0)
+mesh = SubResource("limb_mesh")
+surface_material_override/0 = SubResource("cap_mat")
+
+[node name="Glove" type="MeshInstance3D" parent="pelvis/torso/arm_l"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3, 0)
+mesh = SubResource("glove_mesh")
+surface_material_override/0 = SubResource("glove_mat")
+
+[node name="arm_r" type="Node3D" parent="pelvis/torso"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.24, 0.18, 0)
+
+[node name="ArmMesh" type="MeshInstance3D" parent="pelvis/torso/arm_r"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14, 0)
+mesh = SubResource("limb_mesh")
+surface_material_override/0 = SubResource("cap_mat")
+
+[node name="Glove" type="MeshInstance3D" parent="pelvis/torso/arm_r"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3, 0)
+mesh = SubResource("glove_mesh")
+surface_material_override/0 = SubResource("glove_mat")
+
+[node name="leg_l" type="Node3D" parent="pelvis"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, -0.05, 0)
+
+[node name="LegMesh" type="MeshInstance3D" parent="pelvis/leg_l"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.2, 0)
+mesh = SubResource("leg_mesh")
+surface_material_override/0 = SubResource("overalls_mat")
+
+[node name="Shoe" type="MeshInstance3D" parent="pelvis/leg_l"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.42, 0.04)
+mesh = SubResource("shoe_mesh")
+surface_material_override/0 = SubResource("shoe_mat")
+
+[node name="leg_r" type="Node3D" parent="pelvis"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, -0.05, 0)
+
+[node name="LegMesh" type="MeshInstance3D" parent="pelvis/leg_r"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.2, 0)
+mesh = SubResource("leg_mesh")
+surface_material_override/0 = SubResource("overalls_mat")
+
+[node name="Shoe" type="MeshInstance3D" parent="pelvis/leg_r"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.42, 0.04)
+mesh = SubResource("shoe_mesh")
+surface_material_override/0 = SubResource("shoe_mat")

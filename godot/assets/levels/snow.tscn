@@ -1,0 +1,193 @@
+[gd_scene load_steps=18 format=3]
+
+[sub_resource type="ProceduralSkyMaterial" id="Sky_1"]
+sky_top_color = Color(0.55, 0.7, 0.85, 1)
+sky_horizon_color = Color(0.9, 0.92, 0.95, 1)
+ground_bottom_color = Color(0.85, 0.9, 0.95, 1)
+ground_horizon_color = Color(0.9, 0.93, 0.97, 1)
+
+[sub_resource type="Sky" id="Sky_2"]
+sky_material = SubResource("Sky_1")
+
+[sub_resource type="Environment" id="Env_1"]
+background_mode = 2
+sky = SubResource("Sky_2")
+ambient_light_source = 2
+ambient_light_color = Color(0.75, 0.8, 0.9, 1)
+ambient_light_energy = 0.85
+
+[sub_resource type="StandardMaterial3D" id="Mat_Snow"]
+shading_mode = 0
+albedo_color = Color(0.92, 0.95, 0.98, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Ice"]
+shading_mode = 0
+albedo_color = Color(0.65, 0.85, 0.95, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Wood"]
+shading_mode = 0
+albedo_color = Color(0.4, 0.25, 0.15, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Pine"]
+shading_mode = 0
+albedo_color = Color(0.15, 0.4, 0.22, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Trunk"]
+shading_mode = 0
+albedo_color = Color(0.3, 0.2, 0.12, 1)
+
+[sub_resource type="BoxMesh" id="Box_Base"]
+material = SubResource("Mat_Snow")
+size = Vector3(40, 1, 20)
+
+[sub_resource type="BoxShape3D" id="BS_Base"]
+size = Vector3(40, 1, 20)
+
+[sub_resource type="BoxMesh" id="Box_Slope"]
+material = SubResource("Mat_Snow")
+size = Vector3(40, 1, 30)
+
+[sub_resource type="BoxShape3D" id="BS_Slope"]
+size = Vector3(40, 1, 30)
+
+[sub_resource type="BoxMesh" id="Box_Cabin"]
+material = SubResource("Mat_Wood")
+size = Vector3(5, 3, 4)
+
+[sub_resource type="BoxShape3D" id="BS_Cabin"]
+size = Vector3(5, 3, 4)
+
+[sub_resource type="PrismMesh" id="Prism_CabinRoof"]
+material = SubResource("Mat_Wood")
+size = Vector3(5.5, 2, 4.5)
+
+[sub_resource type="PrismMesh" id="Prism_Pine"]
+material = SubResource("Mat_Pine")
+size = Vector3(2.2, 4, 2.2)
+
+[sub_resource type="CylinderMesh" id="Cyl_PineTrunk"]
+material = SubResource("Mat_Trunk")
+top_radius = 0.25
+bottom_radius = 0.35
+height = 1.2
+
+[sub_resource type="BoxMesh" id="Box_Ice"]
+material = SubResource("Mat_Ice")
+size = Vector3(3, 0.3, 3)
+
+[sub_resource type="BoxShape3D" id="BS_Ice"]
+size = Vector3(3, 0.3, 3)
+
+[node name="LevelRoot" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env_1")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 25, 0)
+light_color = Color(0.95, 0.97, 1, 1)
+
+[node name="TopPlateauMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.5, -20)
+mesh = SubResource("Box_Base")
+
+[node name="TopPlateauBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="TopPlateauBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.5, -20)
+shape = SubResource("BS_Base")
+
+[node name="SlopeMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.966, 0.259, 0, -0.259, 0.966, 0, 4, -5)
+mesh = SubResource("Box_Slope")
+
+[node name="SlopeBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="SlopeBody"]
+transform = Transform3D(1, 0, 0, 0, 0.966, 0.259, 0, -0.259, 0.966, 0, 4, -5)
+shape = SubResource("BS_Slope")
+
+[node name="BottomMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 15)
+mesh = SubResource("Box_Base")
+
+[node name="BottomBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="BottomBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 15)
+shape = SubResource("BS_Base")
+
+[node name="CabinMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 9.5, -22)
+mesh = SubResource("Box_Cabin")
+
+[node name="CabinBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="CabinBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 9.5, -22)
+shape = SubResource("BS_Cabin")
+
+[node name="CabinRoof" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 12, -22)
+mesh = SubResource("Prism_CabinRoof")
+
+[node name="Pine1Trunk" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 8.6, -22)
+mesh = SubResource("Cyl_PineTrunk")
+
+[node name="Pine1Top" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 11.2, -22)
+mesh = SubResource("Prism_Pine")
+
+[node name="Pine2Trunk" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 8.6, -18)
+mesh = SubResource("Cyl_PineTrunk")
+
+[node name="Pine2Top" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 11.2, -18)
+mesh = SubResource("Prism_Pine")
+
+[node name="Pine3Trunk" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 0.6, 18)
+mesh = SubResource("Cyl_PineTrunk")
+
+[node name="Pine3Top" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 3.2, 18)
+mesh = SubResource("Prism_Pine")
+
+[node name="Ice1Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0.15, 12)
+mesh = SubResource("Box_Ice")
+
+[node name="Ice1Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="Ice1Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0.15, 12)
+shape = SubResource("BS_Ice")
+
+[node name="Ice2Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 0.15, 18)
+mesh = SubResource("Box_Ice")
+
+[node name="Ice2Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="Ice2Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 0.15, 18)
+shape = SubResource("BS_Ice")
+
+[node name="SpawnArea" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 0
+metadata/spawn_point = Vector3(0, 9, -22)

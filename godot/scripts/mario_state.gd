@@ -7,7 +7,7 @@ extends RefCounted
 #               ACT_JUMP_LAND, ACT_FREEFALL_LAND
 #   airborne:   ACT_JUMP, ACT_FREEFALL
 #
-# Physics constants live in Godot units (see LevelLoader.WORLD_SCALE = 0.01)
+# Physics constants live in Godot meters (1 unit = 1 meter)
 # but were derived from the decomp's per-frame values at 30 fps. Keeping
 # these as explicit numbers with a short comment beats hardcoding magic.
 #

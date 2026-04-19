@@ -1,0 +1,44 @@
+[gd_scene load_steps=5 format=3 uid="uid://pkupcapnorm"]
+
+; Clean-room normal (red) cap. Fallback pickup for Mario's regular cap.
+; Matches the silhouette of the cap used in the player scene.
+
+[sub_resource type="CylinderMesh" id="cap_mesh"]
+top_radius = 0.18
+bottom_radius = 0.19
+height = 0.11
+radial_segments = 14
+
+[sub_resource type="BoxMesh" id="brim_mesh"]
+size = Vector3(0.42, 0.04, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="cap_mat"]
+albedo_color = Color(0.82, 0.14, 0.14, 1)
+shading_mode = 0
+
+[sub_resource type="SphereMesh" id="emblem_mesh"]
+radius = 0.05
+height = 0.05
+radial_segments = 12
+rings = 8
+is_hemisphere = true
+
+[sub_resource type="StandardMaterial3D" id="emblem_mat"]
+albedo_color = Color(1, 1, 1, 1)
+shading_mode = 0
+
+[node name="CapNormal" type="Node3D"]
+
+[node name="Cap" type="MeshInstance3D" parent="."]
+mesh = SubResource("cap_mesh")
+surface_material_override/0 = SubResource("cap_mat")
+
+[node name="Brim" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.04, 0.11)
+mesh = SubResource("brim_mesh")
+surface_material_override/0 = SubResource("cap_mat")
+
+[node name="Emblem" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.015, 0.17)
+mesh = SubResource("emblem_mesh")
+surface_material_override/0 = SubResource("emblem_mat")

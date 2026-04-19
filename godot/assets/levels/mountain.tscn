@@ -1,0 +1,183 @@
+[gd_scene load_steps=18 format=3]
+
+[sub_resource type="ProceduralSkyMaterial" id="Sky_1"]
+sky_top_color = Color(0.4, 0.6, 0.85, 1)
+sky_horizon_color = Color(0.8, 0.8, 0.75, 1)
+ground_bottom_color = Color(0.35, 0.3, 0.2, 1)
+ground_horizon_color = Color(0.6, 0.55, 0.4, 1)
+
+[sub_resource type="Sky" id="Sky_2"]
+sky_material = SubResource("Sky_1")
+
+[sub_resource type="Environment" id="Env_1"]
+background_mode = 2
+sky = SubResource("Sky_2")
+ambient_light_source = 2
+ambient_light_color = Color(0.65, 0.6, 0.5, 1)
+ambient_light_energy = 0.75
+
+[sub_resource type="StandardMaterial3D" id="Mat_Base"]
+shading_mode = 0
+albedo_color = Color(0.45, 0.55, 0.3, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Rock"]
+shading_mode = 0
+albedo_color = Color(0.55, 0.48, 0.38, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Cannon"]
+shading_mode = 0
+albedo_color = Color(0.25, 0.25, 0.28, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Path"]
+shading_mode = 0
+albedo_color = Color(0.6, 0.5, 0.35, 1)
+
+[sub_resource type="BoxMesh" id="Box_Ground"]
+material = SubResource("Mat_Base")
+size = Vector3(50, 1, 50)
+
+[sub_resource type="BoxShape3D" id="BS_Ground"]
+size = Vector3(50, 1, 50)
+
+[sub_resource type="BoxMesh" id="Box_Tier1"]
+material = SubResource("Mat_Rock")
+size = Vector3(30, 3, 30)
+
+[sub_resource type="BoxShape3D" id="BS_Tier1"]
+size = Vector3(30, 3, 30)
+
+[sub_resource type="BoxMesh" id="Box_Tier2"]
+material = SubResource("Mat_Rock")
+size = Vector3(20, 3, 20)
+
+[sub_resource type="BoxShape3D" id="BS_Tier2"]
+size = Vector3(20, 3, 20)
+
+[sub_resource type="BoxMesh" id="Box_Tier3"]
+material = SubResource("Mat_Rock")
+size = Vector3(10, 3, 10)
+
+[sub_resource type="BoxShape3D" id="BS_Tier3"]
+size = Vector3(10, 3, 10)
+
+[sub_resource type="BoxMesh" id="Box_Ramp"]
+material = SubResource("Mat_Path")
+size = Vector3(4, 0.3, 7)
+
+[sub_resource type="BoxShape3D" id="BS_Ramp"]
+size = Vector3(4, 0.3, 7)
+
+[sub_resource type="CylinderMesh" id="Cyl_Cannon"]
+material = SubResource("Mat_Cannon")
+top_radius = 1.2
+bottom_radius = 1.4
+height = 1.5
+
+[sub_resource type="CylinderShape3D" id="CS_Cannon"]
+height = 1.5
+radius = 1.4
+
+[node name="LevelRoot" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env_1")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.35, 0.35, 0, 0.707, 0.707, -0.5, -0.612, 0.612, 10, 30, 10)
+
+[node name="GroundMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+mesh = SubResource("Box_Ground")
+
+[node name="GroundBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="GroundBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("BS_Ground")
+
+[node name="Tier1Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+mesh = SubResource("Box_Tier1")
+
+[node name="Tier1Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="Tier1Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+shape = SubResource("BS_Tier1")
+
+[node name="Tier2Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.5, 0)
+mesh = SubResource("Box_Tier2")
+
+[node name="Tier2Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="Tier2Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.5, 0)
+shape = SubResource("BS_Tier2")
+
+[node name="Tier3Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.5, 0)
+mesh = SubResource("Box_Tier3")
+
+[node name="Tier3Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="Tier3Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.5, 0)
+shape = SubResource("BS_Tier3")
+
+[node name="Ramp1Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.956, 0.292, 0, -0.292, 0.956, 0, 1.5, 18)
+mesh = SubResource("Box_Ramp")
+
+[node name="Ramp1Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="Ramp1Body"]
+transform = Transform3D(1, 0, 0, 0, 0.956, 0.292, 0, -0.292, 0.956, 0, 1.5, 18)
+shape = SubResource("BS_Ramp")
+
+[node name="Ramp2Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.956, 0.292, 0, -0.292, 0.956, 13, 4.5, 0)
+mesh = SubResource("Box_Ramp")
+
+[node name="Ramp2Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="Ramp2Body"]
+transform = Transform3D(1, 0, 0, 0, 0.956, 0.292, 0, -0.292, 0.956, 13, 4.5, 0)
+shape = SubResource("BS_Ramp")
+
+[node name="CannonMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 3.75, 0)
+mesh = SubResource("Cyl_Cannon")
+
+[node name="CannonBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="CannonBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 3.75, 0)
+shape = SubResource("CS_Cannon")
+
+[node name="BombNPC1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 3.5, 5)
+metadata/npc_type = "bomb_omb"
+
+[node name="BombNPC2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 6.5, 3)
+metadata/npc_type = "bomb_omb"
+
+[node name="SpawnArea" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 0
+metadata/spawn_point = Vector3(0, 1, 20)

@@ -1,44 +1,32 @@
 extends Node3D
 
-const LevelLoader := preload("res://scripts/level_loader.gd")
-const MarioAnimator := preload("res://scripts/mario_animator.gd")
+const CleanCharacterAnim := preload("res://scripts/clean_character_anim.gd")
 const LevelManagerScript := preload("res://scripts/level_manager.gd")
 const SoundBankScript := preload("res://scripts/sound_bank.gd")
 const SaveDataScript := preload("res://scripts/save_data.gd")
-const MARIO_MESH_JSON := "res://extracted/actors/mario/mesh.json"
-const ANIMS_DIR := "res://extracted/actors/mario/anims"
-const BOOT_LEVEL := "castle_inside"   # SM64-canonical boot: castle hub
+const PLAYER_SCENE := preload("res://assets/characters/player.tscn")
+const BOOT_LEVEL := "grass_hub"
 const BOOT_AREA := 1
 
-# Level-switcher keyboard shortcuts so we can bounce between levels to test
-# the pipeline before the painting warps are wired up.
+# Level-switcher keyboard shortcuts. Each key jumps to one of the
+# procedural clean-room worlds.
 const LEVEL_SHORTCUTS := {
-    KEY_1: ["bob", 1],
-    KEY_2: ["ccm", 1],
-    KEY_3: ["wf", 1],
-    KEY_4: ["jrb", 1],
-    KEY_5: ["hmc", 1],
-    KEY_6: ["ssl", 1],
-    KEY_7: ["ttm", 1],
-    KEY_8: ["thi", 1],
-    KEY_9: ["rr", 1],
-    KEY_0: ["castle_grounds", 1],
+    KEY_1: ["grass_hub", 1],
+    KEY_2: ["mountain",  1],
+    KEY_3: ["snow",      1],
+    KEY_4: ["water",     1],
+    KEY_5: ["lava",      1],
+    KEY_6: ["sand",      1],
+    KEY_7: ["sky",       1],
+    KEY_8: ["bowser",    1],
 }
 
-# Q and E step through the full list of 30 levels in sorted order.
+# Q / E step through the worlds in order.
 const CYCLE_ORDER := [
-    "castle_grounds", "castle_inside", "castle_courtyard",
-    "bob", "wf", "jrb", "ccm", "bbh", "hmc", "lll", "ssl",
-    "ddd", "sl", "wdw", "ttm", "thi", "ttc", "rr",
-    "pss", "sa", "totwc", "cotmc", "vcutm", "wmotr",
-    "bitdw", "bitfs", "bits", "bowser_1", "bowser_2", "bowser_3",
+    "grass_hub", "mountain", "snow", "water",
+    "lava", "sand", "sky", "bowser",
 ]
 var _cycle_idx: int = 0
-# Actual spawn from decomp levels/bob/script.c: MARIO_POS(1, 135, -6558, 0, 6464).
-# Scaled to Godot world scale (see LevelLoader.WORLD_SCALE). +2 Y offset for
-# a small cushion so the capsule doesn't start clipped into the floor.
-# Mario's spawn is read from the current level's script.json; only the
-# level-manager knows the answer.
 
 
 # Orbit camera settings (Godot world scale ~= meters).
@@ -76,19 +64,9 @@ var _focus_smooth: Vector3 = Vector3.ZERO
 
 func _ready() -> void:
     var anchor: Node3D = mario.get_node("ActorAnchor")
-    # Preload Mario's idle animation so the axis-compensation pass can
-    # sample its frame-0 bone 0 + bone 1 rotations. Same treatment every
-    # animated actor gets — no Mario-special-case axis_remap any more.
-    var mario_idle: Variant = _read_json("res://extracted/actors/mario/anims/anim_C5.json")
-    # skip_alpha_geo=true hides Mario's cap wings by default — the decomp
-    # uses an ASM callback to toggle them on when he wears the Wing Cap
-    # powerup, which we don't model. Without this flag wings sprout from
-    # the sides of his head.
-    var actor: Dictionary = LevelLoader.load_actor(
-        MARIO_MESH_JSON, anchor, "mario", mario_idle,
-        -1.0, true,
-    )
-    _setup_animator(actor)
+    var rig: Node3D = PLAYER_SCENE.instantiate()
+    anchor.add_child(rig)
+    _setup_animator(rig)
 
     _sound_bank = SoundBankScript.new()
     _sound_bank.name = "SoundBank"
@@ -122,19 +100,21 @@ func _ready() -> void:
     get_tree().debug_collisions_hint = false
 
 
-func _setup_animator(actor: Dictionary) -> void:
-    if actor.is_empty():
-        return
-    _animator = MarioAnimator.new()
-    var rest_rots: Array = []
-    var rest_model: Variant = _read_json(MARIO_MESH_JSON)
-    if rest_model is Dictionary:
-        for b in rest_model.bones:
-            var r: Array = b.rest_rotation
-            var to_rad: float = TAU / 65536.0
-            rest_rots.append(Vector3(r[0] * to_rad, r[1] * to_rad, r[2] * to_rad))
-    _animator.setup(actor.bones, rest_rots)
-    # Hand the animator to Mario so MarioState can request animations by ID.
+func _setup_animator(rig: Node3D) -> void:
+    # Build the name→Node3D bone dict that clean_character_anim expects
+    # from the instantiated player rig. Keys match the animator's
+    # _pose_* functions and the node names in player.tscn.
+    _animator = CleanCharacterAnim.new()
+    var bones := {
+        "pelvis": rig.get_node_or_null("pelvis"),
+        "torso":  rig.get_node_or_null("pelvis/torso"),
+        "head":   rig.get_node_or_null("pelvis/torso/head"),
+        "arm_l":  rig.get_node_or_null("pelvis/torso/arm_l"),
+        "arm_r":  rig.get_node_or_null("pelvis/torso/arm_r"),
+        "leg_l":  rig.get_node_or_null("pelvis/leg_l"),
+        "leg_r":  rig.get_node_or_null("pelvis/leg_r"),
+    }
+    _animator.setup(bones)
     if mario.has_method("bind_animator"):
         mario.bind_animator(_animator, self)
     # Wire star collection → brief delay → return to castle hub.
@@ -198,25 +178,11 @@ func _cycle_level(direction: int) -> void:
 
 
 func get_anim(anim_id: int) -> Dictionary:
-    # Resolve a MARIO_ANIM_* ID to the parsed animation JSON, lazily loading
-    # from disk on first request and caching thereafter.
-    if _anim_cache.has(anim_id):
-        return _anim_cache[anim_id]
-    var path := "%s/anim_%02X.json" % [ANIMS_DIR, anim_id]
-    var parsed: Variant = _read_json(path)
-    if parsed is Dictionary:
-        _anim_cache[anim_id] = parsed
-        return parsed
-    push_warning("main: missing animation 0x%02X at %s" % [anim_id, path])
-    _anim_cache[anim_id] = {}
-    return {}
-
-
-func _read_json(path: String) -> Variant:
-    if not FileAccess.file_exists(path):
-        return null
-    var f := FileAccess.open(path, FileAccess.READ)
-    return JSON.parse_string(f.get_as_text())
+    # The procedural clean-room animator doesn't replay recorded tracks —
+    # it picks a motion tag from the anim_id directly in play(). We still
+    # return a non-empty marker dict because mario_stub treats empty as
+    # "no animation available" and suppresses the call.
+    return {"id": anim_id}
 
 
 func _input(event: InputEvent) -> void:
