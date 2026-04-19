@@ -63,68 +63,146 @@ static func _read_json(path: String) -> Variant:
     return parsed
 
 
-static func load_actor(mesh_json_path: String, parent: Node3D) -> MeshInstance3D:
-    """Load a converted actor mesh (from tools/convert_actor.py) as a
-    MeshInstance3D under `parent`. Applies the actor→Godot axis remap and
-    the 0.25× scale we skip by entering at `mario_geo_body` instead of the
-    top-level `mario_geo` (which carries its own GEO_SCALE)."""
+static func load_actor(mesh_json_path: String, parent: Node3D) -> Dictionary:
+    """Load an articulated actor into `parent`. Returns a dictionary with
+    `bone_root` (the Node3D that owns the whole rig), `bones` (array of
+    Node3D indexed by bone index, matching the decomp's traversal order
+    used by animation data), and `mesh_instances` (array of MeshInstance3D
+    parallel to bones, or null for bones without geometry).
+
+    The skeleton is placed so the rest-pose feet sit at parent.y = 0. The
+    bone_root's basis encodes the actor→Godot axis remap and the 0.25×
+    actor scale; inside that basis, bones live in decomp units so the
+    animation data (which operates in decomp units and s16 angles) can be
+    applied directly at runtime."""
     _ensure_texture_map()
     var model: Variant = _read_json(mesh_json_path)
     if not (model is Dictionary):
-        return null
-    var mi := _build_actor_mesh_instance(model)
-    parent.add_child(mi)
-    return mi
+        return {}
+    return _build_articulated_actor(model, parent)
 
 
-static func _build_actor_mesh_instance(model: Dictionary) -> MeshInstance3D:
-    var mesh := ArrayMesh.new()
+static func _build_articulated_actor(model: Dictionary, parent: Node3D) -> Dictionary:
+    var bones_data: Array = model.bones
+    var bones: Array = []       # Node3D per bone
+    var mesh_instances: Array = []  # MeshInstance3D per bone (or null)
+    bones.resize(bones_data.size())
+    mesh_instances.resize(bones_data.size())
+
+    # Actor→Godot axis remap. Every decomp Mario animation applies these
+    # combined rotations to put Mario upright in world space:
+    #   - Bone 0 rotation Ry(+90°)       (standard across all animations)
+    #   - Bone 1 (butt) rotation Rz(+90°) (standard across all animations)
+    # After walking the chain, a face-vertex ends up flipped so the
+    # character reads as "nose down, head forward" in our frame. We
+    # compose an Rx(+90°) into the remap to re-tip Mario head-up. The
+    # simplified matrix below equals `Rx(+90°) * [actor→Godot basis]`:
+    #   actor +X → Godot -X
+    #   actor +Y → Godot +Y
+    #   actor +Z → Godot -Z
+    # Once applied, the animation's standard bone0+butt rotations land
+    # Mario upright and facing -Z (Godot forward) with head at +Y.
+    var s: float = ACTOR_SCALE * WORLD_SCALE
+    var axis_remap := Basis(
+        Vector3(-1, 0, 0),
+        Vector3(0, 1, 0),
+        Vector3(0, 0, -1),
+    ).scaled(Vector3(s, s, s))
+
+    var bone_root := Node3D.new()
+    bone_root.name = "BoneRoot"
+    bone_root.transform = Transform3D(axis_remap, Vector3.ZERO)
+    parent.add_child(bone_root)
+
+    # Build bones in hierarchy order (parent before child, which is already
+    # guaranteed by the converter's DFS emission order).
     var textured := 0
     var untextured := 0
-    # Actor bones are centered on the butt, so by default Mario's feet sit
-    # well below the CharacterBody3D origin (and therefore below the capsule
-    # bottom, which is what the physics engine treats as the ground contact).
-    # Find the lowest Godot-Y vertex as we build, then offset the whole mesh
-    # up by that amount so the feet land at y=0 in the node's local space.
-    var min_y: float = INF
-    for sm in model.sub_meshes:
-        # Skip the cap-wings on non-wing-cap Mario. The decomp controls wing
-        # visibility via an ASM callback (`geo_mario_rotate_wing_cap_wings`)
-        # we don't emulate; walking the geo tree blindly always emits them,
-        # and they sit right in front of Mario's face as an opaque overlay.
-        # Dropping LAYER_ALPHA sub-meshes until we model wing visibility.
-        if sm.layer == "LAYER_ALPHA":
-            continue
+    for bd in bones_data:
+        var bi: int = bd.index
+        var node := Node3D.new()
+        node.name = "Bone_%d_%s" % [bi, bd.name]
+        # Position: raw decomp translation (bone_root's scale applies
+        # externally).
+        var t: Array = bd.translation
+        node.position = Vector3(t[0], t[1], t[2])
+        # Rest rotation: s16 Euler. EULER_ORDER_ZYX matches the decomp's
+        # mtxf_rotate_xyz_and_translate composition (Rz*Ry*Rx).
+        var r: Array = bd.rest_rotation
+        if r[0] != 0 or r[1] != 0 or r[2] != 0:
+            var to_rad := TAU / 65536.0
+            node.basis = Basis.from_euler(
+                Vector3(r[0] * to_rad, r[1] * to_rad, r[2] * to_rad),
+                EULER_ORDER_ZYX,
+            )
+        bones[bi] = node
+
+        var parent_node: Node3D
+        if bd.parent >= 0:
+            parent_node = bones[bd.parent]
+        else:
+            parent_node = bone_root
+        parent_node.add_child(node)
+
+        # Attach a MeshInstance3D if the bone has any sub_meshes.
+        if bd.sub_meshes.size() > 0:
+            var mi := _build_bone_mesh_instance(bd.sub_meshes)
+            node.add_child(mi)
+            mesh_instances[bi] = mi
+            for sm in bd.sub_meshes:
+                if _texture_map.has(sm.texture):
+                    textured += 1
+                else:
+                    untextured += 1
+        else:
+            mesh_instances[bi] = null
+
+    # Compute the rest-pose world Y of the lowest vertex so we can shift
+    # the bone_root up, keeping Mario's feet on the floor. This needs the
+    # actual parent-chain compose, so do it after all bones are in the tree.
+    var min_y: float = _compute_min_world_y(bones, mesh_instances)
+    if min_y != INF:
+        bone_root.position.y = -min_y
+
+    print("[level_loader] articulated actor: ", bones_data.size(), " bones, ",
+          textured, " textured sub-meshes, ", untextured,
+          " untextured, min_y=", min_y, " -> shifted up ", -min_y)
+    return {
+        "bone_root": bone_root,
+        "bones": bones,
+        "mesh_instances": mesh_instances,
+    }
+
+
+static func _build_bone_mesh_instance(sub_meshes: Array) -> MeshInstance3D:
+    var mesh := ArrayMesh.new()
+    for sm in sub_meshes:
         var positions := PackedVector3Array()
         var normals := PackedVector3Array()
         var uvs := PackedVector2Array()
-        var colors := PackedColorArray()
         var tex_info: Variant = _texture_map.get(sm.texture)
         var tw: float = 32.0
         var th: float = 32.0
         if tex_info is Dictionary:
             tw = float(tex_info.width)
             th = float(tex_info.height)
+        # Vertices are already in the bone's local frame (decomp units). No
+        # additional transform — bone_root/bone hierarchy handles placement.
         for p in sm.positions:
-            var v: Vector3 = _remap_actor_point(p) * ACTOR_SCALE * WORLD_SCALE
-            if v.y < min_y:
-                min_y = v.y
-            positions.append(v)
+            positions.append(Vector3(p[0], p[1], p[2]))
         for n in sm.normals:
-            normals.append(_remap_actor_point(n))
+            normals.append(Vector3(n[0], n[1], n[2]))
         for u in sm.uvs:
             uvs.append(Vector2(u[0] / UV_FIXED_POINT_SHIFT / tw,
                                u[1] / UV_FIXED_POINT_SHIFT / th))
-        # Deliberately do NOT emit ARRAY_COLOR. For Mario, the Vtx "color"
-        # bytes are actually normals (G_LIGHTING is enabled on every body
-        # part). Emitting them as vertex colors gives random RGB with alpha=0
-        # and Godot's material interacts with them badly (renders black /
-        # fully transparent). Normals we DO need for lighting; they come
-        # through ARRAY_NORMAL above.
         var indices := PackedInt32Array()
         for idx in sm.indices:
             indices.append(idx)
         if positions.is_empty() or indices.is_empty():
+            continue
+        # Skip LAYER_ALPHA (cap wings — visibility normally controlled by
+        # an ASM callback we don't model).
+        if sm.layer == "LAYER_ALPHA":
             continue
 
         var arrays := []
@@ -135,44 +213,44 @@ static func _build_actor_mesh_instance(model: Dictionary) -> MeshInstance3D:
         arrays[Mesh.ARRAY_INDEX] = indices
         mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
         var surf_idx := mesh.get_surface_count() - 1
+
         var mat := StandardMaterial3D.new()
         mat.resource_name = sm.key
         mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-        # Plain NEAREST: our runtime ImageTextures don't have mipmaps.
         mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
-        # UNSHADED so Mario's face/mustache/etc. render at full brightness
-        # instead of potentially going dark when a lit triangle's normal
-        # points away from the scene's DirectionalLight3D. N64 Mario was
-        # pseudo-lit via gsSPLight per-DL groups; until we port those, flat
-        # albedo looks closer to the original.
         mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
         var tex := _load_texture(sm.texture)
         if tex != null:
             mat.albedo_texture = tex
             mat.albedo_color = Color(1, 1, 1, 1)
-            textured += 1
         else:
-            # Untextured sub-mesh: use the decomp's gsSPLight color (blue
-            # overalls, red shirt/cap, beige face skin, white gloves, brown
-            # shoes, brown2 hair). Falls back to a neutral gray only when
-            # we couldn't determine a light group.
             mat.albedo_color = _actor_shade_color(sm)
-            untextured += 1
         mesh.surface_set_material(surf_idx, mat)
 
     var mi := MeshInstance3D.new()
-    mi.name = "ActorMesh"
+    mi.name = "Mesh"
     mi.mesh = mesh
-    # Shift the mesh up so the lowest vertex (feet) lands at local y=0, the
-    # same height as the CharacterBody3D's capsule bottom. Without this
-    # Mario's legs clip through the floor because his bone origin is at his
-    # butt, not his feet.
-    if min_y != INF:
-        mi.position.y = -min_y
-    print("[level_loader] actor mesh: ", mesh.get_surface_count(),
-          " surfaces, ", textured, " textured, ", untextured, " untextured, ",
-          "min_y=", min_y, " -> shifted up ", -min_y)
     return mi
+
+
+static func _compute_min_world_y(bones: Array, mesh_instances: Array) -> float:
+    var min_y: float = INF
+    for i in range(bones.size()):
+        var mi: MeshInstance3D = mesh_instances[i]
+        if mi == null:
+            continue
+        var mesh := mi.mesh as ArrayMesh
+        if mesh == null:
+            continue
+        var world_t: Transform3D = mi.global_transform
+        for s in range(mesh.get_surface_count()):
+            var arrays := mesh.surface_get_arrays(s)
+            var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+            for v in verts:
+                var wy: float = (world_t * v).y
+                if wy < min_y:
+                    min_y = wy
+    return min_y
 
 
 static func _actor_shade_color(sm: Dictionary) -> Color:

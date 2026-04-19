@@ -1,45 +1,42 @@
 #!/usr/bin/env python3
-"""Convert an SM64 decomp actor (geo.inc.c + model.inc.c) to a merged T-pose mesh JSON.
+"""Convert an SM64 decomp actor (geo.inc.c + model.inc.c) to an articulated
+skeleton JSON suitable for runtime animation.
 
-Unlike level geometry, actor meshes live inside a skeletal graph expressed as
-a `GeoLayout` — a tree of commands (`GEO_OPEN_NODE` / `GEO_CLOSE_NODE`) that
-push transforms and draw display lists at each bone. Animations at runtime
-replace some of those transforms.
+Unlike `convert_model.py` (static level geometry), actor meshes live inside a
+skeletal graph expressed as a `GeoLayout`. Each `GEO_ANIMATED_PART` node is a
+"bone" that can be rotated by an animation at runtime; the decomp's animation
+data provides per-frame rotation triplets for each bone in a specific
+traversal order.
 
-This tool walks one entry-point GeoLayout, applies the REST-POSE transforms
-(translations from `GEO_ANIMATED_PART`, rest rotations from
-`GEO_TRANSLATE_ROTATE`), resolves all referenced display lists, and emits a
-merged mesh whose vertices are already transformed into actor-local space.
-It's a T-pose Mario in a single mesh — no skeleton, no animation. Good
-enough to replace a capsule placeholder.
+This tool walks the GeoLayout and emits a `bones` array keyed by that same
+traversal order, plus per-bone mesh data (vertices in the bone's LOCAL frame,
+i.e. before parent chains are applied). Non-animated transforms that live
+inside a bone's subtree (`GEO_TRANSLATE_ROTATE`, `GEO_SCALE`, etc.) are baked
+into the vertex positions so the runtime doesn't have to interpret them.
 
-Output schema matches the level converter's model.json so the Godot loader
-doesn't need to know the difference:
+Rest rotations (the hand-curated table below) are attached per bone so the
+rig looks like a T-pose when no animation plays. Animations' rotation deltas
+replace these at runtime.
+
+Output schema:
 {
-  "source":  "<geo.inc.c path>",
+  "source":       "<geo.inc.c path>",
   "model_source": "<model.inc.c path>",
-  "entry":   "<entry geo layout symbol>",
-  "sub_meshes": [ ...same schema as convert_model.py... ]
+  "entry":        "<entry GeoLayout symbol>",
+  "triangles_emitted": N,
+  "bones": [
+    {
+      "index":         i,
+      "parent":        parent_index or -1,
+      "name":          "mario_butt" or "bone_3",
+      "translation":   [tx, ty, tz],       # raw decomp units
+      "rest_rotation": [rx, ry, rz],       # s16 angles (65536=360°)
+      "sub_meshes":    [ ... same schema as convert_model.py's sub_meshes,
+                         vertices in this bone's local frame ... ]
+    },
+    ...
+  ]
 }
-
-Supported GeoLayout commands (others are ignored — a comment is printed if
-they could affect geometry):
-  GEO_OPEN_NODE / GEO_CLOSE_NODE               push/pop transform stack
-  GEO_TRANSLATE_ROTATE(l, tx, ty, tz, rx, ry, rz)
-  GEO_TRANSLATE(l, tx, ty, tz)
-  GEO_TRANSLATE_ROTATE_WITH_DL(..., dl)        translate+rotate and draw dl
-  GEO_TRANSLATE_WITH_DL(l, tx, ty, tz, dl)
-  GEO_ROTATION_NODE(l, rx, ry, rz)             rotate (rest pose: usually 0)
-  GEO_ROTATION_NODE_WITH_DL(l, rx, ry, rz, dl)
-  GEO_ANIMATED_PART(l, x, y, z, dl)            bone rest translation + dl
-  GEO_DISPLAY_LIST(l, dl)                      draw dl at current transform
-  GEO_SCALE(l, s)                              uniform scale (s / 65536)
-  GEO_SCALE_WITH_DL(l, s, dl)
-  GEO_BRANCH(link, other_layout)               dive into another layout
-  GEO_RETURN                                   end of current layout
-  GEO_SWITCH_CASE(n, func)                     take case 0 (rest)
-
-Rotation angles are s16 where 65536 = 360°.
 """
 from __future__ import annotations
 
@@ -61,11 +58,12 @@ from convert_model import (  # type: ignore[import-not-found]
 )
 
 
-# Matches a Lights1 light-group declaration:
-#   static const Lights1 NAME = gdSPDefLights1(
-#       0x7f, 0x60, 0x3c,                 // ambient RGB
-#       0xfe, 0xc1, 0x79, 0x28, 0x28, 0x28 // diffuse RGB + light direction
-#   );
+GEO_ARRAY_RE = re.compile(
+    r"(?:static\s+)?const\s+GeoLayout\s+(\w+)\s*\[\s*\]\s*=\s*\{(.*?)\};",
+    re.DOTALL,
+)
+COMMAND_RE = re.compile(r"(GEO_[A-Z0-9_]+)\s*(?:\(([^()]*(?:\([^()]*\)[^()]*)*)\))?")
+
 LIGHTS1_RE = re.compile(
     r"(?:static\s+)?const\s+Lights1\s+(\w+)\s*=\s*gdSPDefLights1\s*\(\s*"
     r"(0x[0-9a-fA-F]+)\s*,\s*(0x[0-9a-fA-F]+)\s*,\s*(0x[0-9a-fA-F]+)\s*,\s*"
@@ -78,37 +76,12 @@ def parse_light_groups(text: str) -> dict[str, tuple[float, float, float]]:
     out: dict[str, tuple[float, float, float]] = {}
     for m in LIGHTS1_RE.finditer(text):
         name = m.group(1)
-        # Use the diffuse RGB (fully-lit color) — this is what the N64's
-        # shade produces when the surface is facing the light head-on.
         r = int(m.group(5), 16) / 255.0
         g = int(m.group(6), 16) / 255.0
         b = int(m.group(7), 16) / 255.0
         out[name] = (r, g, b)
     return out
 
-
-def _is_shade_only_combine(mode: str) -> bool:
-    """A rough classifier for N64 G_CC_* combine modes: returns True for
-    modes that don't sample the bound texture (shade/vertex-color only).
-    Full truth would require interpreting the combiner inputs, but the mode
-    name prefix is a reliable proxy for stock decomp usage."""
-    m = mode.strip()
-    if not m.startswith("G_CC_"):
-        return False
-    # Any mode whose name starts with SHADE and does NOT involve a texture
-    # operation is shade-only.
-    suffix = m[len("G_CC_"):]
-    for texture_tag in ("DECAL", "MODULATE", "BLEND", "TEXEL"):
-        if texture_tag in suffix:
-            return False
-    return suffix.startswith("SHADE")
-
-
-GEO_ARRAY_RE = re.compile(
-    r"(?:static\s+)?const\s+GeoLayout\s+(\w+)\s*\[\s*\]\s*=\s*\{(.*?)\};",
-    re.DOTALL,
-)
-COMMAND_RE = re.compile(r"(GEO_[A-Z0-9_]+)\s*(?:\(([^()]*(?:\([^()]*\)[^()]*)*)\))?")
 
 # ---- transform primitives --------------------------------------------------
 
@@ -135,8 +108,6 @@ def translate(tx: float, ty: float, tz: float) -> list[list[float]]:
 
 
 def rotate_xyz(rx_s16: int, ry_s16: int, rz_s16: int) -> list[list[float]]:
-    """Rotate around X, Y, Z axes in sequence. Angles are s16 (65536 = 360°).
-    Applied in the same order SM64 uses: R = Rz * Ry * Rx (body-frame X first)."""
     def a(s: int) -> float:
         return s * (math.tau / 65536.0)
     ax, ay, az = a(rx_s16), a(ry_s16), a(rz_s16)
@@ -200,7 +171,20 @@ def parse_int(s: str) -> int:
     return int(s, 16) if s.lower().startswith("0x") else int(s)
 
 
-# ---- display-list walker (collects triangles in a given pose) --------------
+# ---- combine mode detection ------------------------------------------------
+
+def _is_shade_only_combine(mode: str) -> bool:
+    m = mode.strip()
+    if not m.startswith("G_CC_"):
+        return False
+    suffix = m[len("G_CC_"):]
+    for texture_tag in ("DECAL", "MODULATE", "BLEND", "TEXEL"):
+        if texture_tag in suffix:
+            return False
+    return suffix.startswith("SHADE")
+
+
+# ---- data model ------------------------------------------------------------
 
 @dataclass
 class SubMeshBuilder:
@@ -212,64 +196,154 @@ class SubMeshBuilder:
     uvs: list[list[int]] = field(default_factory=list)
     colors: list[list[float]] = field(default_factory=list)
     indices: list[int] = field(default_factory=list)
-    # Dedup on (rounded_pos, uv, rgba) so merged bone meshes don't blow up.
     _dedup: dict[tuple, int] = field(default_factory=dict)
 
-    def emit(self, pos: tuple[float, float, float], v: VtxEntry,
-             normal: tuple[float, float, float]) -> int:
-        key = ((round(pos[0], 3), round(pos[1], 3), round(pos[2], 3)), v.uv, v.rgba)
+    def emit_vertex(
+        self,
+        pos: tuple[float, float, float],
+        uv: tuple[int, int],
+        rgba: tuple[int, int, int, int],
+        normal: tuple[float, float, float],
+        color: tuple[float, float, float, float],
+    ) -> int:
+        key = ((round(pos[0], 3), round(pos[1], 3), round(pos[2], 3)), uv, rgba)
         if key in self._dedup:
             return self._dedup[key]
         idx = len(self.positions)
         self.positions.append([pos[0], pos[1], pos[2]])
         self.normals.append([normal[0], normal[1], normal[2]])
-        self.uvs.append(list(v.uv))
-        self.colors.append(list(v.color))
+        self.uvs.append(list(uv))
+        self.colors.append(list(color))
         self._dedup[key] = idx
         return idx
 
 
-class PosedDLWalker:
+@dataclass
+class Bone:
+    parent: int
+    name: str
+    translation: tuple[int, int, int]
+    rest_rotation: tuple[int, int, int]
+    sub_meshes: dict[tuple[str, str, str], SubMeshBuilder] = field(default_factory=dict)
+
+
+# ---- articulated walker ---------------------------------------------------
+
+class ArticulatedWalker:
+    """Walks a GeoLayout tree and produces a bone list. Within each bone,
+    non-animated transforms (GEO_TRANSLATE_ROTATE, GEO_SCALE, …) are baked
+    into the vertex positions so the runtime skeleton only needs to apply
+    per-bone rotations. Each GEO_ANIMATED_PART creates a new bone whose rest
+    translation/rotation can be overridden by an animation track."""
+
+    # Per-bone rest-pose rotations keyed on the (tx, ty, tz) of the
+    # GEO_ANIMATED_PART. Without animation data these make arms and legs
+    # hang in a believable T-pose instead of all extending "up" in +X.
+    _REST_POSE_ROTATIONS: dict[tuple[int, int, int], tuple[int, int, int]] = {
+        (67, -10, 79):  (0, -16384, 0),  # left shoulder: +X → +Z (arm left)
+        (68, -10, -79): (0, 16384, 0),   # right shoulder: +X → -Z (arm right)
+        (13, -8, 42):   (0, 0, 32768),   # left hip: +X → -X (leg down)
+        (13, -8, -42):  (0, 0, 32768),   # right hip
+    }
+
     def __init__(
         self,
+        geo_layouts: dict[str, list[tuple[str, list[str]]]],
         vtx_arrays: dict[str, list[VtxEntry]],
         gfx_arrays: dict[str, list[tuple[str, list[str]]]],
-        light_groups: dict[str, tuple[float, float, float]] | None = None,
+        light_groups: dict[str, tuple[float, float, float]],
     ) -> None:
+        self.layouts = geo_layouts
         self.vtx_arrays = vtx_arrays
         self.gfx_arrays = gfx_arrays
-        self.light_groups = light_groups or {}
-        self.sub_meshes: dict[tuple[str, str, str], SubMeshBuilder] = {}
-        self.current_texture = "none"
-        self.current_light_group = ""  # empty = unknown
-        self.vtx_cache: list[tuple[VtxEntry, tuple[float, float, float], tuple[float, float, float]] | None] = [None] * 32
-        self.unknown_dls: set[str] = set()
-        self.triangles_emitted = 0
+        self.light_groups = light_groups
 
-    def submesh(self, layer: str) -> SubMeshBuilder:
-        # Light group keys a sub-mesh because Mario's untextured body parts
-        # use different `gsSPLight` groups (blue overalls, red shirt/cap,
-        # beige skin, white gloves, brown shoes, brown hair). Without
-        # splitting by light group, they all collapse into one gray blob.
-        key = (self.current_texture, layer, self.current_light_group)
-        sm = self.sub_meshes.get(key)
+        # Per-bone state (current bone for DL emission, its ancestry chain).
+        self.bones: list[Bone] = []
+        self._current_bone: int = -1  # no bone yet; set to root on first ANIMATED_PART
+        # Stack of (bone_index, local_transform_stack) saved when we enter
+        # a child bone, restored on exit.
+        self._bone_stack: list[tuple[int, list[list[list[float]]]]] = []
+        # Local-transform stack INSIDE the current bone — resets when we
+        # enter a new bone. stack[-1] is the currently active frame.
+        self._local_stack: list[list[list[float]]] = [identity()]
+
+        # Current rendering state.
+        self._current_texture = "none"
+        self._current_light_group = ""
+        self._vtx_cache: list[tuple[VtxEntry, tuple[float, float, float], tuple[float, float, float]] | None] = [None] * 32
+
+        # Diagnostics.
+        self.triangles_emitted = 0
+        self.missing_layouts: set[str] = set()
+        self.ignored_cmds: dict[str, int] = {}
+        self.unknown_dls: set[str] = set()
+
+    # -- bone management ----------------------------------------------------
+
+    def _ensure_root_bone(self) -> None:
+        # Kept as a no-op hook. Originally we auto-created a synthetic root
+        # bone, but the decomp's animation data treats the FIRST
+        # GEO_ANIMATED_PART as animation bone 0 — an extra synthetic root
+        # would shift every animation track by one. Bones now begin at the
+        # first ANIMATED_PART we encounter.
+        pass
+
+    def _begin_bone(
+        self,
+        translation: tuple[int, int, int],
+        rest_rotation: tuple[int, int, int],
+        name: str,
+    ) -> int:
+        parent = self._current_bone  # -1 for the first bone
+        idx = len(self.bones)
+        self.bones.append(
+            Bone(parent=parent, name=name, translation=translation, rest_rotation=rest_rotation)
+        )
+        self._bone_stack.append((self._current_bone, self._local_stack))
+        self._current_bone = idx
+        self._local_stack = [identity()]
+        return idx
+
+    def _end_bone(self) -> None:
+        assert self._bone_stack, "pop with no push"
+        self._current_bone, self._local_stack = self._bone_stack.pop()
+
+    # -- DL walker (draws into current bone) --------------------------------
+
+    def _current_submesh(self, layer: str) -> SubMeshBuilder:
+        bone = self.bones[self._current_bone]
+        key = (self._current_texture, layer, self._current_light_group)
+        sm = bone.sub_meshes.get(key)
         if sm is None:
             sm = SubMeshBuilder(
-                texture=self.current_texture,
+                texture=self._current_texture,
                 layer=layer,
-                light_group=self.current_light_group,
+                light_group=self._current_light_group,
             )
-            self.sub_meshes[key] = sm
+            bone.sub_meshes[key] = sm
         return sm
 
-    def walk_dl(self, dl_name: str, transform: list[list[float]], layer: str,
-                _depth: int = 0) -> None:
+    def _emit_tri(self, a: int, b: int, c: int, layer: str) -> None:
+        va, vb, vc = self._vtx_cache[a], self._vtx_cache[b], self._vtx_cache[c]
+        if va is None or vb is None or vc is None:
+            return
+        sm = self._current_submesh(layer)
+        sm.indices.extend([
+            sm.emit_vertex(va[1], va[0].uv, va[0].rgba, va[2], va[0].color),
+            sm.emit_vertex(vb[1], vb[0].uv, vb[0].rgba, vb[2], vb[0].color),
+            sm.emit_vertex(vc[1], vc[0].uv, vc[0].rgba, vc[2], vc[0].color),
+        ])
+        self.triangles_emitted += 1
+
+    def _walk_dl(self, dl_name: str, layer: str, _depth: int = 0) -> None:
         if _depth > 32:
             return
         ops = self.gfx_arrays.get(dl_name)
         if ops is None:
             self.unknown_dls.add(dl_name)
             return
+        transform = self._local_stack[-1]
         for op, args in ops:
             if op == "gsSPVertex" and len(args) >= 3:
                 arr_name = args[0].strip()
@@ -284,105 +358,61 @@ class PosedDLWalker:
                 except ValueError:
                     continue
                 for i in range(count):
-                    if dest + i >= len(self.vtx_cache) or i >= len(arr):
+                    if dest + i >= len(self._vtx_cache) or i >= len(arr):
                         break
                     v = arr[i]
                     pos = transform_point(transform, v.pos)
                     nrm = transform_normal(transform, v.normal)
-                    self.vtx_cache[dest + i] = (v, pos, nrm)
+                    self._vtx_cache[dest + i] = (v, pos, nrm)
             elif op == "gsSP1Triangle" and len(args) >= 3:
                 self._emit_tri(int(args[0]), int(args[1]), int(args[2]), layer)
             elif op == "gsSP2Triangles" and len(args) >= 8:
                 self._emit_tri(int(args[0]), int(args[1]), int(args[2]), layer)
                 self._emit_tri(int(args[4]), int(args[5]), int(args[6]), layer)
             elif op == "gsDPSetTextureImage" and len(args) >= 4:
-                self.current_texture = args[3].strip()
+                self._current_texture = args[3].strip()
             elif op == "gsDPSetCombineMode" and args:
-                # Track N64 combiner mode changes. When the mode is shade-only
-                # (no texture sampling), subsequent triangles in this DL are
-                # using only vertex/light color — they should go into the
-                # "none" sub-mesh, not the previously-bound texture.
                 mode = args[0].strip()
                 if _is_shade_only_combine(mode):
-                    self.current_texture = "none"
+                    self._current_texture = "none"
             elif op == "gsSPLight" and args:
-                # gsSPLight(&xxx_lights_group.l, 1) binds the main light.
-                # Extract the base symbol (strip "&" and ".l" or ".a"). The
-                # ".l" call provides the diffuse color we care about; we
-                # ignore .a (ambient).
                 ref = args[0].strip()
                 if ref.startswith("&"):
                     ref = ref[1:]
                 if ref.endswith(".l"):
-                    self.current_light_group = ref[:-2]
+                    self._current_light_group = ref[:-2]
             elif op in ("gsSPDisplayList", "gsSPBranchList") and args:
                 sub = args[0].strip()
                 if sub.startswith("&"):
                     sub = sub[1:]
-                self.walk_dl(sub, transform, layer, _depth + 1)
+                self._walk_dl(sub, layer, _depth + 1)
             elif op == "gsSPEndDisplayList":
                 break
 
-    def _emit_tri(self, a: int, b: int, c: int, layer: str) -> None:
-        va, vb, vc = self.vtx_cache[a], self.vtx_cache[b], self.vtx_cache[c]
-        if va is None or vb is None or vc is None:
-            return
-        sm = self.submesh(layer)
-        sm.indices.extend([
-            sm.emit(va[1], va[0], va[2]),
-            sm.emit(vb[1], vb[0], vb[2]),
-            sm.emit(vc[1], vc[0], vc[2]),
-        ])
-        self.triangles_emitted += 1
+    # -- geo walker ---------------------------------------------------------
 
-
-# ---- geo walker ------------------------------------------------------------
-
-class GeoWalker:
-    def __init__(
-        self,
-        geo_layouts: dict[str, list[tuple[str, list[str]]]],
-        dl_walker: PosedDLWalker,
-    ) -> None:
-        self.layouts = geo_layouts
-        self.dl = dl_walker
-        self.missing_layouts: set[str] = set()
-        self.ignored_cmds: dict[str, int] = {}
-
-    def walk(self, entry: str, initial: list[list[float]] | None = None) -> None:
-        # Outer frame owns the initial transform; the top-level block doesn't
-        # live inside an OPEN_NODE so we pass `take_first_only=False` and don't
-        # expect a CLOSE_NODE.
-        t0 = initial if initial is not None else identity()
-        stack = [t0]
-        self._walk_siblings(self.layouts.get(entry, []), stack, 0,
+    def walk(self, entry: str) -> None:
+        self._ensure_root_bone()
+        self._walk_siblings(self.layouts.get(entry, []), 0,
                             take_first_only=False, expect_close=False)
 
     def _walk_siblings(
         self,
         cmds: list[tuple[str, list[str]]],
-        stack: list[list[float]],
         idx: int,
         take_first_only: bool,
         expect_close: bool,
     ) -> int:
-        """Walk siblings in a block. If `take_first_only` (switch semantics),
-        execute just the first sibling and skip the rest to CLOSE_NODE. If
-        `expect_close`, consume the matching GEO_CLOSE_NODE before returning.
-        Pops one frame off `stack` if expect_close is True."""
         first_done = False
         while idx < len(cmds):
-            op, _ = cmds[idx]
+            op = cmds[idx][0]
             if op == "GEO_CLOSE_NODE":
                 if expect_close:
-                    stack.pop()
                     return idx + 1
                 return idx
             if op in ("GEO_RETURN", "GEO_END"):
                 return idx + 1
             if take_first_only and first_done:
-                # Skip remaining siblings (each potentially a node + its
-                # OPEN_NODE block) until the matching CLOSE_NODE.
                 depth = 0
                 while idx < len(cmds):
                     op2 = cmds[idx][0]
@@ -391,129 +421,134 @@ class GeoWalker:
                     elif op2 == "GEO_CLOSE_NODE":
                         if depth == 0:
                             if expect_close:
-                                stack.pop()
                                 return idx + 1
                             return idx
                         depth -= 1
                     idx += 1
                 return idx
-            idx = self._walk_one_sibling(cmds, stack, idx)
+            idx = self._walk_one_sibling(cmds, idx)
             first_done = True
-        if expect_close:
-            stack.pop()
         return idx
 
-    def _walk_one_sibling(
-        self,
-        cmds: list[tuple[str, list[str]]],
-        stack: list[list[float]],
-        idx: int,
-    ) -> int:
-        """Walk one sibling: a node command plus its optional child block.
-        Returns idx positioned at the next sibling (or CLOSE_NODE).
+    def _walk_one_sibling(self, cmds: list[tuple[str, list[str]]], idx: int) -> int:
+        """One sibling: a node command + optional OPEN_NODE children block.
 
-        Crucial invariant: the transform the node applies (e.g. the rest-pose
-        offset of an ANIMATED_PART) must live inside this sibling's SUBTREE
-        only. Subsequent siblings at the same level see the unmodified parent
-        frame. We enforce that by snapshotting stack[-1] before executing the
-        node and restoring it afterward."""
+        The current local_stack top is saved so non-animated transforms the
+        node applies (e.g. GEO_TRANSLATE_ROTATE) affect this sibling's
+        subtree only, not the parent's other children.
+
+        GEO_ANIMATED_PART is special: it opens a new BONE, not just a new
+        local frame, so we enter a fresh bone scope whose own local_stack
+        resets to identity. The current_bone is restored on exit.
+        """
         if idx >= len(cmds):
             return idx
         op, args = cmds[idx]
         if op == "GEO_OPEN_NODE":
-            # Block is itself the sibling. Push + walk children (normal).
-            stack.append([row[:] for row in stack[-1]])
-            return self._walk_siblings(cmds, stack, idx + 1,
-                                       take_first_only=False, expect_close=True)
+            self._local_stack.append([row[:] for row in self._local_stack[-1]])
+            idx = self._walk_siblings(cmds, idx + 1, False, True)
+            self._local_stack.pop()
+            return idx
 
-        saved_frame = [row[:] for row in stack[-1]]
-        self._execute_node(op, args, stack)
-        node_op = op
-        idx += 1
-        # If followed by a child block, descend. Children see the transformed
-        # frame as their parent (current stack[-1]). Switch cases take only
-        # the first sibling.
-        if idx < len(cmds) and cmds[idx][0] == "GEO_OPEN_NODE":
-            stack.append([row[:] for row in stack[-1]])
-            is_switch = (node_op == "GEO_SWITCH_CASE")
-            idx = self._walk_siblings(cmds, stack, idx + 1,
-                                      take_first_only=is_switch,
-                                      expect_close=True)
-        # Restore the parent frame for the NEXT sibling in this block.
-        stack[-1] = saved_frame
-        return idx
+        is_animated_part = (op == "GEO_ANIMATED_PART")
+        saved_frame = [row[:] for row in self._local_stack[-1]]
+        bone_entered = False
 
-    def _execute_node(
-        self,
-        op: str,
-        args: list[str],
-        stack: list[list[float]],
-    ) -> None:
-        """Apply a single geo command's side effects to the current transform
-        frame (stack[-1]) and draw any display list it embeds."""
-        layer = self._arg_layer(args)
-
-        if op == "GEO_TRANSLATE_ROTATE" and len(args) >= 7:
-            t = translate(parse_int(args[1]), parse_int(args[2]), parse_int(args[3]))
-            r = rotate_xyz(parse_int(args[4]), parse_int(args[5]), parse_int(args[6]))
-            stack[-1] = mat_mul(stack[-1], mat_mul(t, r))
-        elif op == "GEO_TRANSLATE_ROTATE_WITH_DL" and len(args) >= 8:
-            t = translate(parse_int(args[1]), parse_int(args[2]), parse_int(args[3]))
-            r = rotate_xyz(parse_int(args[4]), parse_int(args[5]), parse_int(args[6]))
-            stack[-1] = mat_mul(stack[-1], mat_mul(t, r))
-            self._draw(args[7], stack[-1], layer)
-        elif op == "GEO_TRANSLATE" and len(args) >= 4:
-            stack[-1] = mat_mul(stack[-1],
-                                translate(parse_int(args[1]), parse_int(args[2]), parse_int(args[3])))
-        elif op == "GEO_TRANSLATE_WITH_DL" and len(args) >= 5:
-            stack[-1] = mat_mul(stack[-1],
-                                translate(parse_int(args[1]), parse_int(args[2]), parse_int(args[3])))
-            self._draw(args[4], stack[-1], layer)
-        elif op == "GEO_ROTATION_NODE" and len(args) >= 4:
-            stack[-1] = mat_mul(stack[-1],
-                                rotate_xyz(parse_int(args[1]), parse_int(args[2]), parse_int(args[3])))
-        elif op == "GEO_ROTATION_NODE_WITH_DL" and len(args) >= 5:
-            stack[-1] = mat_mul(stack[-1],
-                                rotate_xyz(parse_int(args[1]), parse_int(args[2]), parse_int(args[3])))
-            self._draw(args[4], stack[-1], layer)
-        elif op == "GEO_ANIMATED_PART" and len(args) >= 5:
+        if is_animated_part and len(args) >= 5:
             tx = parse_int(args[1])
             ty = parse_int(args[2])
             tz = parse_int(args[3])
-            stack[-1] = mat_mul(stack[-1], translate(tx, ty, tz))
-            # In the real game each GEO_ANIMATED_PART's rotation is supplied by
-            # the current animation frame. Without that data we fall back on a
-            # hand-curated table of rest-pose rotations for specific joints so
-            # arms and legs hang in plausible T-pose directions.
-            rot = self._rest_pose_rotation_for((tx, ty, tz))
-            if rot is not None:
-                stack[-1] = mat_mul(stack[-1], rotate_xyz(*rot))
-            self._draw(args[4], stack[-1], layer)
+            rest_rot = self._REST_POSE_ROTATIONS.get((tx, ty, tz), (0, 0, 0))
+            dl = args[4].strip()
+            if dl.startswith("&"):
+                dl = dl[1:]
+            name = dl if dl not in ("NULL", "0", "") else f"bone_{len(self.bones)}"
+            # Enter a new bone. Its translation and rest rotation are the
+            # rest-pose transform relative to parent; inside this bone the
+            # local_stack begins at identity so non-animated transforms here
+            # are expressed in the bone's own frame.
+            self._begin_bone((tx, ty, tz), rest_rot, name)
+            bone_entered = True
+            # If the ANIMATED_PART carries a DL, draw it at the new bone's
+            # identity local transform.
+            if dl not in ("NULL", "0", ""):
+                layer = self._arg_layer(args)
+                self._walk_dl(dl, layer)
+        else:
+            self._execute_non_bone_node(op, args)
+
+        idx += 1
+        # If followed by an OPEN_NODE, descend into children.
+        if idx < len(cmds) and cmds[idx][0] == "GEO_OPEN_NODE":
+            self._local_stack.append([row[:] for row in self._local_stack[-1]])
+            is_switch = (op == "GEO_SWITCH_CASE")
+            idx = self._walk_siblings(cmds, idx + 1, is_switch, True)
+            self._local_stack.pop()
+
+        if bone_entered:
+            self._end_bone()
+        else:
+            # Non-animated transforms restore to the parent's frame.
+            self._local_stack[-1] = saved_frame
+        return idx
+
+    def _execute_non_bone_node(self, op: str, args: list[str]) -> None:
+        layer = self._arg_layer(args)
+        if op == "GEO_TRANSLATE_ROTATE" and len(args) >= 7:
+            t = translate(parse_int(args[1]), parse_int(args[2]), parse_int(args[3]))
+            r = rotate_xyz(parse_int(args[4]), parse_int(args[5]), parse_int(args[6]))
+            self._local_stack[-1] = mat_mul(self._local_stack[-1], mat_mul(t, r))
+        elif op == "GEO_TRANSLATE_ROTATE_WITH_DL" and len(args) >= 8:
+            t = translate(parse_int(args[1]), parse_int(args[2]), parse_int(args[3]))
+            r = rotate_xyz(parse_int(args[4]), parse_int(args[5]), parse_int(args[6]))
+            self._local_stack[-1] = mat_mul(self._local_stack[-1], mat_mul(t, r))
+            self._draw(args[7], layer)
+        elif op == "GEO_TRANSLATE" and len(args) >= 4:
+            self._local_stack[-1] = mat_mul(
+                self._local_stack[-1],
+                translate(parse_int(args[1]), parse_int(args[2]), parse_int(args[3])),
+            )
+        elif op == "GEO_TRANSLATE_WITH_DL" and len(args) >= 5:
+            self._local_stack[-1] = mat_mul(
+                self._local_stack[-1],
+                translate(parse_int(args[1]), parse_int(args[2]), parse_int(args[3])),
+            )
+            self._draw(args[4], layer)
+        elif op == "GEO_ROTATION_NODE" and len(args) >= 4:
+            self._local_stack[-1] = mat_mul(
+                self._local_stack[-1],
+                rotate_xyz(parse_int(args[1]), parse_int(args[2]), parse_int(args[3])),
+            )
+        elif op == "GEO_ROTATION_NODE_WITH_DL" and len(args) >= 5:
+            self._local_stack[-1] = mat_mul(
+                self._local_stack[-1],
+                rotate_xyz(parse_int(args[1]), parse_int(args[2]), parse_int(args[3])),
+            )
+            self._draw(args[4], layer)
         elif op == "GEO_DISPLAY_LIST" and len(args) >= 2:
-            self._draw(args[1], stack[-1], layer)
+            self._draw(args[1], layer)
         elif op == "GEO_SCALE" and len(args) >= 2:
-            stack[-1] = mat_mul(stack[-1], scale_uniform(parse_int(args[1]) / 65536.0))
+            self._local_stack[-1] = mat_mul(
+                self._local_stack[-1], scale_uniform(parse_int(args[1]) / 65536.0)
+            )
         elif op == "GEO_SCALE_WITH_DL" and len(args) >= 3:
-            stack[-1] = mat_mul(stack[-1], scale_uniform(parse_int(args[1]) / 65536.0))
-            self._draw(args[2], stack[-1], layer)
+            self._local_stack[-1] = mat_mul(
+                self._local_stack[-1], scale_uniform(parse_int(args[1]) / 65536.0)
+            )
+            self._draw(args[2], layer)
         elif op in ("GEO_BRANCH", "GEO_BRANCH_AND_LINK") and args:
-            sub = args[-1]
+            sub = args[-1].strip()
             if sub.startswith("&"):
                 sub = sub[1:]
-            sub = sub.strip()
             sub_cmds = self.layouts.get(sub)
             if sub_cmds is not None:
-                # Dive with a copy of the current transform as a fresh frame.
-                sub_stack = [[row[:] for row in stack[-1]]]
-                self._walk_siblings(sub_cmds, sub_stack, 0,
-                                    take_first_only=False, expect_close=False)
+                # Dive into the other layout with our current bone scope
+                # (new bones created inside continue to descend from current).
+                self._walk_siblings(sub_cmds, 0, False, False)
             else:
                 self.missing_layouts.add(sub)
         elif op == "GEO_SWITCH_CASE":
-            # Handled specially in _walk_one_sibling: its child OPEN_NODE
-            # uses take_first_only=True. Here, as a standalone node, it has
-            # no side effects.
-            pass
+            pass  # handled by take_first_only in children
         else:
             self.ignored_cmds[op] = self.ignored_cmds.get(op, 0) + 1
 
@@ -523,47 +558,22 @@ class GeoWalker:
         a = args[0].strip()
         return a if a.startswith("LAYER_") else "LAYER_OPAQUE"
 
-    # Per-bone rest-pose rotations keyed on the (tx, ty, tz) of the
-    # GEO_ANIMATED_PART. Angles are s16 (65536 = 360°). Identified by the
-    # decomp's canonical Mario body skeleton offsets.
-    _REST_POSE_ROTATIONS: dict[tuple[int, int, int], tuple[int, int, int]] = {
-        # Left shoulder: rotate +X (up) to +Z (left of torso) so arm hangs out
-        # to Mario's left. Rotate -90° around Y: ry = -16384.
-        (67, -10, 79): (0, -16384, 0),
-        # Right shoulder: +X to -Z (Mario's right). Rotate +90° around Y.
-        (68, -10, -79): (0, 16384, 0),
-        # Left hip: +X (up) to -X (down) so the leg chain hangs beneath the
-        # butt. Rotate 180° around Z. Keeps Y axis so the knee still bends
-        # forward the right way later.
-        (13, -8, 42): (0, 0, 32768),
-        (13, -8, -42): (0, 0, 32768),
-    }
-
-    def _rest_pose_rotation_for(
-        self, offset: tuple[int, int, int]
-    ) -> tuple[int, int, int] | None:
-        return self._REST_POSE_ROTATIONS.get(offset)
-
-    def _draw(self, dl_name: str, transform: list[list[float]], layer: str) -> None:
+    def _draw(self, dl_name: str, layer: str) -> None:
         dl = dl_name.strip()
         if dl in ("NULL", "0", ""):
             return
         if dl.startswith("&"):
             dl = dl[1:]
-        # Each DL invoked from the geo starts with a fresh texture context.
-        # Within one DL, sub-DL calls (gsSPDisplayList) inherit state naturally.
-        # Mario's limbs don't bind a texture — they expect vertex color rendering
-        # via combine modes like G_CC_SHADEFADEA. We approximate that by simply
-        # resetting current_texture at each top-level DL entry; any Mario DL that
-        # really wants a texture rebinds it with gsDPSetTextureImage.
-        self.dl.current_texture = "none"
-        self.dl.walk_dl(dl, transform, layer)
+        # Each DL invocation starts with a clean texture binding. Bodies
+        # with no texture are drawn via shade-only combine modes.
+        self._current_texture = "none"
+        self._ensure_root_bone()
+        self._walk_dl(dl, layer)
 
 
-# ---- main ------------------------------------------------------------------
+# ---- main ----------------------------------------------------------------
 
-def convert(geo_path: Path, model_path: Path, entry: str,
-            also_walk: list[str] | None = None) -> dict:
+def convert(geo_path: Path, model_path: Path, entry: str) -> dict:
     geo_text = re.sub(r"/\*.*?\*/", "", geo_path.read_text(), flags=re.DOTALL)
     model_text = re.sub(r"/\*.*?\*/", "", model_path.read_text(), flags=re.DOTALL)
 
@@ -572,62 +582,55 @@ def convert(geo_path: Path, model_path: Path, entry: str,
     gfx_arrays = parse_gfx_arrays(model_text)
     light_groups = parse_light_groups(model_text)
 
-    dl_walker = PosedDLWalker(vtx_arrays, gfx_arrays, light_groups)
-    geo_walker = GeoWalker(geo_layouts, dl_walker)
+    walker = ArticulatedWalker(geo_layouts, vtx_arrays, gfx_arrays, light_groups)
+    if entry not in geo_layouts:
+        raise ValueError(f"entry GeoLayout {entry} not found in {geo_path}")
+    walker.walk(entry)
 
-    entries = [entry] + list(also_walk or [])
-    for e in entries:
-        if e not in geo_layouts:
-            raise ValueError(f"entry GeoLayout {e} not found in {geo_path}")
-        geo_walker.walk(e)
-
-    sub_meshes_out: list[dict] = []
-    for (tex, layer, lg), sm in dl_walker.sub_meshes.items():
-        shade = light_groups.get(lg) if lg else None
-        sub_meshes_out.append({
-            "key": f"{tex}|{layer}|{lg}",
-            "texture": tex,
-            "layer": layer,
-            "light_group": lg,
-            "shade_color": list(shade) if shade is not None else None,
-            "positions": sm.positions,
-            "normals": sm.normals,
-            "uvs": sm.uvs,
-            "colors": sm.colors,
-            "indices": sm.indices,
+    bones_out: list[dict] = []
+    for i, bone in enumerate(walker.bones):
+        sub_meshes = []
+        for (tex, layer, lg), sm in bone.sub_meshes.items():
+            shade = light_groups.get(lg) if lg else None
+            sub_meshes.append({
+                "key": f"{tex}|{layer}|{lg}",
+                "texture": tex,
+                "layer": layer,
+                "light_group": lg,
+                "shade_color": list(shade) if shade is not None else None,
+                "positions": sm.positions,
+                "normals": sm.normals,
+                "uvs": sm.uvs,
+                "colors": sm.colors,
+                "indices": sm.indices,
+            })
+        bones_out.append({
+            "index": i,
+            "parent": bone.parent,
+            "name": bone.name,
+            "translation": list(bone.translation),
+            "rest_rotation": list(bone.rest_rotation),
+            "sub_meshes": sub_meshes,
         })
 
     return {
         "source": str(geo_path),
         "model_source": str(model_path),
         "entry": entry,
-        "also_walk": also_walk or [],
-        "triangles_emitted": dl_walker.triangles_emitted,
-        "sub_meshes": sub_meshes_out,
-        "missing_layouts": sorted(geo_walker.missing_layouts),
-        "unknown_display_lists": sorted(dl_walker.unknown_dls),
-        "ignored_geo_cmds": geo_walker.ignored_cmds,
+        "bone_count": len(walker.bones),
+        "triangles_emitted": walker.triangles_emitted,
+        "bones": bones_out,
+        "missing_layouts": sorted(walker.missing_layouts),
+        "unknown_display_lists": sorted(walker.unknown_dls),
+        "ignored_geo_cmds": walker.ignored_cmds,
     }
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("actor_dir", type=Path,
-                    help="e.g. reference/sm64/actors/mario")
+    ap.add_argument("actor_dir", type=Path)
     ap.add_argument("output", type=Path)
-    ap.add_argument(
-        "--entry",
-        default="mario_geo_body",
-        help="top-level GeoLayout symbol to walk (default: mario_geo_body)",
-    )
-    ap.add_argument(
-        "--also-walk",
-        action="append",
-        default=[],
-        help="additional GeoLayout symbols to walk with identity transform "
-        "(useful if the body branches are declared but not reached via "
-        "the main entry, e.g. internal switch cases)",
-    )
+    ap.add_argument("--entry", default="mario_geo_body")
     args = ap.parse_args()
 
     geo = args.actor_dir / "geo.inc.c"
@@ -636,15 +639,16 @@ def main() -> int:
         print(f"expected {geo} and {model}", file=sys.stderr)
         return 1
 
-    result = convert(geo, model, args.entry, args.also_walk)
+    result = convert(geo, model, args.entry)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2))
-    print(f"wrote {args.output}: {result['triangles_emitted']} tris in "
-          f"{len(result['sub_meshes'])} sub-meshes")
+    bone_with_geom = sum(1 for b in result["bones"] if b["sub_meshes"])
+    print(f"wrote {args.output}: {result['bone_count']} bones "
+          f"({bone_with_geom} with geometry), {result['triangles_emitted']} tris")
     if result["missing_layouts"]:
         print(f"  missing layouts: {result['missing_layouts']}")
     if result["unknown_display_lists"]:
-        print(f"  unknown DLs: {result['unknown_display_lists'][:5]}...")
+        print(f"  unknown DLs: {result['unknown_display_lists'][:3]}...")
     return 0
 
 

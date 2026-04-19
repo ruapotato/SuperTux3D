@@ -79,11 +79,17 @@ python3 "$SCRIPT_DIR/resolve_textures.py" \
   --copy-to "$EXTRACTED/textures" \
   "$EXTRACTED/textures/texture_map.json"
 
-# 6.5 Convert actor meshes (Mario first). T-pose only for now; no animation.
+# 6.5 Convert actor meshes (Mario first) as articulated skeletons.
 log "converting actor meshes"
 python3 "$SCRIPT_DIR/convert_actor.py" \
   "$SM64_REPO/actors/mario" \
   "$EXTRACTED/actors/mario/mesh.json"
+
+# 6.6 Convert Mario animations to JSON. All 200+ animations; tiny files.
+log "converting Mario animations"
+python3 "$SCRIPT_DIR/convert_animation.py" \
+  "$SM64_REPO/assets/anims" \
+  "$EXTRACTED/actors/mario/anims"
 
 # 7. Convert level geometry + collision to Godot-friendly JSON.
 log "converting level geometry and collision to Godot JSON"

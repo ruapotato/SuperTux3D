@@ -1,9 +1,13 @@
 extends Node3D
 
 const LevelLoader := preload("res://scripts/level_loader.gd")
+const MarioAnimator := preload("res://scripts/mario_animator.gd")
 const MODEL_JSON := "res://extracted/levels/bob/area_1/model.json"
 const COLLISION_JSON := "res://extracted/levels/bob/area_1/collision.json"
 const MARIO_MESH_JSON := "res://extracted/actors/mario/mesh.json"
+# Key decomp animations we start with. IDs are from include/mario_animation_ids.h.
+const ANIM_IDLE := "res://extracted/actors/mario/anims/anim_C5.json"  # IDLE_HEAD_CENTER
+const ANIM_WALKING := "res://extracted/actors/mario/anims/anim_48.json"  # WALKING
 # Actual spawn from decomp levels/bob/script.c: MARIO_POS(1, 135, -6558, 0, 6464).
 # Scaled to Godot world scale (see LevelLoader.WORLD_SCALE). +2 Y offset for
 # a small cushion so the capsule doesn't start clipped into the floor.
@@ -22,6 +26,11 @@ const FOCUS_OFFSET := Vector3(0, 1.0, 0)
 @onready var mario: CharacterBody3D = $Mario
 @onready var hud_label: Label = $UI/HUD
 
+var _animator: RefCounted
+var _anim_idle: Dictionary
+var _anim_walking: Dictionary
+var _current_anim_name: String = ""
+
 # Yaw: rotation about world Y. Pitch: angle above horizontal (+ = camera above).
 var _cam_yaw := 0.0
 var _cam_pitch := 0.25
@@ -30,13 +39,43 @@ var _cam_pitch := 0.25
 func _ready() -> void:
     LevelLoader.load_level(MODEL_JSON, COLLISION_JSON, world)
     var anchor: Node3D = mario.get_node("ActorAnchor")
-    LevelLoader.load_actor(MARIO_MESH_JSON, anchor)
+    var actor: Dictionary = LevelLoader.load_actor(MARIO_MESH_JSON, anchor)
+    _setup_animator(actor)
     mario.global_position = MARIO_SPAWN
     mario.set_camera(camera)
     Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-    # Toggle collision shape visibility (F1); helpful while we're debugging
-    # the physics handoff from the converter.
     get_tree().debug_collisions_hint = false
+
+
+func _setup_animator(actor: Dictionary) -> void:
+    if actor.is_empty():
+        return
+    _animator = MarioAnimator.new()
+    var rest_rots: Array = []
+    var rest_model: Variant = _read_json(MARIO_MESH_JSON)
+    if rest_model is Dictionary:
+        for b in rest_model.bones:
+            var r: Array = b.rest_rotation
+            var to_rad: float = TAU / 65536.0
+            rest_rots.append(Vector3(r[0] * to_rad, r[1] * to_rad, r[2] * to_rad))
+    _animator.setup(actor.bones, rest_rots)
+
+    var idle_parsed: Variant = _read_json(ANIM_IDLE)
+    var walk_parsed: Variant = _read_json(ANIM_WALKING)
+    if idle_parsed is Dictionary:
+        _anim_idle = idle_parsed
+    if walk_parsed is Dictionary:
+        _anim_walking = walk_parsed
+    if not _anim_idle.is_empty():
+        _animator.play(_anim_idle)
+        _current_anim_name = "idle"
+
+
+func _read_json(path: String) -> Variant:
+    if not FileAccess.file_exists(path):
+        return null
+    var f := FileAccess.open(path, FileAccess.READ)
+    return JSON.parse_string(f.get_as_text())
 
 
 func _input(event: InputEvent) -> void:
@@ -61,6 +100,22 @@ func _respawn() -> void:
     mario.velocity = Vector3.ZERO
 
 
+func _update_animation(delta: float) -> void:
+    if _animator == null:
+        return
+    # Pick animation based on current Mario stub motion (proxy for state).
+    var horiz_speed: float = Vector2(mario.velocity.x, mario.velocity.z).length()
+    var desired := "idle" if horiz_speed < 0.5 else "walking"
+    if desired != _current_anim_name:
+        if desired == "walking" and not _anim_walking.is_empty():
+            _animator.play(_anim_walking)
+            _current_anim_name = "walking"
+        elif desired == "idle" and not _anim_idle.is_empty():
+            _animator.play(_anim_idle)
+            _current_anim_name = "idle"
+    _animator.tick(delta)
+
+
 func _reload_debug_shapes() -> void:
     # Toggling debug_collisions_hint at runtime only affects newly-added
     # collision shapes, so re-parent all CollisionShape3D nodes in `world` to
@@ -73,7 +128,8 @@ func _reload_debug_shapes() -> void:
                 parent.add_child(child)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+    _update_animation(delta)
     var focus: Vector3 = mario.global_position + FOCUS_OFFSET
     # Standard orbital: pitch > 0 lifts the camera above the focus.
     var offset := Vector3(
