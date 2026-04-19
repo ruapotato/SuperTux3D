@@ -61,6 +61,8 @@ const ACT_PUNCHING               := 0x00800380
 # port we collapse to a single swim action that handles all movement.
 const ACT_WATER_IDLE             := 0x380022C0
 const ACT_SWIMMING               := 0x300024D1
+const ACT_HOLDING_POLE           := 0x08100340
+const ACT_CLIMBING_POLE          := 0x00100343
 
 # ---- Animation IDs (from include/mario_animation_ids.h) -----------------
 const MARIO_ANIM_BACKFLIP                    := 0x04
@@ -97,6 +99,9 @@ const MARIO_ANIM_IDLE_HEAD_CENTER            := 0xC5
 const MARIO_ANIM_SWIM_PART1                  := 0xAA
 const MARIO_ANIM_SWIM_PART2                  := 0xAB
 const MARIO_ANIM_FLUTTERKICK                 := 0xAC
+const MARIO_ANIM_IDLE_ON_POLE                := 0x0D
+const MARIO_ANIM_CLIMB_UP_POLE               := 0x05
+const MARIO_ANIM_GRAB_POLE_SHORT             := 0x06
 
 # ---- Physics tuning (Godot units, derived from decomp per-frame values) -
 # Decomp numbers were in units/frame at 30 fps; converted to Godot units/sec
@@ -152,6 +157,12 @@ var floor_surface: String = "default"
 # Water detection — owner sets water_level_y each tick; if our feet dip
 # below it we transition into swim mode. Simple single-volume model.
 var water_level_y: float = -INF
+# Pole state — owner reports if a pole_zone Area3D is overlapping Mario
+# and what its world origin is, so the state can snap onto it.
+var near_pole: bool = false
+var pole_origin: Vector3 = Vector3.ZERO
+var pole_top_y: float = 0.0
+var pole_bottom_y: float = 0.0
 
 # ---- Mario state (subset of struct MarioState) --------------------------
 var action: int = ACT_UNINITIALIZED
@@ -234,6 +245,8 @@ func step(delta: float) -> void:
             ACT_FREEFALL_LAND_STOP:       changed = _act_freefall_land_stop(delta)
             ACT_WATER_IDLE:               changed = _act_water_idle(delta)
             ACT_SWIMMING:                 changed = _act_swimming(delta)
+            ACT_HOLDING_POLE:             changed = _act_holding_pole(delta)
+            ACT_CLIMBING_POLE:            changed = _act_climbing_pole(delta)
             _:                            changed = set_action(ACT_IDLE)
         # Any land-bound action can be interrupted by entering water.
         if not changed and pos.y < water_level_y and (action & ACT_FLAG_AIR) == 0 \
@@ -577,6 +590,49 @@ func _act_freefall_land_stop(_delta: float) -> bool:
 
 # ---- Helpers ------------------------------------------------------------
 
+func _act_holding_pole(delta: float) -> bool:
+    # Snap Mario's X/Z to the pole's center so he doesn't drift off it.
+    pos.x = pole_origin.x
+    pos.z = pole_origin.z
+    vel = Vector3.ZERO
+    if input_jump_pressed:
+        # Kick-jump off the pole: small upward + push away from pole.
+        set_action(ACT_JUMP)
+        vel.y = JUMP_IMPULSE * 0.9
+        var away := Vector3(-sin(face_yaw), 0, -cos(face_yaw))
+        vel.x = away.x * 6.0
+        vel.z = away.z * 6.0
+        near_pole = false
+        return true
+    if input_crouch_pressed or (input_stick.y > 0.3 and input_crouch):
+        # Slide down / dismount.
+        near_pole = false
+        return set_action(ACT_FREEFALL)
+    if input_stick.y < -0.2:
+        return set_action(ACT_CLIMBING_POLE)
+    _request_anim(MARIO_ANIM_IDLE_ON_POLE, 1.0)
+    return false
+
+
+func _act_climbing_pole(delta: float) -> bool:
+    pos.x = pole_origin.x
+    pos.z = pole_origin.z
+    # stick y: negative = up, positive = down.
+    var climb_speed: float = 4.0
+    pos.y += -input_stick.y * climb_speed * delta
+    pos.y = clamp(pos.y, pole_bottom_y, pole_top_y)
+    vel = Vector3.ZERO
+    if input_jump_pressed:
+        set_action(ACT_JUMP)
+        vel.y = JUMP_IMPULSE
+        near_pole = false
+        return true
+    if abs(input_stick.y) < 0.1:
+        return set_action(ACT_HOLDING_POLE)
+    _request_anim(MARIO_ANIM_CLIMB_UP_POLE, 1.0 if input_stick.y < 0 else -1.0)
+    return false
+
+
 func _act_water_idle(delta: float) -> bool:
     if pos.y > water_level_y + 0.5:
         return set_action(ACT_FREEFALL)
@@ -645,6 +701,10 @@ func _apply_air_motion(delta: float, allow_steering: bool = true) -> void:
 # ---- Airborne transition helpers ---------------------------------------
 
 func _common_air_transitions(default_land: int) -> bool:
+    # Grab a pole if we're airborne and overlapping one.
+    if near_pole and vel.y < 4.0:
+        face_yaw = atan2(pos.x - pole_origin.x, pos.z - pole_origin.z)
+        return set_action(ACT_HOLDING_POLE)
     if input_crouch_pressed:
         return set_action(ACT_GROUND_POUND)
     if input_attack_pressed:

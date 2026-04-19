@@ -213,6 +213,17 @@ func _physics_process(delta: float) -> void:
     _state.anim_at_end = _animator != null and _animator.is_at_end()
     _state.power_cap = power_cap
     _state.water_level_y = water_level_y
+    # Report pole-zone overlap to the state. We test the pickup Area3D's
+    # overlaps; anything with meta("pole_zone") is climbable.
+    _state.near_pole = false
+    if _pickup_area != null:
+        for area in _pickup_area.get_overlapping_areas():
+            if area.has_meta("pole_zone"):
+                _state.near_pole = true
+                _state.pole_origin = area.global_position
+                _state.pole_top_y = area.global_position.y + 3.0
+                _state.pole_bottom_y = area.global_position.y - 0.5
+                break
 
     _state.step(delta)
 
@@ -227,6 +238,10 @@ func _physics_process(delta: float) -> void:
         else:
             _animator.set_speed(speed)
 
+    # If the state moved Mario directly (e.g. pole snap), honor it before
+    # move_and_slide so velocity-driven motion starts from the snapped pos.
+    if _state.pos.distance_to(global_position) > 0.001:
+        global_position = _state.pos
     velocity = _state.vel
     move_and_slide()
     _state.pos = global_position
