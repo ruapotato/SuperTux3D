@@ -55,6 +55,7 @@ var _cam_distance: float = CAM_DISTANCE_DEFAULT
 @onready var camera_rig: Node3D = $CameraRig
 @onready var mario: CharacterBody3D = $Mario
 @onready var hud_label: Label = $UI/HUD
+@onready var title_screen: ColorRect = $UI/TitleScreen
 
 var _animator: RefCounted
 var _level_manager: Node
@@ -67,6 +68,8 @@ var _anim_cache: Dictionary = {}
 # Yaw: rotation about world Y. Pitch: angle above horizontal (+ = camera above).
 var _cam_yaw := 0.0
 var _cam_pitch := 0.25
+# Smoothed focus point so Mario's animation bob doesn't shake the camera.
+var _focus_smooth: Vector3 = Vector3.ZERO
 
 
 func _ready() -> void:
@@ -89,7 +92,11 @@ func _ready() -> void:
     _level_manager.load_level(BOOT_LEVEL, BOOT_AREA)
 
     mario.set_camera(camera)
-    Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+    # Hold on the title screen; the first key press closes it and captures
+    # the mouse.
+    if title_screen != null:
+        title_screen.visible = true
+    Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
     get_tree().debug_collisions_hint = false
 
 
@@ -179,6 +186,14 @@ func _read_json(path: String) -> Variant:
 
 
 func _input(event: InputEvent) -> void:
+    # Title screen swallows the first meaningful press.
+    if title_screen != null and title_screen.visible:
+        if (event is InputEventKey and event.pressed) \
+                or (event is InputEventMouseButton and event.pressed):
+            title_screen.visible = false
+            Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+            get_viewport().set_input_as_handled()
+            return
     if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
         _cam_yaw -= event.relative.x * MOUSE_SENSITIVITY
         # Mouse up → look up (camera pitches lower so it looks upward).
@@ -244,25 +259,29 @@ func _reload_debug_shapes() -> void:
 
 func _process(delta: float) -> void:
     _update_animation(delta)
-    var focus: Vector3 = mario.global_position + FOCUS_OFFSET
+    var focus_target: Vector3 = mario.global_position + FOCUS_OFFSET
+    # Smooth the focus position (not just the camera position) so vertical
+    # bobbing and rapid Mario motion don't whip the camera around.
+    _focus_smooth = _focus_smooth.lerp(focus_target, clamp(delta * 10.0, 0.0, 1.0))
     var offset := Vector3(
         sin(_cam_yaw) * cos(_cam_pitch),
         sin(_cam_pitch),
         cos(_cam_yaw) * cos(_cam_pitch),
     ) * _cam_distance
-    var desired := focus + offset
-    # Cast a ray from Mario's focus out to the desired camera slot; if the
-    # level geometry blocks us, slide the camera to the hit point with a
-    # small retract so we don't clip into walls.
+    var desired := _focus_smooth + offset
+    # Raycast from focus to desired to keep the camera out of walls.
     var space := get_world_3d().direct_space_state
-    var q := PhysicsRayQueryParameters3D.create(focus, desired)
+    var q := PhysicsRayQueryParameters3D.create(_focus_smooth, desired)
     q.exclude = [mario.get_rid()]
-    q.collision_mask = 1  # level geometry
+    q.collision_mask = 1
     var hit := space.intersect_ray(q)
     if hit.has("position"):
-        desired = (hit.position as Vector3).lerp(focus, 0.04)
-    camera_rig.global_position = desired
-    camera_rig.look_at(focus, Vector3.UP)
+        desired = (hit.position as Vector3).lerp(_focus_smooth, 0.04)
+    # Glide the rig to its new target for a softer feel.
+    camera_rig.global_position = camera_rig.global_position.lerp(
+        desired, clamp(delta * 14.0, 0.0, 1.0)
+    )
+    camera_rig.look_at(_focus_smooth, Vector3.UP)
     # Auto-respawn on fall-plane crossing. Routes through the same death
     # handler so lives decrement + game-over flow are consistent.
     if mario.global_position.y < -10.0 and not _death_pending:

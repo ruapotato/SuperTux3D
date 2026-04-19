@@ -18,6 +18,8 @@ var _actor_anchor: Node3D
 var _pickup_area: Area3D
 var _sound_bank: Node
 var _prev_action_for_sfx: int = 0
+var _shadow: MeshInstance3D
+var _shadow_ray: RayCast3D
 
 # Damage / invulnerability.
 var health: int = 8
@@ -100,6 +102,31 @@ func _ready() -> void:
     _ray_up.collide_with_bodies = true
     _ray_up.position = Vector3(0, 1.6, 0)
     add_child(_ray_up)
+
+    # Shadow blob — a flat dark disk projected onto the floor directly
+    # under Mario via a downward raycast. Much cheaper than a real-time
+    # shadow and keeps the "height over ground" cue even in camera angles
+    # where the directional light's shadow doesn't render clearly.
+    _shadow_ray = RayCast3D.new()
+    _shadow_ray.target_position = Vector3(0, -20.0, 0)
+    _shadow_ray.enabled = true
+    _shadow_ray.collide_with_bodies = true
+    _shadow_ray.position = Vector3(0, 0.2, 0)
+    add_child(_shadow_ray)
+    _shadow = MeshInstance3D.new()
+    var disk := CylinderMesh.new()
+    disk.top_radius = 0.4
+    disk.bottom_radius = 0.4
+    disk.height = 0.01
+    disk.radial_segments = 16
+    _shadow.mesh = disk
+    var shadow_mat := StandardMaterial3D.new()
+    shadow_mat.albedo_color = Color(0, 0, 0, 0.55)
+    shadow_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+    shadow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    _shadow.material_override = shadow_mat
+    _shadow.top_level = true  # world-space, not parented to Mario's rotation
+    add_child(_shadow)
 
 
 func set_camera(cam: Camera3D) -> void:
@@ -208,6 +235,7 @@ func _physics_process(delta: float) -> void:
         _actor_anchor.rotation.y = _state.face_yaw
 
     _sample_rays()
+    _update_shadow()
     _play_state_sfx()
     if power_cap_time > 0.0:
         power_cap_time = max(power_cap_time - delta, 0.0)
@@ -222,6 +250,30 @@ func _physics_process(delta: float) -> void:
         if invulnerable_time > 0.0:
             want_visible = int(Time.get_ticks_msec() / 80) % 2 == 0
         _actor_anchor.visible = want_visible
+
+
+func _update_shadow() -> void:
+    if _shadow_ray == null or _shadow == null:
+        return
+    if _shadow_ray.is_colliding():
+        var hit: Vector3 = _shadow_ray.get_collision_point()
+        _shadow.visible = true
+        _shadow.global_position = hit + Vector3(0, 0.02, 0)
+        # Flatten to the floor's orientation.
+        var up: Vector3 = _shadow_ray.get_collision_normal()
+        if up.length() > 0.001:
+            var basis := Basis.looking_at(Vector3.FORWARD, up.normalized())
+            _shadow.global_transform.basis = basis
+        # Dim and shrink the shadow as Mario rises (depth cue).
+        var alt := global_position.y - hit.y
+        var mat := _shadow.material_override as StandardMaterial3D
+        if mat != null:
+            var a: float = clamp(0.55 - alt * 0.1, 0.1, 0.55)
+            mat.albedo_color.a = a
+        var scale_factor: float = clamp(1.0 - alt * 0.05, 0.4, 1.0)
+        _shadow.scale = Vector3(scale_factor, 1.0, scale_factor)
+    else:
+        _shadow.visible = false
 
 
 func _play_state_sfx() -> void:
