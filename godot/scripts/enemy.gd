@@ -1,15 +1,25 @@
 extends CharacterBody3D
 
 # Lightweight generic enemy node. The bhv name (from the decomp level
-# script) determines visual and behavior parameters. Enough to populate
-# levels with moving hazards — not a line-by-line decomp port of each
-# behavior's state machine, which is future work.
-#
-# Mario interacts with enemies via body_entered on the enemy's Area3D:
-# - Mario above + falling / ground-pounding → enemy squished (dies)
-# - Mario on ground level → Mario takes a hit (brief invulnerability)
+# script) determines visual and behavior parameters.
 
 const GRAVITY := 30.0
+const LevelLoader := preload("res://scripts/level_loader.gd")
+
+# bhv name → (actor mesh subdir, approximate world-scale factor). Actors
+# use the same actor-space axes as Mario, so the same loader applies.
+const ACTOR_MESHES := {
+    "bhvGoomba":               "goomba",
+    "bhvGoombaTripletSpawner": "goomba",
+    "bhvKoopa":                "koopa",
+    "bhvKoopaShellUnderwater": "koopa_shell",
+    "bhvBobomb":               "bobomb",
+    "bhvBobombBuddy":          "bobomb_buddy",
+    "bhvChuckya":              "bobomb",
+    "bhvPiranhaPlant":         "piranha_plant",
+    "bhvSmallPenguin":         "penguin",
+    "bhvRacingPenguin":        "penguin",
+}
 
 @export var bhv_name: String = "bhvGoomba"
 @export var patrol_radius: float = 3.0
@@ -41,6 +51,32 @@ func _randomize_motion() -> void:
 
 
 func _build_visual() -> void:
+    # Prefer a real decomp actor mesh if we have one extracted for this bhv.
+    var actor_sub: String = ACTOR_MESHES.get(bhv_name, "")
+    if actor_sub != "":
+        var mesh_path := "res://extracted/actors/%s/mesh.json" % actor_sub
+        if FileAccess.file_exists(mesh_path):
+            var actor_anchor := Node3D.new()
+            actor_anchor.name = "ActorAnchor"
+            add_child(actor_anchor)
+            LevelLoader.load_actor(mesh_path, actor_anchor)
+            _mesh = actor_anchor
+        else:
+            _build_placeholder_mesh()
+    else:
+        _build_placeholder_mesh()
+
+    # Collision capsule so the enemy can stand on the floor.
+    var cs := CollisionShape3D.new()
+    var caps := CapsuleShape3D.new()
+    caps.radius = 0.3
+    caps.height = 0.8
+    cs.shape = caps
+    cs.position.y = 0.4
+    add_child(cs)
+
+
+func _build_placeholder_mesh() -> void:
     _mesh = MeshInstance3D.new()
     var sph := SphereMesh.new()
     sph.radius = 0.35
@@ -53,15 +89,6 @@ func _build_visual() -> void:
     _mesh.material_override = mat
     _mesh.position.y = 0.4
     add_child(_mesh)
-
-    # Collision capsule so the enemy can stand on the floor.
-    var cs := CollisionShape3D.new()
-    var caps := CapsuleShape3D.new()
-    caps.radius = 0.3
-    caps.height = 0.8
-    cs.shape = caps
-    cs.position.y = 0.4
-    add_child(cs)
 
 
 func _build_hurt_area() -> void:
@@ -126,11 +153,10 @@ func _on_body_entered(body: Node) -> void:
 
 func _squish() -> void:
     _squished = true
-    # Flatten the enemy to the floor, then remove after a brief moment so
-    # the squish is visible.
+    # Flatten the enemy to the floor. scale on the actor anchor affects
+    # everything beneath.
     if _mesh != null:
         _mesh.scale = Vector3(1.4, 0.2, 1.4)
-        _mesh.position.y = 0.06
     if _hurt_area != null:
         _hurt_area.queue_free()
     var t := Timer.new()

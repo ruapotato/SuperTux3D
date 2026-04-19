@@ -79,11 +79,38 @@ python3 "$SCRIPT_DIR/resolve_textures.py" \
   --copy-to "$EXTRACTED/textures" \
   "$EXTRACTED/textures/texture_map.json"
 
-# 6.5 Convert actor meshes (Mario first) as articulated skeletons.
+# 6.5 Convert actor meshes (Mario first) as articulated skeletons. Then
+# convert a batch of enemy actors so the level populations read as
+# recognizable SM64 characters instead of coloured-sphere placeholders.
 log "converting actor meshes"
 python3 "$SCRIPT_DIR/convert_actor.py" \
   "$SM64_REPO/actors/mario" \
-  "$EXTRACTED/actors/mario/mesh.json"
+  "$EXTRACTED/actors/mario/mesh.json" > /dev/null 2>&1
+
+# (actor_dir, entry_layout, output_subdir) triples. We skip errors quietly
+# because the hand-curated rest-pose rotations inside convert_actor are
+# Mario-specific and may not position limbs perfectly for every actor
+# (non-humanoid actors like Goomba don't have arms at all), but the
+# meshes still load.
+declare -a ACTORS=(
+  "goomba           goomba_geo                 goomba"
+  "koopa            koopa_without_shell_geo    koopa"
+  "bobomb           black_bobomb_geo           bobomb"
+  "bobomb           bobomb_buddy_geo           bobomb_buddy"
+  "chain_chomp      chain_chomp_geo            chain_chomp"
+  "piranha_plant    piranha_plant_geo          piranha_plant"
+  "penguin          penguin_geo                penguin"
+  "koopa_shell      koopa_shell_geo            koopa_shell"
+)
+for spec in "${ACTORS[@]}"; do
+  read -r adir entry sub <<< "$spec"
+  actor_dir="$SM64_REPO/actors/$adir"
+  [[ -d "$actor_dir" ]] || continue
+  python3 "$SCRIPT_DIR/convert_actor.py" \
+    --entry "$entry" \
+    "$actor_dir" "$EXTRACTED/actors/$sub/mesh.json" > /dev/null 2>&1 \
+    || warn "actor convert failed for $sub ($entry)"
+done
 
 # 6.6 Convert Mario animations to JSON. All 200+ animations; tiny files.
 log "converting Mario animations"
