@@ -112,9 +112,19 @@ log "found ${#LEVELS[@]} levels: ${LEVELS[*]}"
 converted_areas=0
 for level in "${LEVELS[@]}"; do
   level_dir="$SM64_REPO/levels/$level"
+  out_level_dir="$EXTRACTED/levels/$level"
+  mkdir -p "$out_level_dir"
+
+  # Level script → spawn + object + warp list.
+  if [[ -f "$level_dir/script.c" ]]; then
+    python3 "$SCRIPT_DIR/convert_level_script.py" \
+      "$level_dir" "$out_level_dir/script.json" > /dev/null 2>&1 \
+      || warn "script convert failed for $level"
+  fi
+
   for area_dir in "$level_dir"/areas/*/; do
     area=$(basename "$area_dir")
-    out_dir="$EXTRACTED/levels/$level/area_$area"
+    out_dir="$out_level_dir/area_$area"
     mkdir -p "$out_dir"
 
     if [[ -f "$area_dir/collision.inc.c" ]]; then

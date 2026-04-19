@@ -1,0 +1,94 @@
+extends Node3D
+
+# Owns the currently-loaded level (mesh + collision + objects). Clearing and
+# re-loading goes through load_level(name, area) which tears down any previous
+# content under `world_root` and repositions Mario at the new spawn.
+#
+# Levels are backed by three data files we extracted from the decomp:
+#   extracted/levels/<name>/script.json        — spawn, object list, warps
+#   extracted/levels/<name>/area_<N>/model.json — visual geometry
+#   extracted/levels/<name>/area_<N>/collision.json — collision
+
+const LevelLoader := preload("res://scripts/level_loader.gd")
+const ObjectSpawner := preload("res://scripts/object_spawner.gd")
+
+# Godot-world spawn defaults when a level has no MARIO_POS for the area.
+const FALLBACK_SPAWN := Vector3(0, 5, 0)
+
+var world_root: Node3D
+var mario: CharacterBody3D
+
+# The currently-loaded level name + area (1-based), null when no level.
+var current_level: String = ""
+var current_area: int = 0
+
+
+func setup(root: Node3D, mario_node: CharacterBody3D) -> void:
+    world_root = root
+    mario = mario_node
+
+
+func load_level(level_name: String, area: int = 1) -> bool:
+    _teardown()
+    var script_path := "res://extracted/levels/%s/script.json" % level_name
+    var model_path := "res://extracted/levels/%s/area_%d/model.json" % [level_name, area]
+    var coll_path := "res://extracted/levels/%s/area_%d/collision.json" % [level_name, area]
+
+    if not FileAccess.file_exists(script_path):
+        push_error("level_manager: %s has no script.json" % level_name)
+        return false
+
+    # Load the visual + collision for the area. Either may be missing for a
+    # handful of levels (bowser fights etc.) — warn but keep going so the
+    # player at least spawns somewhere walkable.
+    if FileAccess.file_exists(model_path) or FileAccess.file_exists(coll_path):
+        LevelLoader.load_level(model_path, coll_path, world_root)
+
+    # Pull the spawn for this area out of the level script summary.
+    var script_data: Variant = _read_json(script_path)
+    var spawn := _pick_spawn(script_data, area)
+    mario.global_position = spawn
+    mario.velocity = Vector3.ZERO
+
+    # Spawn the area's decorative + interactive objects.
+    if script_data is Dictionary:
+        var area_data: Variant = script_data.areas.get(str(area))
+        if area_data is Dictionary:
+            ObjectSpawner.spawn_area_objects(area_data.objects, world_root, self)
+
+    current_level = level_name
+    current_area = area
+    print("[level_manager] loaded %s area %d, spawn=%s" % [level_name, area, spawn])
+    return true
+
+
+func teleport_to(level_name: String, area: int = 1) -> void:
+    # Same as load_level but fades/plays warp sfx later. For now just swap.
+    load_level(level_name, area)
+
+
+func _teardown() -> void:
+    if world_root == null:
+        return
+    for child in world_root.get_children():
+        child.queue_free()
+
+
+func _pick_spawn(script_data: Variant, area: int) -> Vector3:
+    if script_data is Dictionary:
+        var spawns: Variant = script_data.spawns
+        if spawns is Dictionary:
+            var s: Variant = spawns.get(str(area))
+            if s is Dictionary and s.has("pos"):
+                var p: Array = s.pos
+                # Decomp coords → Godot units via WORLD_SCALE, plus a small
+                # Y cushion so the capsule doesn't clip floor on spawn.
+                return (Vector3(p[0], p[1], p[2]) * LevelLoader.WORLD_SCALE) + Vector3(0, 2, 0)
+    return FALLBACK_SPAWN
+
+
+func _read_json(path: String) -> Variant:
+    if not FileAccess.file_exists(path):
+        return null
+    var f := FileAccess.open(path, FileAccess.READ)
+    return JSON.parse_string(f.get_as_text())

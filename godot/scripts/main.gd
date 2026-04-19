@@ -2,14 +2,32 @@ extends Node3D
 
 const LevelLoader := preload("res://scripts/level_loader.gd")
 const MarioAnimator := preload("res://scripts/mario_animator.gd")
-const MODEL_JSON := "res://extracted/levels/bob/area_1/model.json"
-const COLLISION_JSON := "res://extracted/levels/bob/area_1/collision.json"
+const LevelManagerScript := preload("res://scripts/level_manager.gd")
 const MARIO_MESH_JSON := "res://extracted/actors/mario/mesh.json"
 const ANIMS_DIR := "res://extracted/actors/mario/anims"
+const BOOT_LEVEL := "bob"   # starting level on launch
+const BOOT_AREA := 1
+
+# Level-switcher keyboard shortcuts so we can bounce between levels to test
+# the pipeline before the painting warps are wired up.
+const LEVEL_SHORTCUTS := {
+    KEY_1: ["bob", 1],
+    KEY_2: ["ccm", 1],
+    KEY_3: ["wf", 1],
+    KEY_4: ["jrb", 1],
+    KEY_5: ["hmc", 1],
+    KEY_6: ["ssl", 1],
+    KEY_7: ["ttm", 1],
+    KEY_8: ["thi", 1],
+    KEY_9: ["rr", 1],
+    KEY_0: ["castle_grounds", 1],
+}
 # Actual spawn from decomp levels/bob/script.c: MARIO_POS(1, 135, -6558, 0, 6464).
 # Scaled to Godot world scale (see LevelLoader.WORLD_SCALE). +2 Y offset for
 # a small cushion so the capsule doesn't start clipped into the floor.
-const MARIO_SPAWN := Vector3(-6558.0, 0.0, 6464.0) * LevelLoader.WORLD_SCALE + Vector3(0, 2, 0)
+# Mario's spawn is read from the current level's script.json; only the
+# level-manager knows the answer.
+
 
 # Orbit camera settings (Godot world scale ~= meters).
 # Lakitu-ish defaults: ~7 units behind Mario, pitched slightly down.
@@ -25,6 +43,7 @@ const FOCUS_OFFSET := Vector3(0, 1.0, 0)
 @onready var hud_label: Label = $UI/HUD
 
 var _animator: RefCounted
+var _level_manager: Node
 # Animation cache keyed by decomp ID (MARIO_ANIM_* integer). Loaded lazily
 # the first time a state requests it.
 var _anim_cache: Dictionary = {}
@@ -35,11 +54,16 @@ var _cam_pitch := 0.25
 
 
 func _ready() -> void:
-    LevelLoader.load_level(MODEL_JSON, COLLISION_JSON, world)
     var anchor: Node3D = mario.get_node("ActorAnchor")
     var actor: Dictionary = LevelLoader.load_actor(MARIO_MESH_JSON, anchor)
     _setup_animator(actor)
-    mario.global_position = MARIO_SPAWN
+
+    _level_manager = LevelManagerScript.new()
+    _level_manager.name = "LevelManager"
+    add_child(_level_manager)
+    _level_manager.setup(world, mario)
+    _level_manager.load_level(BOOT_LEVEL, BOOT_AREA)
+
     mario.set_camera(camera)
     Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
     get_tree().debug_collisions_hint = false
@@ -97,13 +121,16 @@ func _input(event: InputEvent) -> void:
         _respawn()
     elif event is InputEventKey and event.pressed and event.keycode == KEY_F1:
         get_tree().debug_collisions_hint = not get_tree().debug_collisions_hint
-        # debug_collisions_hint only affects NEW shapes — re-add existing ones.
         _reload_debug_shapes()
+    elif event is InputEventKey and event.pressed and LEVEL_SHORTCUTS.has(event.keycode):
+        var spec: Array = LEVEL_SHORTCUTS[event.keycode]
+        _level_manager.load_level(spec[0], spec[1])
 
 
 func _respawn() -> void:
-    mario.global_position = MARIO_SPAWN
-    mario.velocity = Vector3.ZERO
+    if _level_manager != null:
+        _level_manager.load_level(_level_manager.current_level,
+                                  _level_manager.current_area)
 
 
 func _update_animation(delta: float) -> void:
