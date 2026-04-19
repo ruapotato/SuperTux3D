@@ -44,6 +44,11 @@ func load_level(level_name: String, area: int = 1) -> bool:
     if FileAccess.file_exists(model_path) or FileAccess.file_exists(coll_path):
         LevelLoader.load_level(model_path, coll_path, world_root)
 
+    # Safety floor: a big invisible plane well below the level catches the
+    # player if they clip through thin collision (Bowser boss arenas have
+    # very little static geometry, other levels can get wonky near edges).
+    _add_safety_floor()
+
     # Pull the spawn for this area out of the level script summary.
     var script_data: Variant = _read_json(script_path)
     var spawn := _pick_spawn(script_data, area)
@@ -72,6 +77,18 @@ func _teardown() -> void:
         return
     for child in world_root.get_children():
         child.queue_free()
+
+
+func _add_safety_floor() -> void:
+    var body := StaticBody3D.new()
+    body.name = "SafetyFloor"
+    var cs := CollisionShape3D.new()
+    var box := BoxShape3D.new()
+    box.size = Vector3(1000, 0.5, 1000)
+    cs.shape = box
+    body.add_child(cs)
+    body.position = Vector3(0, -20, 0)
+    world_root.add_child(body)
 
 
 func _pick_spawn(script_data: Variant, area: int) -> Vector3:

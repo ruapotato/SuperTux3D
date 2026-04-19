@@ -245,8 +245,10 @@ func _process(delta: float) -> void:
     ) * _cam_distance
     camera_rig.global_position = focus + offset
     camera_rig.look_at(focus, Vector3.UP)
-    # Auto-respawn on fall-plane crossing (Mario dropped below the level).
-    if mario.global_position.y < -50.0 and not _death_pending:
+    # Auto-respawn on fall-plane crossing. The level_manager parks a
+    # SafetyFloor at Y=-20 so Mario doesn't tumble forever through bad
+    # collision; anyone still below -10 has genuinely fallen through.
+    if mario.global_position.y < -10.0 and not _death_pending:
         _death_pending = true
         if mario.lives > 0:
             mario.lives -= 1
