@@ -4,6 +4,15 @@ extends Node
 
 const EnemyScript := preload("res://scripts/enemy.gd")
 const PickupBobScript := preload("res://scripts/pickup_bob.gd")
+
+# Warp-like behaviors. Enter the matching Area3D → warp to the level/area
+# the bhv_param WARP_NODE points at.
+const WARP_BEHAVIORS := [
+    "bhvDoorWarp", "bhvWarp", "bhvInstantActiveWarp",
+    "bhvStarDoor",
+    "bhvPaintingStarCollectWarp",
+    "bhvLaunchStarCollectWarp", "bhvAirborneStarCollectWarp",
+]
 # The decomp maps a (MODEL_*, bhv*) pair to a specific actor + behavior at
 # runtime; we stub most of those with placeholder nodes while the per-object
 # behaviors get ported incrementally. Coins and stars are the first real
@@ -53,11 +62,16 @@ const ENEMY_BEHAVIORS := [
 
 
 static func spawn_area_objects(
-    objects: Array, parent: Node3D, _manager: Node
+    objects: Array, parent: Node3D, manager: Node, warps: Array = []
 ) -> void:
     var spawned := 0
     var enemies := 0
     var pickups := 0
+    var warp_triggers := 0
+    # Build a lookup from WARP_NODE_id → (level, area).
+    var warp_lookup := {}
+    for w in warps:
+        warp_lookup[str(w.id)] = w
     for obj in objects:
         var bhv: String = obj.get("bhv", "")
         var kind: String = BHV_IMPLEMENTATIONS.get(bhv, "")
@@ -68,23 +82,114 @@ static func spawn_area_objects(
         elif bhv in ENEMY_BEHAVIORS:
             node = _make_enemy(bhv)
             enemies += 1
+        elif bhv in WARP_BEHAVIORS:
+            node = _make_warp_trigger(bhv, obj, warp_lookup, manager)
+            if node != null:
+                warp_triggers += 1
         if node == null:
             node = _make_debug_marker(bhv)
         var p: Array = obj.pos
         node.position = Vector3(p[0], p[1], p[2]) * LevelLoader.WORLD_SCALE
         var a: Array = obj.angle
-        var to_rad := (TAU / 65536.0) if abs(a[1]) > 360 else (PI / 180.0)
+        var to_rad: float = (TAU / 65536.0) if abs(a[1]) > 360 else (PI / 180.0)
         node.rotation.y = a[1] * to_rad
         parent.add_child(node)
         spawned += 1
-    print("[object_spawner] spawned %d objects (%d pickups, %d enemies)"
-          % [spawned, pickups, enemies])
+    print("[object_spawner] spawned %d objects (%d pickups, %d enemies, %d warps)"
+          % [spawned, pickups, enemies, warp_triggers])
+
+
+static func _make_warp_trigger(
+    bhv: String, obj: Dictionary, warp_lookup: Dictionary, manager: Node
+) -> Node3D:
+    # bhv_param looks like "BPARAM2(WARP_NODE_00)"; pull the WARP_NODE_ identifier.
+    var param: String = obj.get("bhv_param", "")
+    var target := ""
+    for token in ["WARP_NODE_TOTWC", "WARP_NODE_VCUTM", "WARP_NODE_COTMC"]:
+        if param.find(token) >= 0:
+            target = token
+            break
+    if target == "":
+        # Generic WARP_NODE_XX pattern.
+        for i in range(param.length() - 10):
+            if param.substr(i, 10) == "WARP_NODE_":
+                var j := i + 10
+                while j < param.length() and (
+                    param[j].to_upper() != param[j].to_lower()
+                    or param[j].is_valid_int()
+                ):
+                    j += 1
+                target = param.substr(i, j - i)
+                break
+    var warp: Variant = warp_lookup.get(target)
+    if not (warp is Dictionary):
+        return null
+    var dest_level: String = _level_const_to_name(warp.level)
+    if dest_level == "":
+        return null
+    var dest_area: int = 1
+    if warp.area is int:
+        dest_area = warp.area
+    elif warp.area is String and warp.area.is_valid_int():
+        dest_area = warp.area.to_int()
+
+    var a := Area3D.new()
+    a.name = "Warp_%s" % target
+    a.set_meta("warp_target_level", dest_level)
+    a.set_meta("warp_target_area", dest_area)
+    a.set_meta("warp_source_bhv", bhv)
+    var cs := CollisionShape3D.new()
+    var box := BoxShape3D.new()
+    # Doors are taller and narrower, paintings are wall-aligned. Use a
+    # generous box that catches either.
+    box.size = Vector3(2.5, 3.0, 2.5)
+    cs.shape = box
+    cs.position = Vector3(0, 1.5, 0)
+    a.add_child(cs)
+    # Faint glowing marker so the portal is visible.
+    var m := MeshInstance3D.new()
+    var bm := BoxMesh.new()
+    bm.size = Vector3(1.2, 2.4, 0.3)
+    m.mesh = bm
+    var mat := StandardMaterial3D.new()
+    mat.albedo_color = Color(0.4, 0.7, 1.0, 0.4)
+    mat.emission_enabled = true
+    mat.emission = Color(0.3, 0.6, 1.0)
+    mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+    m.material_override = mat
+    m.position = Vector3(0, 1.2, 0)
+    a.add_child(m)
+    # Connect: on body entered, ask the manager to switch levels.
+    a.body_entered.connect(
+        func(body: Node) -> void:
+            if body is CharacterBody3D and manager != null:
+                print("[warp] %s triggered → %s area %d" % [a.name, dest_level, dest_area])
+                manager.load_level(dest_level, dest_area)
+    )
+    return a
+
+
+static func _level_const_to_name(level_const: String) -> String:
+    # LEVEL_BOB → "bob", LEVEL_CASTLE_INSIDE → "castle_inside", …
+    if not level_const.begins_with("LEVEL_"):
+        return ""
+    var short := level_const.substr(6).to_lower()
+    # Handle a few special-case mappings where our directory name differs
+    # from the decomp's LEVEL_ macro suffix.
+    match short:
+        "castle": return "castle_inside"
+        "ending": return ""     # unsupported for now
+        "unknown_1", "unknown_2", "unknown_3": return ""
+    return short
 
 
 static func _make_enemy(bhv: String) -> Node3D:
+    # Use `.set()` rather than `.bhv_name =` so we go through the property
+    # system; direct field access after set_script() sometimes races with
+    # script attachment in Godot 4.
     var e := CharacterBody3D.new()
     e.set_script(EnemyScript)
-    e.bhv_name = bhv
+    e.set("bhv_name", bhv)
     e.name = "Enemy_" + bhv
     return e
 

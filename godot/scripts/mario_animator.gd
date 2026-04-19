@@ -76,14 +76,21 @@ func tick(delta: float) -> void:
     var loop_end: int = current_anim.loop_end
     var loop_start: int = current_anim.loop_start
     _looped_this_tick = false
+    var no_loop: bool = (int(current_anim.flags) & 1) != 0
     if loop_end > loop_start:
         var span: float = float(loop_end - loop_start)
-        while current_frame >= float(loop_end):
-            current_frame -= span
-            _looped_this_tick = true
-    elif loop_end == loop_start or loop_end == 1:
-        # Single-frame animation (e.g. A_POSE) — "end" every tick so state
-        # machines that check is_at_end don't stall.
+        if no_loop:
+            # One-shot animations (dive, punch, backflip, single jump, …)
+            # clamp at the last frame instead of wrapping. State machines
+            # that want to transition on anim end watch is_at_end().
+            if current_frame >= float(loop_end):
+                current_frame = float(loop_end) - 1.0
+                _looped_this_tick = true
+        else:
+            while current_frame >= float(loop_end):
+                current_frame -= span
+                _looped_this_tick = true
+    else:
         _looped_this_tick = true
     _apply_frame(int(current_frame))
 

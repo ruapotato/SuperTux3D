@@ -167,10 +167,13 @@ func _physics_process(delta: float) -> void:
         Input.is_key_pressed(KEY_CTRL) and not _prev_crouch
     )
     _prev_crouch = Input.is_key_pressed(KEY_CTRL)
-    _state.input_attack_pressed = (
-        Input.is_key_pressed(KEY_SHIFT) and not _prev_attack
+    # Attack / dive / punch — Shift key OR left mouse click.
+    var attack_held := (
+        Input.is_key_pressed(KEY_SHIFT)
+        or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
     )
-    _prev_attack = Input.is_key_pressed(KEY_SHIFT)
+    _state.input_attack_pressed = attack_held and not _prev_attack
+    _prev_attack = attack_held
     _state.input_camera_yaw = _camera_yaw()
     _state.is_on_floor = is_on_floor()
     _state.is_on_wall = is_on_wall()

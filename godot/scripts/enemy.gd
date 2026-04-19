@@ -122,7 +122,7 @@ func _physics_process(delta: float) -> void:
         return
     _time += delta
     # Drive a simple sinusoidal patrol around the spawn center.
-    var angle := _time * (speed / max(patrol_radius, 0.5))
+    var angle: float = _time * (speed / max(patrol_radius, 0.5))
     var target := _center + Vector3(
         sin(angle) * patrol_radius, 0, cos(angle) * patrol_radius
     )
@@ -142,7 +142,7 @@ func _on_body_entered(body: Node) -> void:
         return
     if body is CharacterBody3D and body.has_method("take_damage"):
         # If Mario is clearly above (falling, ground-pounding), squish.
-        var mario_y := body.global_position.y
+        var mario_y: float = body.global_position.y
         if mario_y > global_position.y + 0.6 and body.velocity.y <= 0.0:
             _squish()
             if body.has_method("on_enemy_squished"):

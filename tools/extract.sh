@@ -125,10 +125,16 @@ python3 "$SCRIPT_DIR/convert_animation.py" \
   "$SM64_REPO/assets/anims" \
   "$EXTRACTED/actors/mario/anims"
 
-# 6.7 Generate placeholder sound effects (until we port the decomp's audio
-# engine, synthesize short WAVs for coin/jump/land/star/etc).
+# 6.7 Generate placeholder sound effects (for events we haven't mapped to
+# real AIFF samples yet — coin, star, cap, 1up, ground pound).
 log "generating placeholder sound effects"
 python3 "$SCRIPT_DIR/gen_sounds.py" "$EXTRACTED/sounds"
+
+# 6.8 Convert hand-picked decomp AIFFs (Mario's voice, footsteps, plops)
+# to WAV so the game can play the actual SM64 voice lines instead of
+# synthesized placeholders for those events.
+log "converting real decomp AIFF samples to WAV"
+python3 "$SCRIPT_DIR/convert_sounds.py" "$EXTRACTED/sounds"
 
 # 7. Convert level geometry + collision to Godot-friendly JSON.
 log "converting level geometry and collision to Godot JSON"

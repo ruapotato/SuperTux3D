@@ -158,11 +158,16 @@ static func _build_articulated_actor(model: Dictionary, parent: Node3D) -> Dicti
             mesh_instances[bi] = null
 
     # Compute the rest-pose world Y of the lowest vertex so we can shift
-    # the bone_root up, keeping Mario's feet on the floor. This needs the
-    # actual parent-chain compose, so do it after all bones are in the tree.
-    var min_y: float = _compute_min_world_y(bones, mesh_instances)
-    if min_y != INF:
-        bone_root.position.y = -min_y
+    # the bone_root up, keeping Mario's feet on the floor. This relies on
+    # each node's global_transform, which is only valid once the bone tree
+    # is inside a scene tree. Pickups/objects are often built before being
+    # parented into the world, so skip the shift in that case — those
+    # actors' pivots are close to their base anyway.
+    var min_y: float = INF
+    if bone_root.is_inside_tree():
+        min_y = _compute_min_world_y(bones, mesh_instances)
+        if min_y != INF:
+            bone_root.position.y = -min_y
 
     print("[level_loader] articulated actor: ", bones_data.size(), " bones, ",
           textured, " textured sub-meshes, ", untextured,

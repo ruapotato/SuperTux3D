@@ -55,11 +55,15 @@ func load_level(level_name: String, area: int = 1) -> bool:
     mario.global_position = spawn
     mario.velocity = Vector3.ZERO
 
-    # Spawn the area's decorative + interactive objects.
+    # Spawn the area's decorative + interactive objects. The warps list is
+    # passed along so door/painting warp triggers can resolve their
+    # destination level + area at spawn time.
     if script_data is Dictionary:
         var area_data: Variant = script_data.areas.get(str(area))
         if area_data is Dictionary:
-            ObjectSpawner.spawn_area_objects(area_data.objects, world_root, self)
+            ObjectSpawner.spawn_area_objects(
+                area_data.objects, world_root, self, area_data.warps
+            )
 
     current_level = level_name
     current_area = area

@@ -6,7 +6,7 @@ const LevelManagerScript := preload("res://scripts/level_manager.gd")
 const SoundBankScript := preload("res://scripts/sound_bank.gd")
 const MARIO_MESH_JSON := "res://extracted/actors/mario/mesh.json"
 const ANIMS_DIR := "res://extracted/actors/mario/anims"
-const BOOT_LEVEL := "bob"   # starting level on launch
+const BOOT_LEVEL := "castle_inside"   # SM64-canonical boot: castle hub
 const BOOT_AREA := 1
 
 # Level-switcher keyboard shortcuts so we can bounce between levels to test

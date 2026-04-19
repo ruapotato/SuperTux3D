@@ -574,9 +574,16 @@ func _common_air_transitions(default_land: int) -> bool:
         return _begin_dive()
     if is_on_wall and input_jump_pressed:
         return _begin_wall_kick()
-    if vel.y <= 0.0 and action != ACT_FREEFALL and action_timer > 4:
+    # Only promote to FREEFALL once we're clearly past the peak AND a few
+    # frames have elapsed. Too tight a threshold makes the jump anim snap
+    # to the fall anim mid-rise because vel.y ticks through zero briefly.
+    if vel.y < -2.0 and action != ACT_FREEFALL and action_timer > 6:
         return set_action(ACT_FREEFALL)
-    if is_on_floor and action_timer > 2:
+    # Only register a landing when we're clearly airborne before touching
+    # down — without the grace window a just-launched jump would read
+    # as a land on the spawn frame (is_on_floor is true before the first
+    # move_and_slide applies the upward velocity).
+    if is_on_floor and action_timer > 4 and vel.y <= 0.0:
         return set_action(default_land)
     return false
 
