@@ -33,5 +33,6 @@ func set_paused(paused: bool) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-    if event is InputEventKey and event.pressed and event.keycode == KEY_P:
-        toggle()
+    if event is InputEventKey and event.pressed:
+        if event.keycode == KEY_P or event.keycode == KEY_ESCAPE:
+            toggle()

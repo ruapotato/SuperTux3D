@@ -200,8 +200,11 @@ func _input(event: InputEvent) -> void:
         _cam_pitch = clamp(_cam_pitch + event.relative.y * MOUSE_SENSITIVITY,
                            -0.4, 1.2)
     elif event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
-        Input.mouse_mode = (Input.MOUSE_MODE_VISIBLE if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
-                            else Input.MOUSE_MODE_CAPTURED)
+        # ESC pauses the game (which also releases the cursor). The pause
+        # overlay handles its own unpause input.
+        var pause := get_node_or_null("PauseMenu")
+        if pause != null:
+            pause.toggle()
     elif event is InputEventKey and event.pressed and event.keycode == KEY_R:
         _respawn()
     elif event is InputEventKey and event.pressed and event.keycode == KEY_F1:
