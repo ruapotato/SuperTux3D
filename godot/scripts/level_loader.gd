@@ -15,6 +15,19 @@ const UV_FIXED_POINT_SHIFT := 32.0  # Q10.5 -> texels
 const TEXTURE_MAP_JSON := "res://extracted/textures/texture_map.json"
 const TEXTURE_ROOT := "res://extracted/textures"
 
+# Actor meshes (Mario, etc.) live in the decomp's local coordinate frame where
+# +X is up, +Y is forward, +Z is left. Godot uses +Y up, -Z forward. The
+# remap below puts actor +X to Godot +Y (up), actor +Y to Godot -Z (forward),
+# and actor +Z to Godot -X (left). With this remap, face_yaw=0 makes Mario
+# look along Godot -Z, matching the camera-default forward direction.
+# We also apply 0.25× scale because we enter the walker at mario_geo_body,
+# which skips the top-level mario_geo's GEO_SCALE(0, 16384) = 0.25.
+const ACTOR_SCALE := 0.25
+
+
+static func _remap_actor_point(p: Array) -> Vector3:
+    return Vector3(-p[2], p[0], -p[1])
+
 # Per-run cache so repeated loads don't re-decode the same PNG.
 static var _texture_map: Dictionary = {}
 static var _texture_cache: Dictionary = {}
@@ -50,6 +63,128 @@ static func _read_json(path: String) -> Variant:
     return parsed
 
 
+static func load_actor(mesh_json_path: String, parent: Node3D) -> MeshInstance3D:
+    """Load a converted actor mesh (from tools/convert_actor.py) as a
+    MeshInstance3D under `parent`. Applies the actor→Godot axis remap and
+    the 0.25× scale we skip by entering at `mario_geo_body` instead of the
+    top-level `mario_geo` (which carries its own GEO_SCALE)."""
+    _ensure_texture_map()
+    var model: Variant = _read_json(mesh_json_path)
+    if not (model is Dictionary):
+        return null
+    var mi := _build_actor_mesh_instance(model)
+    parent.add_child(mi)
+    return mi
+
+
+static func _build_actor_mesh_instance(model: Dictionary) -> MeshInstance3D:
+    var mesh := ArrayMesh.new()
+    var textured := 0
+    var untextured := 0
+    # Actor bones are centered on the butt, so by default Mario's feet sit
+    # well below the CharacterBody3D origin (and therefore below the capsule
+    # bottom, which is what the physics engine treats as the ground contact).
+    # Find the lowest Godot-Y vertex as we build, then offset the whole mesh
+    # up by that amount so the feet land at y=0 in the node's local space.
+    var min_y: float = INF
+    for sm in model.sub_meshes:
+        # Skip the cap-wings on non-wing-cap Mario. The decomp controls wing
+        # visibility via an ASM callback (`geo_mario_rotate_wing_cap_wings`)
+        # we don't emulate; walking the geo tree blindly always emits them,
+        # and they sit right in front of Mario's face as an opaque overlay.
+        # Dropping LAYER_ALPHA sub-meshes until we model wing visibility.
+        if sm.layer == "LAYER_ALPHA":
+            continue
+        var positions := PackedVector3Array()
+        var normals := PackedVector3Array()
+        var uvs := PackedVector2Array()
+        var colors := PackedColorArray()
+        var tex_info: Variant = _texture_map.get(sm.texture)
+        var tw: float = 32.0
+        var th: float = 32.0
+        if tex_info is Dictionary:
+            tw = float(tex_info.width)
+            th = float(tex_info.height)
+        for p in sm.positions:
+            var v: Vector3 = _remap_actor_point(p) * ACTOR_SCALE * WORLD_SCALE
+            if v.y < min_y:
+                min_y = v.y
+            positions.append(v)
+        for n in sm.normals:
+            normals.append(_remap_actor_point(n))
+        for u in sm.uvs:
+            uvs.append(Vector2(u[0] / UV_FIXED_POINT_SHIFT / tw,
+                               u[1] / UV_FIXED_POINT_SHIFT / th))
+        # Deliberately do NOT emit ARRAY_COLOR. For Mario, the Vtx "color"
+        # bytes are actually normals (G_LIGHTING is enabled on every body
+        # part). Emitting them as vertex colors gives random RGB with alpha=0
+        # and Godot's material interacts with them badly (renders black /
+        # fully transparent). Normals we DO need for lighting; they come
+        # through ARRAY_NORMAL above.
+        var indices := PackedInt32Array()
+        for idx in sm.indices:
+            indices.append(idx)
+        if positions.is_empty() or indices.is_empty():
+            continue
+
+        var arrays := []
+        arrays.resize(Mesh.ARRAY_MAX)
+        arrays[Mesh.ARRAY_VERTEX] = positions
+        arrays[Mesh.ARRAY_NORMAL] = normals
+        arrays[Mesh.ARRAY_TEX_UV] = uvs
+        arrays[Mesh.ARRAY_INDEX] = indices
+        mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+        var surf_idx := mesh.get_surface_count() - 1
+        var mat := StandardMaterial3D.new()
+        mat.resource_name = sm.key
+        mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+        # Plain NEAREST: our runtime ImageTextures don't have mipmaps.
+        mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+        # UNSHADED so Mario's face/mustache/etc. render at full brightness
+        # instead of potentially going dark when a lit triangle's normal
+        # points away from the scene's DirectionalLight3D. N64 Mario was
+        # pseudo-lit via gsSPLight per-DL groups; until we port those, flat
+        # albedo looks closer to the original.
+        mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+        var tex := _load_texture(sm.texture)
+        if tex != null:
+            mat.albedo_texture = tex
+            mat.albedo_color = Color(1, 1, 1, 1)
+            textured += 1
+        else:
+            # Untextured sub-mesh: use the decomp's gsSPLight color (blue
+            # overalls, red shirt/cap, beige face skin, white gloves, brown
+            # shoes, brown2 hair). Falls back to a neutral gray only when
+            # we couldn't determine a light group.
+            mat.albedo_color = _actor_shade_color(sm)
+            untextured += 1
+        mesh.surface_set_material(surf_idx, mat)
+
+    var mi := MeshInstance3D.new()
+    mi.name = "ActorMesh"
+    mi.mesh = mesh
+    # Shift the mesh up so the lowest vertex (feet) lands at local y=0, the
+    # same height as the CharacterBody3D's capsule bottom. Without this
+    # Mario's legs clip through the floor because his bone origin is at his
+    # butt, not his feet.
+    if min_y != INF:
+        mi.position.y = -min_y
+    print("[level_loader] actor mesh: ", mesh.get_surface_count(),
+          " surfaces, ", textured, " textured, ", untextured, " untextured, ",
+          "min_y=", min_y, " -> shifted up ", -min_y)
+    return mi
+
+
+static func _actor_shade_color(sm: Dictionary) -> Color:
+    # The converter attaches a `shade_color` RGB triple from the decomp's
+    # gsSPLight group. If it's missing (old converter output or a DL that
+    # doesn't set a light), fall back to neutral gray.
+    var shade: Variant = sm.get("shade_color")
+    if shade is Array and shade.size() >= 3:
+        return Color(shade[0], shade[1], shade[2], 1.0)
+    return Color(0.75, 0.75, 0.78)
+
+
 static func _ensure_texture_map() -> void:
     if _texture_map_loaded:
         return
@@ -57,6 +192,32 @@ static func _ensure_texture_map() -> void:
     var parsed: Variant = _read_json(TEXTURE_MAP_JSON)
     if parsed is Dictionary:
         _texture_map = parsed
+
+
+# Mario decal textures have alpha=0 rgb=0 over large regions. The N64 renders
+# those regions as the current light color (G_CC_BLENDRGBFADEA combine mode),
+# but Godot's alpha modes either discard them (leaving holes in the head
+# geometry) or render them as opaque black. We preprocess each decal image:
+# alpha=0 pixels get the appropriate light color baked in as their RGB with
+# alpha=1, so the decal becomes fully opaque and its "transparent" regions
+# display the skin/cap color the decomp originally computed via shade.
+const MARIO_BEIGE := Color(0xFE / 255.0, 0xC1 / 255.0, 0x79 / 255.0)
+const MARIO_RED   := Color(0xFF / 255.0, 0x00 / 255.0, 0x00 / 255.0)
+const _ACTOR_DECAL_BACKGROUND := {
+    # Cap-front decals sit on the red cap.
+    "mario_texture_m_logo": MARIO_RED,
+    # Face decals sit on the beige face skin.
+    "mario_texture_eyes_front": MARIO_BEIGE,
+    "mario_texture_eyes_half_closed": MARIO_BEIGE,
+    "mario_texture_eyes_closed": MARIO_BEIGE,
+    "mario_texture_eyes_right": MARIO_BEIGE,
+    "mario_texture_eyes_left": MARIO_BEIGE,
+    "mario_texture_eyes_up": MARIO_BEIGE,
+    "mario_texture_eyes_down": MARIO_BEIGE,
+    "mario_texture_eyes_dead": MARIO_BEIGE,
+    "mario_texture_mustache": MARIO_BEIGE,
+    "mario_texture_hair_sideburn": MARIO_BEIGE,
+}
 
 
 static func _load_texture(symbol: String) -> Texture2D:
@@ -77,9 +238,27 @@ static func _load_texture(symbol: String) -> Texture2D:
             % [symbol, full_path, err])
         _texture_cache[symbol] = null
         return null
+    if _ACTOR_DECAL_BACKGROUND.has(symbol):
+        _fill_transparent_background(img, _ACTOR_DECAL_BACKGROUND[symbol])
     var tex := ImageTexture.create_from_image(img)
     _texture_cache[symbol] = tex
     return tex
+
+
+static func _fill_transparent_background(img: Image, bg: Color) -> void:
+    # Walk every pixel; where alpha < 0.5, overwrite with the backdrop color
+    # and set alpha to 1. The result is a fully opaque texture with the
+    # decal on top of a solid "skin-tone" background.
+    if img.get_format() != Image.FORMAT_RGBA8:
+        img.convert(Image.FORMAT_RGBA8)
+    var w := img.get_width()
+    var h := img.get_height()
+    var bg_opaque := Color(bg.r, bg.g, bg.b, 1.0)
+    for y in range(h):
+        for x in range(w):
+            var c := img.get_pixel(x, y)
+            if c.a < 0.5:
+                img.set_pixel(x, y, bg_opaque)
 
 
 static func _build_mesh_instance(model: Dictionary) -> MeshInstance3D:

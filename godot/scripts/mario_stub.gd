@@ -1,18 +1,21 @@
 extends CharacterBody3D
 
-# Placeholder capsule controller used to validate level geometry + collision.
-# Will be replaced with the real decomp-ported Mario state machine.
+# Thin adapter between Godot's CharacterBody3D + Input system and the decomp-
+# style MarioState dispatcher in mario_state.gd. Reads input, hands it to the
+# state machine, lets the state set velocity, runs move_and_slide, feeds floor
+# contact back into the state for the next tick. Also orients the visible
+# Mario mesh under ActorAnchor to match the state's face_yaw.
+#
+# The physics constants and action semantics live in mario_state.gd — this
+# file is just plumbing.
 
-# Units are Godot world units (see LevelLoader.WORLD_SCALE = 0.01). So 1 unit
-# here maps to 100 decomp units: walk_speed=16 means Mario moves 1600 decomp
-# units/sec, close to Mario's decomp run speed.
-@export var walk_speed: float = 16.0     # units/sec
-@export var jump_speed: float = 24.0     # initial vertical velocity (units/sec)
-@export var gravity: float = 70.0        # units/sec^2
+const MarioStateScript := preload("res://scripts/mario_state.gd")
 
+var _state: RefCounted
 var _camera_node: Camera3D
 var _ray_down: RayCast3D
 var _ray_up: RayCast3D
+var _actor_anchor: Node3D
 
 # Latest raycast observations, read by main.gd for HUD.
 var debug_ray_down_hit: String = "(no hit)"
@@ -20,6 +23,8 @@ var debug_ray_up_hit: String = "(no hit)"
 
 
 func _ready() -> void:
+    _state = MarioStateScript.new()
+    _actor_anchor = get_node_or_null("ActorAnchor")
     _ray_down = RayCast3D.new()
     _ray_down.name = "RayDown"
     _ray_down.target_position = Vector3(0, -10.0, 0)  # 10 units = 1000 decomp
@@ -63,37 +68,33 @@ func _sample_rays() -> void:
 
 
 func _physics_process(delta: float) -> void:
-    var input_dir := Vector2(
+    # Pull input into the MarioState, step the action dispatch, apply vel.
+    _state.input_stick = Vector2(
         Input.get_action_strength("move_right") - Input.get_action_strength("move_left"),
         Input.get_action_strength("move_back")  - Input.get_action_strength("move_forward"),
     )
+    _state.input_jump_pressed = Input.is_action_just_pressed("jump")
+    _state.input_camera_yaw = _camera_yaw()
+    _state.is_on_floor = is_on_floor()
+    _state.pos = global_position
 
-    # Camera-relative movement on the horizontal plane.
-    var basis_xz := Basis()
-    if _camera_node != null:
-        var cb := _camera_node.global_transform.basis
-        var fwd := -cb.z
-        fwd.y = 0.0
-        if fwd.length() > 0.001:
-            fwd = fwd.normalized()
-        var right := cb.x
-        right.y = 0.0
-        if right.length() > 0.001:
-            right = right.normalized()
-        basis_xz = Basis(right, Vector3.UP, -fwd)
+    _state.step(delta)
 
-    var move_xz := basis_xz * Vector3(input_dir.x, 0.0, input_dir.y)
-    velocity.x = move_xz.x * walk_speed
-    velocity.z = move_xz.z * walk_speed
-
-    if is_on_floor():
-        # Small downward pull keeps the body snapped to slopes so ramps don't
-        # bounce. move_and_slide cancels the residual velocity on contact.
-        velocity.y = -1.0
-        if Input.is_action_just_pressed("jump"):
-            velocity.y = jump_speed
-    else:
-        velocity.y -= gravity * delta
-
+    velocity = _state.vel
     move_and_slide()
+    _state.pos = global_position
+
+    # Orient the visible Mario mesh under ActorAnchor to the state's face_yaw.
+    if _actor_anchor != null:
+        _actor_anchor.rotation.y = _state.face_yaw
+
     _sample_rays()
+
+
+func _camera_yaw() -> float:
+    if _camera_node == null:
+        return 0.0
+    # Yaw is the rotation of camera forward around Y. atan2(-fwd.x, -fwd.z)
+    # gives 0 when the camera looks along -Z (Godot forward).
+    var fwd := -_camera_node.global_transform.basis.z
+    return atan2(-fwd.x, -fwd.z)

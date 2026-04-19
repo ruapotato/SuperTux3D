@@ -3,6 +3,7 @@ extends Node3D
 const LevelLoader := preload("res://scripts/level_loader.gd")
 const MODEL_JSON := "res://extracted/levels/bob/area_1/model.json"
 const COLLISION_JSON := "res://extracted/levels/bob/area_1/collision.json"
+const MARIO_MESH_JSON := "res://extracted/actors/mario/mesh.json"
 # Actual spawn from decomp levels/bob/script.c: MARIO_POS(1, 135, -6558, 0, 6464).
 # Scaled to Godot world scale (see LevelLoader.WORLD_SCALE). +2 Y offset for
 # a small cushion so the capsule doesn't start clipped into the floor.
@@ -28,6 +29,8 @@ var _cam_pitch := 0.25
 
 func _ready() -> void:
     LevelLoader.load_level(MODEL_JSON, COLLISION_JSON, world)
+    var anchor: Node3D = mario.get_node("ActorAnchor")
+    LevelLoader.load_actor(MARIO_MESH_JSON, anchor)
     mario.global_position = MARIO_SPAWN
     mario.set_camera(camera)
     Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
