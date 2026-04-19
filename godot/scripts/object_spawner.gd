@@ -3,6 +3,7 @@ extends Node
 # Spawns the OBJECT() macros parsed from a level's script.c into the world.
 
 const EnemyScript := preload("res://scripts/enemy.gd")
+const PickupBobScript := preload("res://scripts/pickup_bob.gd")
 # The decomp maps a (MODEL_*, bhv*) pair to a specific actor + behavior at
 # runtime; we stub most of those with placeholder nodes while the per-object
 # behaviors get ported incrementally. Coins and stars are the first real
@@ -95,6 +96,9 @@ const PICKUP_ACTORS := {
     "coin_red":    "coin_yellow",
     "star":        "star",
     "oneup":       "oneup",
+    "cap_wing":    "cap_wing",
+    "cap_metal":   "cap_metal",
+    "cap_vanish":  "cap_normal",
 }
 
 
@@ -109,14 +113,15 @@ static func _make_pickup(kind: String) -> Node3D:
     shape.shape = sphere
     body.add_child(shape)
 
-    # Prefer a real actor mesh where we have one extracted; fall back to
-    # the glowing sphere for caps (no cap actor yet) and any unknown kind.
+    # Prefer a real actor mesh where we have one extracted. The anchor node
+    # carries a small spin + bob animation so collectibles read clearly.
     var actor_sub: String = PICKUP_ACTORS.get(kind, "")
     if actor_sub != "":
         var mesh_path := "res://extracted/actors/%s/mesh.json" % actor_sub
         if FileAccess.file_exists(mesh_path):
             var anchor := Node3D.new()
             anchor.name = "ActorAnchor"
+            anchor.set_script(PickupBobScript)
             body.add_child(anchor)
             LevelLoader.load_actor(mesh_path, anchor)
             return body
