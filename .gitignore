@@ -1,0 +1,33 @@
+# ROM files (copyrighted) — must never be committed.
+*.v64
+*.z64
+*.n64
+
+# Third-party clones with their own git history.
+/reference/
+
+# Everything derived from the ROM (textures, sounds, level JSON, etc).
+/extracted/
+/godot/extracted
+
+# Godot editor cache / imports.
+/godot/.godot/
+/godot/*.import
+/godot/.import/
+
+# Python bytecode.
+__pycache__/
+*.pyc
+
+# Godot engine binary.
+/Godot_v*.x86_64
+/Godot_v*.exe
+/Godot_v*_macos*
+
+# Editor / OS cruft.
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
