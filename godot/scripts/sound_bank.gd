@@ -21,6 +21,8 @@ const SOUND_NAMES := [
     "plop", "heavy_land", "hand_touch",
     # name aliases that map to a preferred sound at play time
     "death", "land", "punch",
+    # background music tracks (procedural)
+    "bgm_castle", "bgm_course", "bgm_water", "bgm_bowser", "bgm_sub",
 ]
 const SOUND_ALIASES := {
     "death": "whoa",
@@ -39,6 +41,8 @@ const SOUND_BANKS := {
 var _streams: Dictionary = {}
 var _players: Array[AudioStreamPlayer3D] = []
 var _pool_idx: int = 0
+var _bgm_player: AudioStreamPlayer   # 2D/global for background music
+var _bgm_current: String = ""
 
 
 func setup(voice_count: int, mount: Node3D) -> void:
@@ -56,6 +60,32 @@ func setup(voice_count: int, mount: Node3D) -> void:
         p.unit_size = 6.0
         mount.add_child(p)
         _players.append(p)
+    # Global BGM player, non-positional, plays looped music.
+    _bgm_player = AudioStreamPlayer.new()
+    _bgm_player.volume_db = -8.0
+    mount.add_child(_bgm_player)
+
+
+func play_bgm(track: String) -> void:
+    if track == _bgm_current:
+        return
+    _bgm_current = track
+    var s: Variant = _streams.get(track)
+    if s == null:
+        _bgm_player.stop()
+        return
+    # Enable the loop flag on the stream so AudioStreamPlayer repeats it.
+    s.loop_mode = AudioStreamWAV.LOOP_FORWARD
+    s.loop_begin = 0
+    s.loop_end = s.data.size() / (2 if s.format == AudioStreamWAV.FORMAT_16_BITS else 1)
+    _bgm_player.stream = s
+    _bgm_player.play()
+
+
+func stop_bgm() -> void:
+    if _bgm_player != null:
+        _bgm_player.stop()
+        _bgm_current = ""
 
 
 func _load_wav(path: String) -> AudioStreamWAV:

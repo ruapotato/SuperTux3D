@@ -34,6 +34,10 @@ var power_cap_time: float = 0.0  # seconds remaining
 
 var _prev_crouch: bool = false
 var _prev_attack: bool = false
+# Water level Y in Godot units. -INF → no water. LevelManager sets this
+# per level; only the water-themed levels (JRB, DDD, CotMC, SA, WDW)
+# have a non-trivial value.
+var water_level_y: float = -INF
 
 signal star_collected
 
@@ -181,6 +185,7 @@ func _physics_process(delta: float) -> void:
     _state.pos = global_position
     _state.anim_at_end = _animator != null and _animator.is_at_end()
     _state.power_cap = power_cap
+    _state.water_level_y = water_level_y
 
     _state.step(delta)
 

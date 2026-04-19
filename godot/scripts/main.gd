@@ -85,6 +85,7 @@ func _ready() -> void:
     _level_manager.name = "LevelManager"
     add_child(_level_manager)
     _level_manager.setup(world, mario)
+    _level_manager.sound_bank = _sound_bank
     _level_manager.load_level(BOOT_LEVEL, BOOT_AREA)
 
     mario.set_camera(camera)

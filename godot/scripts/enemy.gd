@@ -30,19 +30,38 @@ var _time: float = 0.0
 var life: int = 1
 var _squished: bool = false
 var _hurt_area: Area3D
-var _mesh: MeshInstance3D
+var _mesh: Node3D   # MeshInstance3D or loaded actor root
+var _mode: String = "patrol"     # patrol / chase / static / bomb / pop
+var _fuse: float = 0.0
+var _exploded: bool = false
 
 
 func _ready() -> void:
     _center = global_position
+    _mode = _mode_for_bhv(bhv_name)
     _randomize_motion()
     _build_visual()
     _build_hurt_area()
-    # Enemies collide with world geometry but NOT with Mario — Mario walks
-    # through them and we detect contact via HurtArea's body_entered.
-    # Otherwise Mario would physically wedge against a patrolling enemy.
     collision_layer = 2
-    collision_mask = 1  # still collides with the level (layer 1)
+    collision_mask = 1
+
+    # Per-mode tuning tweaks.
+    match _mode:
+        "chase":  speed = 3.0
+        "bomb":   speed = 3.5
+        "static": speed = 0.0
+        "pop":    speed = 0.0
+
+
+static func _mode_for_bhv(bhv: String) -> String:
+    match bhv:
+        "bhvBobomb":        return "bomb"
+        "bhvChuckya":       return "chase"
+        "bhvKoopa":         return "chase"
+        "bhvPiranhaPlant":  return "pop"
+        "bhvMrBlizzard", "bhvMrBlizzardHidden": return "static"
+        "bhvSnufit", "bhvFlyGuy":               return "static"
+        _:                  return "patrol"
 
 
 func _randomize_motion() -> void:
@@ -118,15 +137,42 @@ static func _visual_color_for(bhv: String) -> Color:
 
 
 func _physics_process(delta: float) -> void:
-    if _squished:
+    if _squished or _exploded:
         return
     _time += delta
-    # Drive a simple sinusoidal patrol around the spawn center.
-    var angle: float = _time * (speed / max(patrol_radius, 0.5))
-    var target := _center + Vector3(
-        sin(angle) * patrol_radius, 0, cos(angle) * patrol_radius
-    )
-    var dir := target - global_position
+    var mario := _find_mario()
+    var dir := Vector3.ZERO
+
+    match _mode:
+        "patrol":
+            var angle: float = _time * (speed / max(patrol_radius, 0.5))
+            var target := _center + Vector3(
+                sin(angle) * patrol_radius, 0, cos(angle) * patrol_radius)
+            dir = target - global_position
+        "chase":
+            if mario != null and global_position.distance_to(mario.global_position) < 12.0:
+                dir = mario.global_position - global_position
+            else:
+                var angle2: float = _time * (speed / max(patrol_radius, 0.5))
+                dir = _center + Vector3(
+                    sin(angle2) * patrol_radius, 0, cos(angle2) * patrol_radius
+                ) - global_position
+        "bomb":
+            if mario != null and global_position.distance_to(mario.global_position) < 6.0:
+                dir = mario.global_position - global_position
+                _fuse += delta
+                # Pulse scale as the fuse ticks (visual warning).
+                if _mesh != null:
+                    var puls: float = 1.0 + sin(_time * 12.0) * (_fuse * 0.25)
+                    _mesh.scale = Vector3(puls, puls, puls)
+                if _fuse > 3.0 or global_position.distance_to(mario.global_position) < 1.0:
+                    _explode(mario)
+                    return
+            else:
+                _fuse = max(_fuse - delta * 0.5, 0.0)
+        "pop", "static":
+            pass  # no movement; hurt area still active
+
     dir.y = 0.0
     if dir.length() > 0.01:
         dir = dir.normalized()
@@ -135,6 +181,33 @@ func _physics_process(delta: float) -> void:
     velocity.z = dir.z * speed
     velocity.y -= GRAVITY * delta
     move_and_slide()
+
+
+func _find_mario() -> Node3D:
+    # Mario is a direct child of Main; walk up from our parent chain.
+    var n: Node = self
+    while n != null and n.name != "Main":
+        n = n.get_parent()
+    if n == null:
+        return null
+    return n.get_node_or_null("Mario")
+
+
+func _explode(mario: Node) -> void:
+    _exploded = true
+    # Visual pop: briefly enlarge then fade.
+    if _mesh != null:
+        _mesh.scale = Vector3(2.0, 2.0, 2.0)
+    if _hurt_area != null:
+        _hurt_area.queue_free()
+    if mario != null and mario.has_method("take_damage"):
+        mario.take_damage(2, bhv_name)
+    var t := Timer.new()
+    t.wait_time = 0.3
+    t.one_shot = true
+    add_child(t)
+    t.timeout.connect(queue_free)
+    t.start()
 
 
 func _on_body_entered(body: Node) -> void:

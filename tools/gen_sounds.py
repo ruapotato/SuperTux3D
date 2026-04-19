@@ -77,6 +77,59 @@ def seq(parts: list[list[int]]) -> list[int]:
     return out
 
 
+def melody_line(notes: list[tuple[float, float]], amp: float = 0.25) -> list[int]:
+    """`notes` = list of (freq_hz, duration_s). Plays each sequentially."""
+    out: list[int] = []
+    for freq, dur in notes:
+        if freq <= 0.0:
+            out.extend([0] * int(dur * SAMPLE_RATE))
+        else:
+            out.extend(tone(freq, dur, amp, wave_type="triangle",
+                            attack=0.01, release=max(0.03, dur * 0.25)))
+    return out
+
+
+def bgm(mood: str) -> list[int]:
+    """Produce a short loopable ambient track. `mood` flavors the chord
+    choice: major for castle/overworld, minor for bowser, sparse for sub."""
+    # Base chord drone (layered sines, quiet).
+    bass_freqs: list[float] = {
+        "major":  [65.41,  82.41, 98.00],   # C E G
+        "minor":  [65.41,  77.78, 98.00],   # C Eb G
+        "water":  [58.27,  73.42, 87.31],   # A♭ slightly muted
+        "bowser": [55.00,  65.41, 77.78],   # A C Eb darker
+    }.get(mood, [65.41, 82.41, 98.00])
+    length = 16.0
+    drone_layers = [
+        tone(f, length, 0.07, wave_type="sine",
+             attack=0.3, release=0.3) for f in bass_freqs
+    ]
+    drone = layer(drone_layers)
+
+    # Sparse arpeggio melody on top. Pick notes from the same triad
+    # at different octaves so it stays consonant.
+    mel_freqs = [f * 4.0 for f in bass_freqs] + [f * 5.0 for f in bass_freqs[:2]]
+    import random
+    random.seed({"major":1, "minor":2, "water":3, "bowser":4}.get(mood, 0))
+    notes: list[tuple[float, float]] = []
+    t = 0.0
+    while t < length - 0.3:
+        pick = random.choice(mel_freqs)
+        dur = random.choice([0.3, 0.5, 0.75, 1.0])
+        if random.random() < 0.3:
+            notes.append((0.0, 0.6))      # rest
+            t += 0.6
+            continue
+        notes.append((pick, dur))
+        t += dur
+    melody = melody_line(notes, amp=0.2)
+
+    # Overlay; pad melody to drone length if short.
+    if len(melody) < len(drone):
+        melody = melody + [0] * (len(drone) - len(melody))
+    return layer([drone, melody[:len(drone)]])
+
+
 SOUNDS = {
     # Cheery two-note coin chime.
     "coin": lambda: seq([
@@ -116,6 +169,12 @@ SOUNDS = {
         tone(1319, 0.09, 0.5),
         tone(1568, 0.22, 0.6, release=0.15),
     ]),
+    # Per-mood background ambience loops.
+    "bgm_castle": lambda: bgm("major"),
+    "bgm_course": lambda: bgm("major"),
+    "bgm_water":  lambda: bgm("water"),
+    "bgm_bowser": lambda: bgm("bowser"),
+    "bgm_sub":    lambda: bgm("minor"),
 }
 
 

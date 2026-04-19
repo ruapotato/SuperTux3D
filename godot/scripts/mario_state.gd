@@ -56,6 +56,11 @@ const ACT_DIVE                   := 0x0188088A
 const ACT_FREEFALL               := 0x0100088C
 const ACT_GROUND_POUND           := 0x008008A9
 const ACT_PUNCHING               := 0x00800380
+# Water actions — simplified. SM64's water state is more granular
+# (WATER_IDLE, WATER_ACTION_END, BREASTSTROKE, SWIMMING, …) but for our
+# port we collapse to a single swim action that handles all movement.
+const ACT_WATER_IDLE             := 0x380022C0
+const ACT_SWIMMING               := 0x300024D1
 
 # ---- Animation IDs (from include/mario_animation_ids.h) -----------------
 const MARIO_ANIM_BACKFLIP                    := 0x04
@@ -89,6 +94,9 @@ const MARIO_ANIM_TRIPLE_JUMP_LAND            := 0xC0
 const MARIO_ANIM_IDLE_HEAD_LEFT              := 0xC3
 const MARIO_ANIM_IDLE_HEAD_RIGHT             := 0xC4
 const MARIO_ANIM_IDLE_HEAD_CENTER            := 0xC5
+const MARIO_ANIM_SWIM_PART1                  := 0xAA
+const MARIO_ANIM_SWIM_PART2                  := 0xAB
+const MARIO_ANIM_FLUTTERKICK                 := 0xAC
 
 # ---- Physics tuning (Godot units, derived from decomp per-frame values) -
 # Decomp numbers were in units/frame at 30 fps; converted to Godot units/sec
@@ -135,6 +143,9 @@ var wall_normal: Vector3 = Vector3.ZERO
 # time, "metal" makes Mario impervious and slightly slower, "vanish"
 # currently cosmetic only.
 var power_cap: String = ""
+# Water detection — owner sets water_level_y each tick; if our feet dip
+# below it we transition into swim mode. Simple single-volume model.
+var water_level_y: float = -INF
 
 # ---- Mario state (subset of struct MarioState) --------------------------
 var action: int = ACT_UNINITIALIZED
@@ -215,7 +226,14 @@ func step(delta: float) -> void:
             ACT_SIDE_FLIP_LAND_STOP:      changed = _act_jump_land_stop(delta)
             ACT_BRAKING_STOP:             changed = _act_jump_land_stop(delta)
             ACT_FREEFALL_LAND_STOP:       changed = _act_freefall_land_stop(delta)
+            ACT_WATER_IDLE:               changed = _act_water_idle(delta)
+            ACT_SWIMMING:                 changed = _act_swimming(delta)
             _:                            changed = set_action(ACT_IDLE)
+        # Any land-bound action can be interrupted by entering water.
+        if not changed and pos.y < water_level_y and (action & ACT_FLAG_AIR) == 0 \
+                and action != ACT_WATER_IDLE and action != ACT_SWIMMING:
+            set_action(ACT_WATER_IDLE)
+            changed = true
         if not changed:
             break
         safety -= 1
@@ -541,6 +559,48 @@ func _act_freefall_land_stop(_delta: float) -> bool:
 
 
 # ---- Helpers ------------------------------------------------------------
+
+func _act_water_idle(delta: float) -> bool:
+    if pos.y > water_level_y + 0.5:
+        return set_action(ACT_FREEFALL)
+    _request_anim(MARIO_ANIM_SWIM_PART2, 0.6)
+    if input_jump_pressed or input_stick.length() > 0.1 or input_attack_pressed:
+        return set_action(ACT_SWIMMING)
+    # Float slowly downward with buoyancy resisting.
+    vel.y = move_toward(vel.y, -0.6, 3.0 * delta)
+    vel.x = move_toward(vel.x, 0.0, 8.0 * delta)
+    vel.z = move_toward(vel.z, 0.0, 8.0 * delta)
+    return false
+
+
+func _act_swimming(delta: float) -> bool:
+    if pos.y > water_level_y + 0.5:
+        return set_action(ACT_FREEFALL)
+    _request_anim(MARIO_ANIM_FLUTTERKICK, 1.2)
+    # Stroke impulse on jump press or attack press.
+    if input_jump_pressed or input_attack_pressed:
+        vel.y = max(vel.y, 6.0)
+        var d := _stick_to_world_dir()
+        if d.length() > 0.01:
+            vel.x = d.x * 7.0
+            vel.z = d.z * 7.0
+            face_yaw = atan2(-d.x, -d.z)
+    else:
+        vel.y = move_toward(vel.y, -1.5, 4.0 * delta)
+        var d2 := _stick_to_world_dir()
+        if d2.length() > 0.01:
+            vel.x = move_toward(vel.x, d2.x * 5.0, 6.0 * delta)
+            vel.z = move_toward(vel.z, d2.z * 5.0, 6.0 * delta)
+            face_yaw = _approach_angle(face_yaw, atan2(-d2.x, -d2.z), TURN_RATE * delta)
+        else:
+            vel.x = move_toward(vel.x, 0.0, 3.0 * delta)
+            vel.z = move_toward(vel.z, 0.0, 3.0 * delta)
+    # Transition back to a calm float after the stroke loses momentum.
+    if input_stick.length() < 0.1 and action_time > 0.5 \
+            and Vector3(vel.x, 0, vel.z).length() < 1.5 and not input_jump_pressed:
+        return set_action(ACT_WATER_IDLE)
+    return false
+
 
 func _apply_air_motion(delta: float, allow_steering: bool = true) -> void:
     if allow_steering:

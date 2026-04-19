@@ -12,11 +12,49 @@ extends Node3D
 const LevelLoader := preload("res://scripts/level_loader.gd")
 const ObjectSpawner := preload("res://scripts/object_spawner.gd")
 
+# Level → appropriate BGM track name.
+# Per-level water surface Y (Godot units). Hand-tuned to match the
+# approximate surface visible in each decomp level. Levels not in this
+# table get -INF (no water).
+const LEVEL_WATER_Y := {
+    "jrb":   0.5,
+    "ddd":   0.0,
+    "wdw":   0.0,
+    "sa":    0.0,
+    "cotmc": -15.0,
+    "hmc":   -25.0,   # underground pool
+    "ccm":   -30.0,   # the deep slide tunnel water
+    "wmotr": 0.0,
+}
+
+const LEVEL_BGM := {
+    "castle_grounds":   "bgm_castle",
+    "castle_inside":    "bgm_castle",
+    "castle_courtyard": "bgm_castle",
+    "jrb":              "bgm_water",
+    "ddd":              "bgm_water",
+    "wdw":              "bgm_water",
+    "cotmc":            "bgm_water",
+    "sa":               "bgm_water",
+    "bitdw":            "bgm_bowser",
+    "bitfs":            "bgm_bowser",
+    "bits":             "bgm_bowser",
+    "bowser_1":         "bgm_bowser",
+    "bowser_2":         "bgm_bowser",
+    "bowser_3":         "bgm_bowser",
+    "hmc":              "bgm_sub",
+    "sl":               "bgm_sub",
+    "ssl":              "bgm_sub",
+    "bbh":              "bgm_sub",
+    "pss":              "bgm_sub",
+}
+
 # Godot-world spawn defaults when a level has no MARIO_POS for the area.
 const FALLBACK_SPAWN := Vector3(0, 5, 0)
 
 var world_root: Node3D
 var mario: CharacterBody3D
+var sound_bank: Node     # optional — set by main.gd so we can swap BGM on load
 
 # The currently-loaded level name + area (1-based), null when no level.
 var current_level: String = ""
@@ -67,7 +105,15 @@ func load_level(level_name: String, area: int = 1) -> bool:
 
     current_level = level_name
     current_area = area
-    print("[level_manager] loaded %s area %d, spawn=%s" % [level_name, area, spawn])
+    if sound_bank != null:
+        var track: String = LEVEL_BGM.get(level_name, "bgm_course")
+        if sound_bank.has_method("play_bgm"):
+            sound_bank.play_bgm(track)
+    # Tell Mario whether this level has a water volume.
+    var water_y: float = LEVEL_WATER_Y.get(level_name, -INF)
+    mario.water_level_y = water_y
+    print("[level_manager] loaded %s area %d, spawn=%s water=%s" % [
+        level_name, area, spawn, water_y])
     return true
 
 
