@@ -64,7 +64,8 @@ static func _read_json(path: String) -> Variant:
 
 
 static func load_actor(mesh_json_path: String, parent: Node3D,
-                       animation_mode: String = "mario") -> Dictionary:
+                       animation_mode: String = "mario",
+                       anim_data: Variant = null) -> Dictionary:
     """Load an articulated actor into `parent`. Returns a dictionary with
     `bone_root` (the Node3D that owns the whole rig), `bones` (array of
     Node3D indexed by bone index, matching the decomp's traversal order
@@ -80,11 +81,13 @@ static func load_actor(mesh_json_path: String, parent: Node3D,
     var model: Variant = _read_json(mesh_json_path)
     if not (model is Dictionary):
         return {}
-    return _build_articulated_actor(model, parent, animation_mode)
+    return _build_articulated_actor(model, parent, animation_mode, anim_data)
 
 
 static func _build_articulated_actor(
-    model: Dictionary, parent: Node3D, animation_mode: String = "mario"
+    model: Dictionary, parent: Node3D,
+    animation_mode: String = "mario",
+    anim_data: Variant = null
 ) -> Dictionary:
     var bones_data: Array = model.bones
     var bones: Array = []
@@ -93,19 +96,24 @@ static func _build_articulated_actor(
     mesh_instances.resize(bones_data.size())
 
     var s: float = ACTOR_SCALE * WORLD_SCALE
-    var axis_remap: Basis
-    if animation_mode == "rigid":
-        axis_remap = Basis(
-            Vector3(0, 1, 0),
-            Vector3(0, 0, -1),
-            Vector3(-1, 0, 0),
-        ).scaled(Vector3(s, s, s))
-    else:
-        axis_remap = Basis(
-            Vector3(-1, 0, 0),
-            Vector3(0, 1, 0),
-            Vector3(0, 0, -1),
-        ).scaled(Vector3(s, s, s))
+    # Base rigid axis remap — directly maps decomp mesh convention into
+    # Godot (+X mesh-up → Godot +Y, +Y mesh-forward → -Z, +Z mesh-left → -X).
+    var rigid := Basis(
+        Vector3(0, 1, 0),
+        Vector3(0, 0, -1),
+        Vector3(-1, 0, 0),
+    )
+    # Compensation: when an animation plays it applies a rotation chain
+    # whose frame-0 composed rotation would otherwise tip the mesh away
+    # from upright (Mario uses Ry(+90°)+Rz(+90°); Goomba's is similar;
+    # Koopa carries Rz(+148°) so the tip angle differs). We pre-multiply
+    # the rigid remap by the INVERSE of that composed rotation so the
+    # animation's rotations cancel out the pose and leave us upright.
+    var comp := _anim_axis_compensation(anim_data)
+    var axis_remap: Basis = (rigid * comp).scaled(Vector3(s, s, s))
+    # Legacy "rigid" mode = skip comp (used when no animation will play).
+    if animation_mode == "rigid" or anim_data == null:
+        axis_remap = rigid.scaled(Vector3(s, s, s))
 
     var bone_root := Node3D.new()
     bone_root.name = "BoneRoot"
@@ -466,6 +474,51 @@ static func _build_static_body(coll: Dictionary) -> StaticBody3D:
     print("[level_loader] built %d surface-kind bodies with %d total tris"
           % [buckets.size(), total_tris])
     return container
+
+
+static func _anim_axis_compensation(anim_data: Variant) -> Basis:
+    # Build a rotation that undoes the animation's frame-0 bone 0 + bone 1
+    # pose, so vertex_mesh_up maps cleanly through rigid_remap into world
+    # +Y. Without this Mario/Goomba/Koopa all tip differently because
+    # their "authored" frame-0 rotations differ. Decomp animations use
+    # Rz*Ry*Rx intrinsic composition (matches our EULER_ORDER_ZYX).
+    if not (anim_data is Dictionary):
+        return Basis()
+    var indices: Variant = anim_data.get("indices")
+    var values: Variant = anim_data.get("values")
+    if not (indices is Array) or not (values is Array):
+        return Basis()
+    # Skip the 3 root-translation tracks, then sample the first 6 rotation
+    # entries (bone 0 XYZ + bone 1 XYZ) at frame 0.
+    if indices.size() < 9 or values.size() < 1:
+        return Basis()
+    var to_rad: float = TAU / 65536.0
+    var b0 := Vector3(
+        float(_sample_value(indices, values, 3)) * to_rad,
+        float(_sample_value(indices, values, 4)) * to_rad,
+        float(_sample_value(indices, values, 5)) * to_rad,
+    )
+    var b1 := Vector3(
+        float(_sample_value(indices, values, 6)) * to_rad,
+        float(_sample_value(indices, values, 7)) * to_rad,
+        float(_sample_value(indices, values, 8)) * to_rad,
+    )
+    var r0 := Basis.from_euler(b0, EULER_ORDER_ZYX)
+    var r1 := Basis.from_euler(b1, EULER_ORDER_ZYX)
+    # Frame-0 composed rotation applied to mesh vertices = r0 * r1 * v.
+    # We want to undo this so the axis_remap ends up targeting the rigid
+    # mapping. Apply the inverse by composing the transpose.
+    return (r0 * r1).transposed()
+
+
+static func _sample_value(indices: Array, values: Array, track_idx: int) -> int:
+    if track_idx >= indices.size():
+        return 0
+    var pair: Array = indices[track_idx]
+    var off: int = int(pair[1])
+    if off < 0 or off >= values.size():
+        return 0
+    return int(values[off])
 
 
 static func _surface_id_to_kind(sid: int) -> String:

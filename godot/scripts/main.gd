@@ -76,7 +76,13 @@ var _focus_smooth: Vector3 = Vector3.ZERO
 
 func _ready() -> void:
     var anchor: Node3D = mario.get_node("ActorAnchor")
-    var actor: Dictionary = LevelLoader.load_actor(MARIO_MESH_JSON, anchor)
+    # Preload Mario's idle animation so the axis-compensation pass can
+    # sample its frame-0 bone 0 + bone 1 rotations. Same treatment every
+    # animated actor gets — no Mario-special-case axis_remap any more.
+    var mario_idle: Variant = _read_json("res://extracted/actors/mario/anims/anim_C5.json")
+    var actor: Dictionary = LevelLoader.load_actor(
+        MARIO_MESH_JSON, anchor, "mario", mario_idle
+    )
     _setup_animator(actor)
 
     _sound_bank = SoundBankScript.new()

@@ -55,11 +55,13 @@ const BHV_IMPLEMENTATIONS := {
 }
 
 
-# Behaviors that spawn as walking enemies.
+# Behaviors that spawn as walking enemies. bhvBobombBuddy is NOT an
+# enemy (it's the pink non-hostile bob-omb that opens cannons) — we
+# spawn it as a distinctive debug marker instead.
 const ENEMY_BEHAVIORS := [
     "bhvGoomba", "bhvGoombaTripletSpawner",
-    "bhvKoopa",
-    "bhvBobomb", "bhvBobombBuddy",
+    "bhvKoopa", "bhvKoopaShellUnderwater",
+    "bhvBobomb",
     "bhvChuckya",
     "bhvPiranhaPlant",
     "bhvMrBlizzard", "bhvMrBlizzardHidden",

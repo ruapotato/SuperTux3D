@@ -118,8 +118,9 @@ const JUMP_IMPULSE         := 12.6    # single jump (decomp 42/frame)
 const DOUBLE_JUMP_IMPULSE  := 15.6    # decomp 52/frame
 const TRIPLE_JUMP_IMPULSE  := 20.7    # decomp 69/frame
 const BACKFLIP_IMPULSE     := 18.6    # decomp 62/frame
-const LONG_JUMP_IMPULSE    := 8.4     # decomp 28/frame (flatter arc)
-const LONG_JUMP_FORWARD    := 16.8    # long-jump preserved horizontal
+const LONG_JUMP_IMPULSE    := 11.0    # decomp ~35/frame * 30 * 0.01
+const LONG_JUMP_FORWARD    := 16.8    # minimum horizontal if not already running
+const LONG_JUMP_FORWARD_MULT := 1.5   # preserve + 50% of existing forward vel
 const SIDE_FLIP_IMPULSE    := 18.0
 const WALL_KICK_IMPULSE    := 18.0
 const DIVE_IMPULSE_Y       := 4.8     # small up-kick on dive
@@ -789,7 +790,11 @@ func _begin_backflip() -> bool:
 func _begin_long_jump() -> bool:
     set_action(ACT_LONG_JUMP)
     vel.y = LONG_JUMP_IMPULSE
-    forward_vel = LONG_JUMP_FORWARD
+    # Decomp keeps ~1.5× of existing forward_vel plus a minimum boost so a
+    # standing long jump still goes somewhere. Previously we just SET
+    # forward_vel to a constant, which robbed running long jumps of the
+    # distance they should have.
+    forward_vel = max(forward_vel * LONG_JUMP_FORWARD_MULT, LONG_JUMP_FORWARD)
     vel.x = -sin(face_yaw) * forward_vel
     vel.z = -cos(face_yaw) * forward_vel
     jump_combo = 0

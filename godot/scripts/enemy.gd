@@ -93,7 +93,8 @@ func _build_visual() -> void:
             var anim_data := _find_walk_animation(actor_sub)
             var mode := "mario" if not anim_data.is_empty() else "rigid"
             var actor: Dictionary = LevelLoader.load_actor(
-                mesh_path, actor_anchor, mode
+                mesh_path, actor_anchor, mode,
+                anim_data if not anim_data.is_empty() else null,
             )
             _mesh = actor_anchor
             if not anim_data.is_empty():
