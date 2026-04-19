@@ -19,11 +19,17 @@ extends RefCounted
 var bones: Array = []              # Array[Node3D], indexed by bone index
 var bone_rest_rotations: Array = []  # Array[Vector3] — rest rotation (radians, XYZ) from converter
 var current_anim: Dictionary = {}
+var current_anim_id: int = -1
 var current_frame: float = 0.0
+var _prev_frame: float = 0.0
+var _looped_this_tick: bool = false
 
-# Playback speed: SM64 runs at 30fps but its animations advance at a
-# per-frame "speed" set by the state. Default 1 frame / game tick.
-var frames_per_second: float = 30.0
+# Base playback speed in animation-frames per real second. Individual
+# play() calls can override this via the `speed` argument; the decomp
+# varies anim speed per action (walking scales with forward velocity,
+# running uses fixed fast cadence, etc.).
+var frames_per_second: float = 60.0
+var speed_multiplier: float = 1.0
 
 
 func setup(bone_nodes: Array, rest_rotations_rad: Array) -> void:
@@ -31,9 +37,23 @@ func setup(bone_nodes: Array, rest_rotations_rad: Array) -> void:
     bone_rest_rotations = rest_rotations_rad
 
 
-func play(anim: Dictionary) -> void:
+func play(anim: Dictionary, speed: float = 1.0, anim_id: int = -1) -> void:
     current_anim = anim
+    current_anim_id = anim_id
     current_frame = float(anim.start_frame)
+    _prev_frame = current_frame
+    speed_multiplier = speed
+
+
+func set_speed(speed: float) -> void:
+    speed_multiplier = speed
+
+
+func is_at_end() -> bool:
+    # Returns true for the single tick after the animation rolled over its
+    # loop_end. Mario actions use this to chain (e.g. IDLE cycling through
+    # HEAD_LEFT → HEAD_RIGHT → HEAD_CENTER on anim end).
+    return _looped_this_tick
 
 
 func stop() -> void:
@@ -51,13 +71,29 @@ func stop() -> void:
 func tick(delta: float) -> void:
     if current_anim.is_empty():
         return
-    current_frame += delta * frames_per_second
+    _prev_frame = current_frame
+    current_frame += delta * frames_per_second * speed_multiplier
     var loop_end: int = current_anim.loop_end
     var loop_start: int = current_anim.loop_start
-    if loop_end > loop_start and current_frame >= float(loop_end):
+    _looped_this_tick = false
+    if loop_end > loop_start:
         var span: float = float(loop_end - loop_start)
-        current_frame = float(loop_start) + fmod(current_frame - float(loop_start), span)
+        while current_frame >= float(loop_end):
+            current_frame -= span
+            _looped_this_tick = true
+    elif loop_end == loop_start or loop_end == 1:
+        # Single-frame animation (e.g. A_POSE) — "end" every tick so state
+        # machines that check is_at_end don't stall.
+        _looped_this_tick = true
     _apply_frame(int(current_frame))
+
+
+func debug_state() -> String:
+    if current_anim.is_empty():
+        return "(no anim)"
+    return "%s frame=%.1f / %d" % [
+        current_anim.name, current_frame, int(current_anim.loop_end),
+    ]
 
 
 func _apply_frame(frame: int) -> void:

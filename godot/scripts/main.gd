@@ -5,9 +5,7 @@ const MarioAnimator := preload("res://scripts/mario_animator.gd")
 const MODEL_JSON := "res://extracted/levels/bob/area_1/model.json"
 const COLLISION_JSON := "res://extracted/levels/bob/area_1/collision.json"
 const MARIO_MESH_JSON := "res://extracted/actors/mario/mesh.json"
-# Key decomp animations we start with. IDs are from include/mario_animation_ids.h.
-const ANIM_IDLE := "res://extracted/actors/mario/anims/anim_C5.json"  # IDLE_HEAD_CENTER
-const ANIM_WALKING := "res://extracted/actors/mario/anims/anim_48.json"  # WALKING
+const ANIMS_DIR := "res://extracted/actors/mario/anims"
 # Actual spawn from decomp levels/bob/script.c: MARIO_POS(1, 135, -6558, 0, 6464).
 # Scaled to Godot world scale (see LevelLoader.WORLD_SCALE). +2 Y offset for
 # a small cushion so the capsule doesn't start clipped into the floor.
@@ -27,9 +25,9 @@ const FOCUS_OFFSET := Vector3(0, 1.0, 0)
 @onready var hud_label: Label = $UI/HUD
 
 var _animator: RefCounted
-var _anim_idle: Dictionary
-var _anim_walking: Dictionary
-var _current_anim_name: String = ""
+# Animation cache keyed by decomp ID (MARIO_ANIM_* integer). Loaded lazily
+# the first time a state requests it.
+var _anim_cache: Dictionary = {}
 
 # Yaw: rotation about world Y. Pitch: angle above horizontal (+ = camera above).
 var _cam_yaw := 0.0
@@ -59,16 +57,24 @@ func _setup_animator(actor: Dictionary) -> void:
             var to_rad: float = TAU / 65536.0
             rest_rots.append(Vector3(r[0] * to_rad, r[1] * to_rad, r[2] * to_rad))
     _animator.setup(actor.bones, rest_rots)
+    # Hand the animator to Mario so MarioState can request animations by ID.
+    if mario.has_method("bind_animator"):
+        mario.bind_animator(_animator, self)
 
-    var idle_parsed: Variant = _read_json(ANIM_IDLE)
-    var walk_parsed: Variant = _read_json(ANIM_WALKING)
-    if idle_parsed is Dictionary:
-        _anim_idle = idle_parsed
-    if walk_parsed is Dictionary:
-        _anim_walking = walk_parsed
-    if not _anim_idle.is_empty():
-        _animator.play(_anim_idle)
-        _current_anim_name = "idle"
+
+func get_anim(anim_id: int) -> Dictionary:
+    # Resolve a MARIO_ANIM_* ID to the parsed animation JSON, lazily loading
+    # from disk on first request and caching thereafter.
+    if _anim_cache.has(anim_id):
+        return _anim_cache[anim_id]
+    var path := "%s/anim_%02X.json" % [ANIMS_DIR, anim_id]
+    var parsed: Variant = _read_json(path)
+    if parsed is Dictionary:
+        _anim_cache[anim_id] = parsed
+        return parsed
+    push_warning("main: missing animation 0x%02X at %s" % [anim_id, path])
+    _anim_cache[anim_id] = {}
+    return {}
 
 
 func _read_json(path: String) -> Variant:
@@ -103,16 +109,6 @@ func _respawn() -> void:
 func _update_animation(delta: float) -> void:
     if _animator == null:
         return
-    # Pick animation based on current Mario stub motion (proxy for state).
-    var horiz_speed: float = Vector2(mario.velocity.x, mario.velocity.z).length()
-    var desired := "idle" if horiz_speed < 0.5 else "walking"
-    if desired != _current_anim_name:
-        if desired == "walking" and not _anim_walking.is_empty():
-            _animator.play(_anim_walking)
-            _current_anim_name = "walking"
-        elif desired == "idle" and not _anim_idle.is_empty():
-            _animator.play(_anim_idle)
-            _current_anim_name = "idle"
     _animator.tick(delta)
 
 
@@ -145,13 +141,20 @@ func _process(delta: float) -> void:
     var mario_stub := mario as CharacterBody3D
     var ray_down: String = mario.get("debug_ray_down_hit")
     var ray_up: String = mario.get("debug_ray_up_hit")
+    var anim_state: String = "(none)"
+    if _animator != null:
+        anim_state = _animator.debug_state()
+    var action_name: String = ""
+    if mario.has_method("current_action_name"):
+        action_name = mario.current_action_name()
     hud_label.text = (
-        "pos: %.2f,%.2f,%.2f   floor: %s   vel.y: %.2f\n"
-        + "ray down: %s\n"
-        + "ray up:   %s\n"
+        "pos: %.2f,%.2f,%.2f   floor: %s   vel: (%.2f,%.2f,%.2f)\n"
+        + "action: %s\n"
+        + "anim: %s\n"
         + "[R] respawn  [F1] collision  [Esc] cursor"
     ) % [
         mario.global_position.x, mario.global_position.y, mario.global_position.z,
-        str(mario.is_on_floor()), mario.velocity.y,
-        ray_down, ray_up,
+        str(mario.is_on_floor()),
+        mario.velocity.x, mario.velocity.y, mario.velocity.z,
+        action_name, anim_state,
     ]

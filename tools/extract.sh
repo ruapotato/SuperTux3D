@@ -94,13 +94,24 @@ python3 "$SCRIPT_DIR/convert_animation.py" \
 # 7. Convert level geometry + collision to Godot-friendly JSON.
 log "converting level geometry and collision to Godot JSON"
 
-# Build a list of levels to convert. For now hard-coded to the ones we support.
-# Extend this list as new levels are wired up.
-LEVELS=(bob)
+# Auto-discover all levels that have an areas/ directory. The converter
+# handles each area independently and produces a JSON pair per area.
+shopt -s nullglob
+LEVELS=()
+for d in "$SM64_REPO"/levels/*/; do
+  name=$(basename "$d")
+  # Skip scaffolding directories that aren't playable levels.
+  case "$name" in
+    scripts|common*|intro|ending|menu|group*|"level_"*) continue;;
+  esac
+  [[ -d "$d/areas" ]] || continue
+  LEVELS+=("$name")
+done
+log "found ${#LEVELS[@]} levels: ${LEVELS[*]}"
 
+converted_areas=0
 for level in "${LEVELS[@]}"; do
   level_dir="$SM64_REPO/levels/$level"
-  [[ -d "$level_dir/areas" ]] || { warn "no areas/ under $level_dir — skipping"; continue; }
   for area_dir in "$level_dir"/areas/*/; do
     area=$(basename "$area_dir")
     out_dir="$EXTRACTED/levels/$level/area_$area"
@@ -109,13 +120,16 @@ for level in "${LEVELS[@]}"; do
     if [[ -f "$area_dir/collision.inc.c" ]]; then
       python3 "$SCRIPT_DIR/convert_collision.py" \
         "$area_dir/collision.inc.c" "$out_dir/collision.json" \
-        --sm64-root "$SM64_REPO"
+        --sm64-root "$SM64_REPO" > /dev/null 2>&1 \
+        || warn "collision convert failed for $level/$area"
     fi
-
     python3 "$SCRIPT_DIR/convert_model.py" \
-      "$area_dir" "$out_dir/model.json"
+      "$area_dir" "$out_dir/model.json" > /dev/null 2>&1 \
+      || warn "model convert failed for $level/$area"
+    converted_areas=$((converted_areas + 1))
   done
 done
+log "converted $converted_areas areas across ${#LEVELS[@]} levels"
 
 # 8. Ensure the Godot project can see extracted/ via res://. Godot restricts
 # res:// to its own project tree, so we link our sibling extracted/ into it.
