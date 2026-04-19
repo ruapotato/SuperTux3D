@@ -416,25 +416,37 @@ func _act_double_jump(delta: float) -> bool:
 func _act_triple_jump(delta: float) -> bool:
     _request_anim(MARIO_ANIM_TRIPLE_JUMP, 1.0)
     _apply_air_motion(delta)
-    return _common_air_transitions(ACT_TRIPLE_JUMP_LAND)
+    return _hold_air_until_land(ACT_TRIPLE_JUMP_LAND)
 
 
 func _act_backflip(delta: float) -> bool:
     _request_anim(MARIO_ANIM_BACKFLIP, 1.0)
     _apply_air_motion(delta)
-    return _common_air_transitions(ACT_BACKFLIP_LAND)
+    # Flip animations should stay on their one-shot pose until landing,
+    # not mid-air-snap to the generic FREEFALL animation.
+    return _hold_air_until_land(ACT_BACKFLIP_LAND)
 
 
 func _act_side_flip(delta: float) -> bool:
-    _request_anim(MARIO_ANIM_TRIPLE_JUMP, 1.3)  # reuse triple flip anim
+    _request_anim(MARIO_ANIM_TRIPLE_JUMP, 1.3)
     _apply_air_motion(delta)
-    return _common_air_transitions(ACT_SIDE_FLIP_LAND)
+    return _hold_air_until_land(ACT_SIDE_FLIP_LAND)
 
 
 func _act_long_jump(delta: float) -> bool:
     _request_anim(MARIO_ANIM_FAST_LONGJUMP, 1.0)
-    _apply_air_motion(delta, false)   # long jump preserves horizontal momentum
-    return _common_air_transitions(ACT_LONG_JUMP_LAND)
+    _apply_air_motion(delta, false)
+    # Long jump (and flip variants) should hold the pose until the feet
+    # actually touch down — the one-shot anim clamps on its last frame,
+    # which is where Mario stays mid-flight. Skip the auto-FREEFALL
+    # transition and only react to landing or special mid-air inputs.
+    if input_crouch_pressed:
+        return set_action(ACT_GROUND_POUND)
+    if input_attack_pressed:
+        return _begin_dive()
+    if is_on_floor and action_time > 0.07 and vel.y <= 0.0:
+        return set_action(ACT_LONG_JUMP_LAND)
+    return false
 
 
 func _act_wall_kick(delta: float) -> bool:
@@ -719,6 +731,22 @@ func _apply_air_motion(delta: float, allow_steering: bool = true) -> void:
 
 
 # ---- Airborne transition helpers ---------------------------------------
+
+func _hold_air_until_land(land_action: int) -> bool:
+    # For one-shot flip animations (triple jump, backflip, side flip,
+    # long jump) Mario should hold the final frame of the flip anim for
+    # the remainder of the arc, not auto-transition to FREEFALL at the
+    # peak. Reacts only to landing and to a handful of mid-air inputs.
+    if input_crouch_pressed:
+        return set_action(ACT_GROUND_POUND)
+    if input_attack_pressed:
+        return _begin_dive()
+    if is_on_wall and input_jump_pressed:
+        return _begin_wall_kick()
+    if is_on_floor and action_time > 0.07 and vel.y <= 0.0:
+        return set_action(land_action)
+    return false
+
 
 func _common_air_transitions(default_land: int) -> bool:
     # Grab a pole if we're airborne and overlapping one.

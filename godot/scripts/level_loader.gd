@@ -163,15 +163,16 @@ static func _build_articulated_actor(
         else:
             mesh_instances[bi] = null
 
-    # Compute the rest-pose world Y of the lowest vertex so we can shift
-    # the bone_root up, keeping Mario's feet on the floor. This relies on
-    # each node's global_transform, which is only valid once the bone tree
-    # is inside a scene tree. Pickups/objects are often built before being
-    # parented into the world, so skip the shift in that case — those
-    # actors' pivots are close to their base anyway.
+    # Compute the lowest vertex in PARENT-LOCAL coords so the shift
+    # ignores where this actor sits in the world. Using global_transform
+    # is unsafe for enemies — they're positioned by object_spawner BEFORE
+    # their mesh is loaded, so the global_y already reflects the spawn
+    # height and the shift would teleport the mesh to world y=0 instead
+    # of lining it up with the character's own origin.
     var min_y: float = INF
     if bone_root.is_inside_tree():
-        min_y = _compute_min_world_y(bones, mesh_instances)
+        var parent_inv: Transform3D = parent.global_transform.affine_inverse()
+        min_y = _compute_min_local_y(bones, mesh_instances, parent_inv)
         if min_y != INF:
             bone_root.position.y = -min_y
 
@@ -244,7 +245,9 @@ static func _build_bone_mesh_instance(sub_meshes: Array) -> MeshInstance3D:
     return mi
 
 
-static func _compute_min_world_y(bones: Array, mesh_instances: Array) -> float:
+static func _compute_min_local_y(
+    bones: Array, mesh_instances: Array, parent_inv: Transform3D
+) -> float:
     var min_y: float = INF
     for i in range(bones.size()):
         var mi: MeshInstance3D = mesh_instances[i]
@@ -253,14 +256,17 @@ static func _compute_min_world_y(bones: Array, mesh_instances: Array) -> float:
         var mesh := mi.mesh as ArrayMesh
         if mesh == null:
             continue
-        var world_t: Transform3D = mi.global_transform
+        # mi.global_transform → parent-local → pick Y. Each vertex then
+        # tells us where it sits relative to the actor's own origin,
+        # regardless of where the character is in the world.
+        var local_t: Transform3D = parent_inv * mi.global_transform
         for s in range(mesh.get_surface_count()):
             var arrays := mesh.surface_get_arrays(s)
             var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
             for v in verts:
-                var wy: float = (world_t * v).y
-                if wy < min_y:
-                    min_y = wy
+                var ly: float = (local_t * v).y
+                if ly < min_y:
+                    min_y = ly
     return min_y
 
 
