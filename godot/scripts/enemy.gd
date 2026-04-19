@@ -105,15 +105,45 @@ func _build_visual() -> void:
         _build_placeholder_mesh()
 
 
+# Per-actor preferred walk animation. The decomp's anim tables order
+# animations roughly by action index (0 = default/A-pose, 1+ = specific
+# walk/run/idle variants). Picking the first file alphabetically lands
+# on the "default" anim which is often not the walk cycle; per-actor
+# the walking cycle is usually a specific index. Falls back to the
+# first same-bone-count anim we can load.
+const PREFERRED_ANIMS := {
+    "goomba":        ["goomba_seg8_anim_0801DA34"],
+    # Koopa's table.inc.c lists the walk-ish cycles after the first
+    # couple of idle/turn anims; try these in order.
+    "koopa":         [
+        "koopa_seg6_anim_0600D518",  # walk
+        "koopa_seg6_anim_0600CFB8",  # run
+        "koopa_seg6_anim_0600D804",  # cleanup / standing
+    ],
+    "bobomb":        ["bobomb_seg8_anim_080237FC"],
+    "chain_chomp":   [],
+    "piranha_plant": [],
+    "penguin":       [],
+}
+
+
 func _find_walk_animation(actor_sub: String) -> Dictionary:
-    # Pick the first JSON in the actor's anims/ dir. For Koopa that's
-    # its walking cycle; for Goomba it's the only anim they have. We
-    # don't try to match anim-by-name — the first one is always fine
-    # as the default-pose walk cycle in the decomp's layout.
     var anims_dir := "res://extracted/actors/%s/anims" % actor_sub
     var d := DirAccess.open(anims_dir)
     if d == null:
         return {}
+    # Try preferred names first.
+    var preferred: Variant = PREFERRED_ANIMS.get(actor_sub, [])
+    if preferred is Array:
+        for name in preferred:
+            var path := "%s/%s.json" % [anims_dir, name]
+            if FileAccess.file_exists(path):
+                var file := FileAccess.open(path, FileAccess.READ)
+                if file != null:
+                    var parsed: Variant = JSON.parse_string(file.get_as_text())
+                    if parsed is Dictionary:
+                        return parsed
+    # Fall back to any JSON in the dir.
     for f in d.get_files():
         if not f.ends_with(".json"):
             continue

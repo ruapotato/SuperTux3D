@@ -317,6 +317,15 @@ func _act_walking(delta: float) -> bool:
         if input_crouch:
             return _begin_long_jump()
         return _begin_chained_jump()
+    # Sharp-turn → skid. If the player slams the stick opposite to
+    # Mario's current facing while running fast, the decomp transitions
+    # into ACT_BRAKING (or ACT_TURNING_AROUND) rather than snapping the
+    # facing around. Approximate with a dot-product threshold.
+    if forward_vel > 6.0 and input_stick.length() > 0.1:
+        var stick_dir := _stick_to_world_dir()
+        var face_dir := Vector3(-sin(face_yaw), 0, -cos(face_yaw))
+        if stick_dir.dot(face_dir) < -0.3:
+            return set_action(ACT_BRAKING)
     if input_crouch_pressed:
         if forward_vel > 4.0:
             return set_action(ACT_CROUCH_SLIDE)
