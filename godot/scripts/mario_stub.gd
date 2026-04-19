@@ -15,43 +15,69 @@ var _camera_node: Camera3D
 var _ray_down: RayCast3D
 var _ray_up: RayCast3D
 var _actor_anchor: Node3D
+var _pickup_area: Area3D
+
+# Collected totals + timed power-ups. HUD in main.gd reads these.
+var coin_count: int = 0
+var star_count: int = 0
+var lives: int = 4
+var power_cap: String = ""      # "wing" / "metal" / "vanish" / ""
+var power_cap_time: float = 0.0  # seconds remaining
+
+var _prev_crouch: bool = false
+var _prev_attack: bool = false
+
+signal star_collected
 
 # Latest raycast observations, read by main.gd for HUD.
 var debug_ray_down_hit: String = "(no hit)"
 var debug_ray_up_hit: String = "(no hit)"
 
 
+const _ACTION_NAMES := {
+    "IDLE": 0x0C400201, "CROUCHING": 0x0C008220,
+    "JUMP_LAND_STOP": 0x0C000230, "DOUBLE_JUMP_LAND_STOP": 0x0C000231,
+    "FREEFALL_LAND_STOP": 0x0C000232, "SIDE_FLIP_LAND_STOP": 0x0C000233,
+    "BACKFLIP_LAND_STOP": 0x0800022F, "TRIPLE_JUMP_LAND_STOP": 0x0800023A,
+    "LONG_JUMP_LAND_STOP": 0x0800023B, "GROUND_POUND_LAND": 0x0080023C,
+    "BRAKING_STOP": 0x0C00023D,
+    "WALKING": 0x04000440, "BRAKING": 0x04000445,
+    "DIVE_SLIDE": 0x00880456, "CROUCH_SLIDE": 0x04808459,
+    "JUMP_LAND": 0x04000470, "FREEFALL_LAND": 0x04000471,
+    "DOUBLE_JUMP_LAND": 0x04000472, "SIDE_FLIP_LAND": 0x04000473,
+    "TRIPLE_JUMP_LAND": 0x04000478, "LONG_JUMP_LAND": 0x00000479,
+    "BACKFLIP_LAND": 0x0400047A,
+    "JUMP": 0x03000880, "DOUBLE_JUMP": 0x03000881,
+    "TRIPLE_JUMP": 0x01000882, "BACKFLIP": 0x01000883,
+    "WALL_KICK_AIR": 0x03000886, "SIDE_FLIP": 0x01000887,
+    "LONG_JUMP": 0x03000888, "DIVE": 0x0188088A,
+    "FREEFALL": 0x0100088C, "GROUND_POUND": 0x008008A9,
+    "PUNCHING": 0x00800380,
+}
+
+
 func _ready() -> void:
     _state = MarioStateScript.new()
     _actor_anchor = get_node_or_null("ActorAnchor")
 
+    # Pickup sensor — larger than Mario's body so coins feel generous to grab.
+    _pickup_area = Area3D.new()
+    _pickup_area.name = "PickupArea"
+    var cs := CollisionShape3D.new()
+    var sph := SphereShape3D.new()
+    sph.radius = 0.9
+    cs.shape = sph
+    cs.position = Vector3(0, 0.8, 0)
+    _pickup_area.add_child(cs)
+    _pickup_area.area_entered.connect(_on_pickup)
+    add_child(_pickup_area)
 
-func bind_animator(animator: RefCounted, owner: Node) -> void:
-    _animator = animator
-    _anim_owner = owner
-
-
-func current_action_name() -> String:
-    if _state == null:
-        return "(no state)"
-    match _state.action:
-        MarioStateScript.ACT_IDLE:                return "IDLE[%d]" % _state.action_state
-        MarioStateScript.ACT_WALKING:             return "WALKING"
-        MarioStateScript.ACT_BRAKING:             return "BRAKING"
-        MarioStateScript.ACT_JUMP:                return "JUMP"
-        MarioStateScript.ACT_FREEFALL:            return "FREEFALL"
-        MarioStateScript.ACT_JUMP_LAND:           return "JUMP_LAND"
-        MarioStateScript.ACT_FREEFALL_LAND:       return "FREEFALL_LAND"
-        MarioStateScript.ACT_JUMP_LAND_STOP:      return "JUMP_LAND_STOP"
-        MarioStateScript.ACT_FREEFALL_LAND_STOP:  return "FREEFALL_LAND_STOP"
-        _:                                        return "0x%08X" % _state.action
     _ray_down = RayCast3D.new()
     _ray_down.name = "RayDown"
-    _ray_down.target_position = Vector3(0, -10.0, 0)  # 10 units = 1000 decomp
+    _ray_down.target_position = Vector3(0, -10.0, 0)
     _ray_down.enabled = true
     _ray_down.collide_with_bodies = true
     _ray_down.collide_with_areas = false
-    # Start above the capsule's base to avoid self-intersection.
     _ray_down.position = Vector3(0, 0.2, 0)
     add_child(_ray_down)
 
@@ -94,8 +120,20 @@ func _physics_process(delta: float) -> void:
         Input.get_action_strength("move_back")  - Input.get_action_strength("move_forward"),
     )
     _state.input_jump_pressed = Input.is_action_just_pressed("jump")
+    # Crouch = Ctrl (held). Attack/dive/punch = Shift (press).
+    _state.input_crouch = Input.is_key_pressed(KEY_CTRL)
+    _state.input_crouch_pressed = (
+        Input.is_key_pressed(KEY_CTRL) and not _prev_crouch
+    )
+    _prev_crouch = Input.is_key_pressed(KEY_CTRL)
+    _state.input_attack_pressed = (
+        Input.is_key_pressed(KEY_SHIFT) and not _prev_attack
+    )
+    _prev_attack = Input.is_key_pressed(KEY_SHIFT)
     _state.input_camera_yaw = _camera_yaw()
     _state.is_on_floor = is_on_floor()
+    _state.is_on_wall = is_on_wall()
+    _state.wall_normal = get_wall_normal() if is_on_wall() else Vector3.ZERO
     _state.pos = global_position
     _state.anim_at_end = _animator != null and _animator.is_at_end()
 
@@ -120,6 +158,38 @@ func _physics_process(delta: float) -> void:
         _actor_anchor.rotation.y = _state.face_yaw
 
     _sample_rays()
+    if power_cap_time > 0.0:
+        power_cap_time = max(power_cap_time - delta, 0.0)
+        if power_cap_time == 0.0:
+            power_cap = ""
+
+
+func _on_pickup(other: Area3D) -> void:
+    if not other.has_meta("pickup_kind"):
+        return
+    var kind: String = other.get_meta("pickup_kind")
+    match kind:
+        "coin_yellow":
+            coin_count += 1
+        "coin_blue":
+            coin_count += 5
+        "coin_red":
+            coin_count += 2
+        "oneup":
+            lives += 1
+        "star":
+            star_count += 1
+            emit_signal("star_collected")
+        "cap_wing":
+            power_cap = "wing"
+            power_cap_time = 20.0
+        "cap_metal":
+            power_cap = "metal"
+            power_cap_time = 20.0
+        "cap_vanish":
+            power_cap = "vanish"
+            power_cap_time = 20.0
+    other.queue_free()
 
 
 func _camera_yaw() -> float:

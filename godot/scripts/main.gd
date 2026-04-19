@@ -174,14 +174,30 @@ func _process(delta: float) -> void:
     var action_name: String = ""
     if mario.has_method("current_action_name"):
         action_name = mario.current_action_name()
+    var stats := ""
+    if mario != null:
+        var cap := ""
+        if mario.power_cap != "":
+            cap = "  cap:%s (%.0fs)" % [mario.power_cap, mario.power_cap_time]
+        stats = "coins:%d  stars:%d  lives:%d%s" % [
+            mario.coin_count, mario.star_count, mario.lives, cap,
+        ]
+    var level_info := ""
+    if _level_manager != null:
+        level_info = "level: %s area %d" % [
+            _level_manager.current_level, _level_manager.current_area,
+        ]
     hud_label.text = (
-        "pos: %.2f,%.2f,%.2f   floor: %s   vel: (%.2f,%.2f,%.2f)\n"
-        + "action: %s\n"
-        + "anim: %s\n"
-        + "[R] respawn  [F1] collision  [Esc] cursor"
+        "%s\n"
+        + "pos: %.2f,%.2f,%.2f   floor: %s   vel: (%.2f,%.2f,%.2f)\n"
+        + "action: %s  anim: %s\n"
+        + "%s\n"
+        + "[R] respawn  [F1] collision  [Esc] cursor  [1-9,0] swap level"
     ) % [
+        level_info,
         mario.global_position.x, mario.global_position.y, mario.global_position.z,
         str(mario.is_on_floor()),
         mario.velocity.x, mario.velocity.y, mario.velocity.z,
         action_name, anim_state,
+        stats,
     ]
