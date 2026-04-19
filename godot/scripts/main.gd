@@ -94,6 +94,29 @@ func _setup_animator(actor: Dictionary) -> void:
     # Hand the animator to Mario so MarioState can request animations by ID.
     if mario.has_method("bind_animator"):
         mario.bind_animator(_animator, self)
+    # Wire star collection → brief delay → return to castle hub. Matches
+    # the "grabbed star, exit course" cadence of the original game.
+    if mario.has_signal("star_collected"):
+        mario.star_collected.connect(_on_star_collected)
+
+
+func _on_star_collected() -> void:
+    _respawn_after(2.5)
+    # Override the next respawn to land in castle_grounds rather than the
+    # current level's spawn. The simplest approach: change the current
+    # level_manager state immediately before respawn fires.
+    var t := Timer.new()
+    t.wait_time = 2.4
+    t.one_shot = true
+    add_child(t)
+    t.timeout.connect(_go_to_castle)
+    t.start()
+
+
+func _go_to_castle() -> void:
+    if _level_manager != null:
+        _level_manager.current_level = "castle_grounds"
+        _level_manager.current_area = 1
 
 
 func get_anim(anim_id: int) -> Dictionary:
@@ -208,8 +231,9 @@ func _process(delta: float) -> void:
         var cap := ""
         if mario.power_cap != "":
             cap = "  cap:%s (%.0fs)" % [mario.power_cap, mario.power_cap_time]
-        stats = "coins:%d  stars:%d  lives:%d%s" % [
-            mario.coin_count, mario.star_count, mario.lives, cap,
+        stats = "HP:%d/8  coins:%d  stars:%d  lives:%d%s" % [
+            mario.health, mario.coin_count, mario.star_count,
+            mario.lives, cap,
         ]
     var level_info := ""
     if _level_manager != null:

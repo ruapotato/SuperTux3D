@@ -207,6 +207,13 @@ func _physics_process(delta: float) -> void:
             power_cap = ""
     if invulnerable_time > 0.0:
         invulnerable_time = max(invulnerable_time - delta, 0.0)
+    # I-frame blink: toggle mesh visibility at ~8 Hz so the player can see
+    # they're invulnerable without a full material modification pass.
+    if _actor_anchor != null:
+        var want_visible := true
+        if invulnerable_time > 0.0:
+            want_visible = int(Time.get_ticks_msec() / 80) % 2 == 0
+        _actor_anchor.visible = want_visible
 
 
 func _play_state_sfx() -> void:
