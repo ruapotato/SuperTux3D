@@ -28,6 +28,11 @@ func _ready() -> void:
     _randomize_motion()
     _build_visual()
     _build_hurt_area()
+    # Enemies collide with world geometry but NOT with Mario — Mario walks
+    # through them and we detect contact via HurtArea's body_entered.
+    # Otherwise Mario would physically wedge against a patrolling enemy.
+    collision_layer = 2
+    collision_mask = 1  # still collides with the level (layer 1)
 
 
 func _randomize_motion() -> void:

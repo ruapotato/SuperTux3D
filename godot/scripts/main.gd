@@ -23,6 +23,16 @@ const LEVEL_SHORTCUTS := {
     KEY_9: ["rr", 1],
     KEY_0: ["castle_grounds", 1],
 }
+
+# Q and E step through the full list of 30 levels in sorted order.
+const CYCLE_ORDER := [
+    "castle_grounds", "castle_inside", "castle_courtyard",
+    "bob", "wf", "jrb", "ccm", "bbh", "hmc", "lll", "ssl",
+    "ddd", "sl", "wdw", "ttm", "thi", "ttc", "rr",
+    "pss", "sa", "totwc", "cotmc", "vcutm", "wmotr",
+    "bitdw", "bitfs", "bits", "bowser_1", "bowser_2", "bowser_3",
+]
+var _cycle_idx: int = 0
 # Actual spawn from decomp levels/bob/script.c: MARIO_POS(1, 135, -6558, 0, 6464).
 # Scaled to Godot world scale (see LevelLoader.WORLD_SCALE). +2 Y offset for
 # a small cushion so the capsule doesn't start clipped into the floor.
@@ -97,10 +107,21 @@ func _setup_animator(actor: Dictionary) -> void:
     # Hand the animator to Mario so MarioState can request animations by ID.
     if mario.has_method("bind_animator"):
         mario.bind_animator(_animator, self)
-    # Wire star collection → brief delay → return to castle hub. Matches
-    # the "grabbed star, exit course" cadence of the original game.
+    # Wire star collection → brief delay → return to castle hub.
     if mario.has_signal("star_collected"):
         mario.star_collected.connect(_on_star_collected)
+    # Wire death → short delay → reload current area, restoring HP.
+    if mario.has_signal("died"):
+        mario.died.connect(_on_mario_died)
+
+
+func _on_mario_died() -> void:
+    if _death_pending:
+        return
+    _death_pending = true
+    if mario.lives > 0:
+        mario.lives -= 1
+    _respawn_after(1.5)
 
 
 func _on_star_collected() -> void:
@@ -120,6 +141,11 @@ func _go_to_castle() -> void:
     if _level_manager != null:
         _level_manager.current_level = "castle_grounds"
         _level_manager.current_area = 1
+
+
+func _cycle_level(direction: int) -> void:
+    _cycle_idx = (_cycle_idx + direction + CYCLE_ORDER.size()) % CYCLE_ORDER.size()
+    _level_manager.load_level(CYCLE_ORDER[_cycle_idx], 1)
 
 
 func get_anim(anim_id: int) -> Dictionary:
@@ -161,6 +187,10 @@ func _input(event: InputEvent) -> void:
     elif event is InputEventKey and event.pressed and LEVEL_SHORTCUTS.has(event.keycode):
         var spec: Array = LEVEL_SHORTCUTS[event.keycode]
         _level_manager.load_level(spec[0], spec[1])
+    elif event is InputEventKey and event.pressed and event.keycode == KEY_Q:
+        _cycle_level(-1)
+    elif event is InputEventKey and event.pressed and event.keycode == KEY_E:
+        _cycle_level(1)
     elif event is InputEventMouseButton and event.pressed:
         if event.button_index == MOUSE_BUTTON_WHEEL_UP:
             _cam_distance = max(_cam_distance - 0.7, CAM_DISTANCE_MIN)
@@ -216,15 +246,12 @@ func _process(delta: float) -> void:
     camera_rig.global_position = focus + offset
     camera_rig.look_at(focus, Vector3.UP)
     # Auto-respawn on fall-plane crossing (Mario dropped below the level).
-    if mario.global_position.y < -50.0:
+    if mario.global_position.y < -50.0 and not _death_pending:
+        _death_pending = true
         if mario.lives > 0:
             mario.lives -= 1
         mario._play_sfx("death")
-        _respawn()
-    # Respawn on death signal too.
-    if mario.health <= 0 and not _death_pending:
-        _death_pending = true
-        _respawn_after(0.5)
+        _respawn_after(0.8)
     var mario_stub := mario as CharacterBody3D
     var ray_down: String = mario.get("debug_ray_down_hit")
     var ray_up: String = mario.get("debug_ray_up_hit")
@@ -254,7 +281,7 @@ func _process(delta: float) -> void:
         + "action: %s\n"
         + "%s\n"
         + "WASD move  Space jump  Ctrl crouch  Shift attack/dive\n"
-        + "Wheel zoom  1-9 swap level  0 castle  R respawn  F1 collision"
+        + "Wheel zoom  1-9 swap level  0 castle  Q/E cycle  R respawn  F1 collision"
     ) % [
         level_info,
         stats,
