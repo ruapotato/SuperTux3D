@@ -119,9 +119,16 @@ func _on_mario_died() -> void:
     if _death_pending:
         return
     _death_pending = true
-    if mario.lives > 0:
-        mario.lives -= 1
-    _respawn_after(1.5)
+    mario.lives -= 1
+    if mario.lives <= 0:
+        # Game over: reset lives, return to castle hub with full HP.
+        mario.lives = 4
+        mario.coin_count = 0
+        mario._play_sfx("game_over")
+        _go_to_castle()
+        _respawn_after(2.0)
+    else:
+        _respawn_after(1.5)
 
 
 func _on_star_collected() -> void:
@@ -237,23 +244,29 @@ func _reload_debug_shapes() -> void:
 func _process(delta: float) -> void:
     _update_animation(delta)
     var focus: Vector3 = mario.global_position + FOCUS_OFFSET
-    # Standard orbital: pitch > 0 lifts the camera above the focus.
     var offset := Vector3(
         sin(_cam_yaw) * cos(_cam_pitch),
         sin(_cam_pitch),
         cos(_cam_yaw) * cos(_cam_pitch),
     ) * _cam_distance
-    camera_rig.global_position = focus + offset
+    var desired := focus + offset
+    # Cast a ray from Mario's focus out to the desired camera slot; if the
+    # level geometry blocks us, slide the camera to the hit point with a
+    # small retract so we don't clip into walls.
+    var space := get_world_3d().direct_space_state
+    var q := PhysicsRayQueryParameters3D.create(focus, desired)
+    q.exclude = [mario.get_rid()]
+    q.collision_mask = 1  # level geometry
+    var hit := space.intersect_ray(q)
+    if hit.has("position"):
+        desired = (hit.position as Vector3).lerp(focus, 0.04)
+    camera_rig.global_position = desired
     camera_rig.look_at(focus, Vector3.UP)
-    # Auto-respawn on fall-plane crossing. The level_manager parks a
-    # SafetyFloor at Y=-20 so Mario doesn't tumble forever through bad
-    # collision; anyone still below -10 has genuinely fallen through.
+    # Auto-respawn on fall-plane crossing. Routes through the same death
+    # handler so lives decrement + game-over flow are consistent.
     if mario.global_position.y < -10.0 and not _death_pending:
-        _death_pending = true
-        if mario.lives > 0:
-            mario.lives -= 1
         mario._play_sfx("death")
-        _respawn_after(0.8)
+        _on_mario_died()
     var mario_stub := mario as CharacterBody3D
     var ray_down: String = mario.get("debug_ray_down_hit")
     var ray_up: String = mario.get("debug_ray_up_hit")
