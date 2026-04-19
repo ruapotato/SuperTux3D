@@ -28,6 +28,14 @@ const SOUND_ALIASES := {
     "punch": "ooof",
 }
 
+# Weighted random banks — when any of these event names is requested, we
+# pick a real AIFF-derived clip at random so Mario doesn't repeat the
+# same vocal on every jump. First entry is the default.
+const SOUND_BANKS := {
+    "jump": ["jump", "jump2", "yah", "haha", "here_we_go"],
+    "land": ["heavy_land", "plop"],
+}
+
 var _streams: Dictionary = {}
 var _players: Array[AudioStreamPlayer3D] = []
 var _pool_idx: int = 0
@@ -93,7 +101,12 @@ func _load_wav(path: String) -> AudioStreamWAV:
 
 
 func play(name: String) -> void:
-    var actual: String = SOUND_ALIASES.get(name, name)
+    var actual: String = name
+    if SOUND_BANKS.has(name):
+        var bank: Array = SOUND_BANKS[name]
+        actual = bank[randi() % bank.size()]
+    else:
+        actual = SOUND_ALIASES.get(name, name)
     var s: Variant = _streams.get(actual)
     if s == null:
         return
@@ -102,5 +115,7 @@ func play(name: String) -> void:
     var p := _players[_pool_idx % _players.size()]
     _pool_idx += 1
     p.stream = s
-    p.pitch_scale = 1.0
+    # Small pitch variance so repeated plays don't sound identical even
+    # when the bank resolves to the same clip.
+    p.pitch_scale = 0.95 + randf() * 0.1
     p.play()

@@ -140,7 +140,7 @@ var power_cap: String = ""
 var action: int = ACT_UNINITIALIZED
 var prev_action: int = ACT_UNINITIALIZED
 var action_state: int = 0           # sub-state within an action (decomp's actionState)
-var action_timer: int = 0           # frames elapsed in current action
+var action_time: float = 0.0        # seconds elapsed in current action (frame-rate independent)
 var action_arg: int = 0
 
 var pos: Vector3 = Vector3.ZERO
@@ -163,7 +163,7 @@ func set_action(new_action: int, arg: int = 0) -> bool:
     prev_action = action
     action = new_action
     action_state = 0
-    action_timer = 0
+    action_time = 0.0
     action_arg = arg
     return true
 
@@ -219,7 +219,7 @@ func step(delta: float) -> void:
         if not changed:
             break
         safety -= 1
-    action_timer += 1
+    action_time += delta
 
 
 # ---- Actions ------------------------------------------------------------
@@ -393,7 +393,7 @@ func _act_dive_slide(delta: float) -> bool:
 
 func _act_ground_pound(delta: float) -> bool:
     _request_anim(MARIO_ANIM_GROUND_POUND, 1.0)
-    if action_timer < 10:
+    if action_time < 0.17:
         vel.y = 0.0   # brief spin in place
         vel.x = 0.0
         vel.z = 0.0
@@ -401,7 +401,7 @@ func _act_ground_pound(delta: float) -> bool:
         vel.y = GROUND_POUND_SPEED
         vel.x = 0.0
         vel.z = 0.0
-    if is_on_floor and action_timer > 10:
+    if is_on_floor and action_time > 0.17:
         return set_action(ACT_GROUND_POUND_LAND)
     return false
 
@@ -413,7 +413,7 @@ func _act_ground_pound_land(_delta: float) -> bool:
     vel.y = -1.0
     if input_jump_pressed:
         return _begin_single_jump()
-    if anim_at_end or action_timer > 12:
+    if anim_at_end or action_time > 0.20:
         return set_action(ACT_IDLE)
     return false
 
@@ -424,7 +424,7 @@ func _act_punching(_delta: float) -> bool:
     vel.z = 0.0
     vel.y = -1.0
     forward_vel = 0.0
-    if anim_at_end or action_timer > 8:
+    if anim_at_end or action_time > 0.13:
         return set_action(ACT_IDLE)
     return false
 
@@ -485,7 +485,7 @@ func _act_jump_land(_delta: float) -> bool:
     vel.z = 0.0
     vel.y = -1.0
     forward_vel = 0.0
-    if anim_at_end or action_timer > 10:
+    if anim_at_end or action_time > 0.17:
         return set_action(ACT_JUMP_LAND_STOP)
     return false
 
@@ -500,7 +500,7 @@ func _act_freefall_land(_delta: float) -> bool:
     vel.z = 0.0
     vel.y = -1.0
     forward_vel = 0.0
-    if anim_at_end or action_timer > 10:
+    if anim_at_end or action_time > 0.17:
         return set_action(ACT_FREEFALL_LAND_STOP)
     return false
 
@@ -516,7 +516,7 @@ func _act_jump_land_stop(_delta: float) -> bool:
         return set_action(ACT_JUMP)
     if input_stick.length() > 0.1:
         return set_action(ACT_WALKING)
-    if action_timer > 6:
+    if action_time > 0.10:
         return set_action(ACT_IDLE)
     vel.x = 0.0
     vel.z = 0.0
@@ -532,7 +532,7 @@ func _act_freefall_land_stop(_delta: float) -> bool:
         return set_action(ACT_JUMP)
     if input_stick.length() > 0.1:
         return set_action(ACT_WALKING)
-    if action_timer > 6:
+    if action_time > 0.10:
         return set_action(ACT_IDLE)
     vel.x = 0.0
     vel.z = 0.0
@@ -577,13 +577,13 @@ func _common_air_transitions(default_land: int) -> bool:
     # Only promote to FREEFALL once we're clearly past the peak AND a few
     # frames have elapsed. Too tight a threshold makes the jump anim snap
     # to the fall anim mid-rise because vel.y ticks through zero briefly.
-    if vel.y < -2.0 and action != ACT_FREEFALL and action_timer > 6:
+    if vel.y < -2.0 and action != ACT_FREEFALL and action_time > 0.10:
         return set_action(ACT_FREEFALL)
     # Only register a landing when we're clearly airborne before touching
     # down — without the grace window a just-launched jump would read
     # as a land on the spawn frame (is_on_floor is true before the first
     # move_and_slide applies the upward velocity).
-    if is_on_floor and action_timer > 4 and vel.y <= 0.0:
+    if is_on_floor and action_time > 0.07 and vel.y <= 0.0:
         return set_action(default_land)
     return false
 
