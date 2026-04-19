@@ -13,6 +13,17 @@ const WARP_BEHAVIORS := [
     "bhvPaintingStarCollectWarp",
     "bhvLaunchStarCollectWarp", "bhvAirborneStarCollectWarp",
 ]
+
+# Climbable pole objects. We spawn a tall invisible Area3D; Mario's
+# interaction logic (future work — currently stubbed) treats these as
+# grab zones that enter ACT_HOLDING_POLE.
+const POLE_BEHAVIORS := ["bhvPoleGrabbing", "bhvPoleBase", "bhvGiantPole"]
+
+# Cannon behaviors — walk-into-lid triggers a visual placeholder for now.
+const CANNON_BEHAVIORS := [
+    "bhvCannon", "bhvCannonClosed", "bhvCannonOpened",
+    "bhvCannonBarrel", "bhvCannonBaseUnused",
+]
 # The decomp maps a (MODEL_*, bhv*) pair to a specific actor + behavior at
 # runtime; we stub most of those with placeholder nodes while the per-object
 # behaviors get ported incrementally. Coins and stars are the first real
@@ -86,6 +97,10 @@ static func spawn_area_objects(
             node = _make_warp_trigger(bhv, obj, warp_lookup, manager)
             if node != null:
                 warp_triggers += 1
+        elif bhv in POLE_BEHAVIORS:
+            node = _make_pole(bhv)
+        elif bhv in CANNON_BEHAVIORS:
+            node = _make_cannon(bhv)
         if node == null:
             node = _make_debug_marker(bhv)
         var p: Array = obj.pos
@@ -97,6 +112,13 @@ static func spawn_area_objects(
         spawned += 1
     print("[object_spawner] spawned %d objects (%d pickups, %d enemies, %d warps)"
           % [spawned, pickups, enemies, warp_triggers])
+
+
+# Lock certain high-level doors behind a star count. Real SM64 has a
+# tiered progression (lobby door: 1 star, basement: 3, upstairs: 8, etc);
+# without parsing each door's bhvParam we just apply a modest gate to
+# any bhvStarDoor so stars actually matter in progression.
+const STAR_DOOR_REQUIREMENT := 1
 
 
 static func _make_warp_trigger(
@@ -160,11 +182,19 @@ static func _make_warp_trigger(
     m.position = Vector3(0, 1.2, 0)
     a.add_child(m)
     # Connect: on body entered, ask the manager to switch levels.
+    var star_gate: int = STAR_DOOR_REQUIREMENT if bhv == "bhvStarDoor" else 0
     a.body_entered.connect(
         func(body: Node) -> void:
-            if body is CharacterBody3D and manager != null:
-                print("[warp] %s triggered → %s area %d" % [a.name, dest_level, dest_area])
-                manager.load_level(dest_level, dest_area)
+            if not (body is CharacterBody3D and manager != null):
+                return
+            if star_gate > 0 and body.get("star_count") != null \
+                    and body.star_count < star_gate:
+                # Not enough stars — nothing happens, Mario just bumps off.
+                print("[warp] locked: need %d stars (have %d)" % [
+                    star_gate, body.star_count])
+                return
+            print("[warp] %s triggered → %s area %d" % [a.name, dest_level, dest_area])
+            manager.load_level(dest_level, dest_area)
     )
     return a
 
@@ -257,6 +287,78 @@ static func _pickup_color(kind: String) -> Color:
         "cap_metal":   return Color(0.7, 0.7, 0.8)
         "cap_vanish":  return Color(0.8, 0.4, 1.0)
         _:             return Color(1, 1, 1)
+
+
+static func _make_pole(_bhv: String) -> Node3D:
+    # Static vertical cylinder + grab-zone Area3D around it. Mario's state
+    # machine watches for overlap with meta("pole_zone") to enter the
+    # holding-pole action.
+    var root := Node3D.new()
+    root.name = "Pole"
+    var mi := MeshInstance3D.new()
+    var cm := CylinderMesh.new()
+    cm.top_radius = 0.08
+    cm.bottom_radius = 0.08
+    cm.height = 5.0
+    mi.mesh = cm
+    var mat := StandardMaterial3D.new()
+    mat.albedo_color = Color(0.35, 0.2, 0.12)
+    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    mi.material_override = mat
+    mi.position = Vector3(0, 2.5, 0)
+    root.add_child(mi)
+    var a := Area3D.new()
+    a.name = "PoleZone"
+    a.set_meta("pole_zone", true)
+    var cs := CollisionShape3D.new()
+    var cap := CapsuleShape3D.new()
+    cap.radius = 0.4
+    cap.height = 5.0
+    cs.shape = cap
+    cs.position = Vector3(0, 2.5, 0)
+    a.add_child(cs)
+    root.add_child(a)
+    return root
+
+
+static func _make_cannon(_bhv: String) -> Node3D:
+    # A static base + angled barrel marker; real cannon-entry mechanic is
+    # future work. At minimum we can stand on the base for platforming.
+    var root := StaticBody3D.new()
+    root.name = "Cannon"
+    root.collision_layer = 1
+    var base := MeshInstance3D.new()
+    var bm := CylinderMesh.new()
+    bm.top_radius = 0.7
+    bm.bottom_radius = 0.9
+    bm.height = 0.5
+    base.mesh = bm
+    var bmat := StandardMaterial3D.new()
+    bmat.albedo_color = Color(0.25, 0.25, 0.3)
+    base.material_override = bmat
+    base.position = Vector3(0, 0.25, 0)
+    root.add_child(base)
+    var barrel := MeshInstance3D.new()
+    var bmesh := CylinderMesh.new()
+    bmesh.top_radius = 0.35
+    bmesh.bottom_radius = 0.45
+    bmesh.height = 1.3
+    barrel.mesh = bmesh
+    var barmat := StandardMaterial3D.new()
+    barmat.albedo_color = Color(0.15, 0.15, 0.18)
+    barrel.material_override = barmat
+    barrel.position = Vector3(0, 0.8, 0)
+    barrel.rotation = Vector3(-0.8, 0, 0)  # tilt upward
+    root.add_child(barrel)
+    # Base collision so Mario can land on it.
+    var cs := CollisionShape3D.new()
+    var bb := CylinderShape3D.new()
+    bb.radius = 0.9
+    bb.height = 1.0
+    cs.shape = bb
+    cs.position = Vector3(0, 0.5, 0)
+    root.add_child(cs)
+    return root
 
 
 static func _make_debug_marker(bhv: String) -> Node3D:
