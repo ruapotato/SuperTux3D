@@ -65,7 +65,10 @@ static func _read_json(path: String) -> Variant:
 
 static func load_actor(mesh_json_path: String, parent: Node3D,
                        animation_mode: String = "mario",
-                       anim_data: Variant = null) -> Dictionary:
+                       anim_data: Variant = null,
+                       actor_scale_override: float = -1.0,
+                       skip_alpha_geo: bool = false,
+                       debug_actor_name: String = "") -> Dictionary:
     """Load an articulated actor into `parent`. Returns a dictionary with
     `bone_root` (the Node3D that owns the whole rig), `bones` (array of
     Node3D indexed by bone index, matching the decomp's traversal order
@@ -81,13 +84,19 @@ static func load_actor(mesh_json_path: String, parent: Node3D,
     var model: Variant = _read_json(mesh_json_path)
     if not (model is Dictionary):
         return {}
-    return _build_articulated_actor(model, parent, animation_mode, anim_data)
+    return _build_articulated_actor(
+        model, parent, animation_mode, anim_data,
+        actor_scale_override, skip_alpha_geo, debug_actor_name,
+    )
 
 
 static func _build_articulated_actor(
     model: Dictionary, parent: Node3D,
     animation_mode: String = "mario",
-    anim_data: Variant = null
+    anim_data: Variant = null,
+    actor_scale_override: float = -1.0,
+    skip_alpha_geo: bool = false,
+    debug_actor_name: String = ""
 ) -> Dictionary:
     var bones_data: Array = model.bones
     var bones: Array = []
@@ -95,7 +104,8 @@ static func _build_articulated_actor(
     bones.resize(bones_data.size())
     mesh_instances.resize(bones_data.size())
 
-    var s: float = ACTOR_SCALE * WORLD_SCALE
+    var base_scale: float = ACTOR_SCALE if actor_scale_override <= 0.0 else actor_scale_override
+    var s: float = base_scale * WORLD_SCALE
     # Base rigid axis remap — directly maps decomp mesh convention into
     # Godot (+X mesh-up → Godot +Y, +Y mesh-forward → -Z, +Z mesh-left → -X).
     var rigid := Basis(
@@ -109,11 +119,24 @@ static func _build_articulated_actor(
     # Koopa carries Rz(+148°) so the tip angle differs). We pre-multiply
     # the rigid remap by the INVERSE of that composed rotation so the
     # animation's rotations cancel out the pose and leave us upright.
-    var comp := _anim_axis_compensation(anim_data)
+    # Decide compensation depth from bone hierarchy: if the actor has any
+    # geometry-carrying bone whose ancestor chain passes through bone 1,
+    # then bone 1's rotation is part of the body chain — compensate bones
+    # 0+1. Otherwise (goomba/chain_chomp: bone 1 is a sibling-only
+    # billboard bone), only compensate bone 0 so bone 1's irrelevant
+    # rotation doesn't leak Rz(-90°) into the sibling body bones.
+    var comp_depth: int = _auto_comp_depth(bones_data)
+    var comp := _anim_axis_compensation(anim_data, comp_depth)
     var axis_remap: Basis = (rigid * comp).scaled(Vector3(s, s, s))
     # Legacy "rigid" mode = skip comp (used when no animation will play).
     if animation_mode == "rigid" or anim_data == null:
         axis_remap = rigid.scaled(Vector3(s, s, s))
+    # "world" mode: the animation already rotates mesh vertices into game
+    # world coords (e.g. Bobomb's bone 1 Rz(~+180°) flips the body up),
+    # so we need NEITHER rigid NOR compensation — pure identity (plus
+    # scale) lets the anim speak directly into Godot's frame.
+    elif animation_mode == "world":
+        axis_remap = Basis.IDENTITY.scaled(Vector3(s, s, s))
 
     var bone_root := Node3D.new()
     bone_root.name = "BoneRoot"
@@ -152,7 +175,7 @@ static func _build_articulated_actor(
 
         # Attach a MeshInstance3D if the bone has any sub_meshes.
         if bd.sub_meshes.size() > 0:
-            var mi := _build_bone_mesh_instance(bd.sub_meshes)
+            var mi := _build_bone_mesh_instance(bd.sub_meshes, skip_alpha_geo)
             node.add_child(mi)
             mesh_instances[bi] = mi
             for sm in bd.sub_meshes:
@@ -179,6 +202,8 @@ static func _build_articulated_actor(
     print("[level_loader] articulated actor [%s]: %d bones, %d textured, %d untextured, min_y=%.3f" % [
         animation_mode, bones_data.size(), textured, untextured, min_y,
     ])
+    if debug_actor_name != "":
+        _dump_actor_bones(debug_actor_name, bones, mesh_instances, bones_data, parent)
     return {
         "bone_root": bone_root,
         "bones": bones,
@@ -186,7 +211,53 @@ static func _build_articulated_actor(
     }
 
 
-static func _build_bone_mesh_instance(sub_meshes: Array) -> MeshInstance3D:
+static func _dump_actor_bones(
+    tag: String, bones: Array, mesh_instances: Array,
+    bones_data: Variant, parent: Node3D
+) -> void:
+    # Print per-bone global position + per-submesh vertex Y range, so we
+    # can see exactly where each bone actually lands after the axis_remap
+    # + anim rotation chain runs. Useful for diagnosing cases like the
+    # bob-omb body floating far above the feet: if bone 11's vertex Y
+    # range is >> the foot bones', the anim's authored rotation genuinely
+    # places the body up there, not our math. If it's at a reasonable
+    # position but the mesh just isn't visible, the bug is elsewhere.
+    var parent_inv: Transform3D = parent.global_transform.affine_inverse()
+    for i in range(bones.size()):
+        var n: Node3D = bones[i]
+        if n == null:
+            continue
+        var pos_local: Vector3 = parent_inv * n.global_transform.origin
+        var info := ""
+        var mi: MeshInstance3D = mesh_instances[i]
+        if mi != null and mi.mesh != null:
+            var mesh := mi.mesh as ArrayMesh
+            var min_vy: float = INF
+            var max_vy: float = -INF
+            var vcount: int = 0
+            for s in range(mesh.get_surface_count()):
+                var arrays := mesh.surface_get_arrays(s)
+                var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+                var local_t: Transform3D = parent_inv * mi.global_transform
+                for v in verts:
+                    var y: float = (local_t * v).y
+                    if y < min_vy: min_vy = y
+                    if y > max_vy: max_vy = y
+                    vcount += 1
+            if vcount > 0:
+                info = " verts=%d y=[%.3f, %.3f]" % [vcount, min_vy, max_vy]
+        var par_idx: int = -1
+        if bones_data is Array and i < bones_data.size():
+            par_idx = int(bones_data[i].parent)
+        print("  [%s] bone %2d (parent=%2d) local_pos=(%.3f, %.3f, %.3f)%s" % [
+            tag, i, par_idx,
+            pos_local.x, pos_local.y, pos_local.z, info,
+        ])
+
+
+static func _build_bone_mesh_instance(
+    sub_meshes: Array, skip_alpha_geo: bool = false
+) -> MeshInstance3D:
     var mesh := ArrayMesh.new()
     for sm in sub_meshes:
         var positions := PackedVector3Array()
@@ -212,9 +283,19 @@ static func _build_bone_mesh_instance(sub_meshes: Array) -> MeshInstance3D:
             indices.append(idx)
         if positions.is_empty() or indices.is_empty():
             continue
-        # Skip LAYER_ALPHA (cap wings — visibility normally controlled by
-        # an ASM callback we don't model).
-        if sm.layer == "LAYER_ALPHA":
+        # Skip geometry authored inside GEO_BILLBOARD (Goomba/Bob-omb eye
+        # sprites). They're meant to always face the camera; rendered
+        # statically they appear as duplicated flat quads in the middle
+        # of the body ("two small cores"). Until we implement real
+        # billboarding, it's better to omit them.
+        if sm.get("billboard", false):
+            continue
+        # Mario's cap wings (among other things) are authored as
+        # LAYER_ALPHA geometry toggled on by an ASM callback we don't
+        # implement. For Mario we skip all non-billboard alpha geometry
+        # so the wings don't sprout by default. Other actors (bob-omb
+        # fuse/eye panels, Koopa shell alpha decals) keep it.
+        if skip_alpha_geo and sm.layer == "LAYER_ALPHA":
             continue
 
         var arrays := []
@@ -226,17 +307,28 @@ static func _build_bone_mesh_instance(sub_meshes: Array) -> MeshInstance3D:
         mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
         var surf_idx := mesh.get_surface_count() - 1
 
-        var mat := StandardMaterial3D.new()
-        mat.resource_name = sm.key
-        mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-        mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
-        mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
         var tex := _load_texture(sm.texture)
+        var mat: Material
         if tex != null:
-            mat.albedo_texture = tex
-            mat.albedo_color = Color(1, 1, 1, 1)
+            # Use a ShaderMaterial with a repeat_disable sampler so textured
+            # actor surfaces CLAMP instead of WRAPPING. The decomp sets
+            # G_TX_CLAMP on most actor textures (goomba face, koopa eyes,
+            # etc.); without this, UVs authored outside [0,1] tile the
+            # face texture across the whole body and eyes appear on the
+            # back. Alpha layers use alpha-scissor for cutout transparency.
+            mat = _build_clamped_actor_material(
+                tex, sm.key, sm.layer == "LAYER_ALPHA"
+            )
         else:
-            mat.albedo_color = _actor_shade_color(sm)
+            var smat := StandardMaterial3D.new()
+            smat.resource_name = sm.key
+            smat.cull_mode = BaseMaterial3D.CULL_DISABLED
+            smat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+            smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+            smat.albedo_color = _actor_shade_color(sm)
+            if sm.layer == "LAYER_ALPHA":
+                smat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+            mat = smat
         mesh.surface_set_material(surf_idx, mat)
 
     var mi := MeshInstance3D.new()
@@ -268,6 +360,62 @@ static func _compute_min_local_y(
                 if ly < min_y:
                     min_y = ly
     return min_y
+
+
+# Shared shader + material cache. Godot's StandardMaterial3D doesn't
+# expose a sampler-level repeat mode (only filter), so we use a tiny
+# ShaderMaterial whose sampler is hinted `repeat_disable` → hardware
+# CLAMP. The shader is unshaded, nearest-filtered, double-sided.
+# Opaque shader: no ALPHA output so Godot treats the material as fully
+# opaque (depth write, no blending). Setting ALPHA = c.a here would mark
+# the surface as transparent, which disables depth writes and lets
+# back-facing triangles composite over the front — on a goomba that
+# makes the face (with eyes) invisible when viewed head-on.
+const _ACTOR_CLAMPED_SHADER_SRC := """
+shader_type spatial;
+render_mode unshaded, cull_disabled;
+uniform sampler2D albedo_tex : source_color, filter_nearest, repeat_disable;
+void fragment() {
+    ALBEDO = texture(albedo_tex, UV).rgb;
+}
+"""
+
+# Alpha-scissor variant: cutout transparency for things like the bob-omb
+# fuse / Koopa shell decals. discard keeps depth writes correct for the
+# non-discarded fragments.
+const _ACTOR_CLAMPED_ALPHA_SHADER_SRC := """
+shader_type spatial;
+render_mode unshaded, cull_disabled;
+uniform sampler2D albedo_tex : source_color, filter_nearest, repeat_disable;
+void fragment() {
+    vec4 c = texture(albedo_tex, UV);
+    if (c.a < 0.5) discard;
+    ALBEDO = c.rgb;
+}
+"""
+static var _actor_clamped_shader: Shader = null
+static var _actor_clamped_alpha_shader: Shader = null
+
+
+static func _build_clamped_actor_material(
+    tex: Texture2D, name: String, alpha_scissor: bool
+) -> ShaderMaterial:
+    var shader: Shader
+    if alpha_scissor:
+        if _actor_clamped_alpha_shader == null:
+            _actor_clamped_alpha_shader = Shader.new()
+            _actor_clamped_alpha_shader.code = _ACTOR_CLAMPED_ALPHA_SHADER_SRC
+        shader = _actor_clamped_alpha_shader
+    else:
+        if _actor_clamped_shader == null:
+            _actor_clamped_shader = Shader.new()
+            _actor_clamped_shader.code = _ACTOR_CLAMPED_SHADER_SRC
+        shader = _actor_clamped_shader
+    var mat := ShaderMaterial.new()
+    mat.resource_name = name
+    mat.shader = shader
+    mat.set_shader_parameter("albedo_tex", tex)
+    return mat
 
 
 static func _actor_shade_color(sm: Dictionary) -> Color:
@@ -482,7 +630,27 @@ static func _build_static_body(coll: Dictionary) -> StaticBody3D:
     return container
 
 
-static func _anim_axis_compensation(anim_data: Variant) -> Basis:
+static func _auto_comp_depth(bones_data: Array) -> int:
+    # Return 2 if any geometry-bearing bone descends through bone 1;
+    # else 1. (Mario/Koopa/Bobomb/Piranha/Penguin = 2; Goomba/Chain
+    # Chomp = 1 because bone 1 is the eye-billboard sibling.)
+    for bd in bones_data:
+        var subs: Array = bd.sub_meshes
+        if subs.is_empty():
+            continue
+        var idx: int = int(bd.index)
+        if idx == 1:
+            continue
+        # Walk parents until -1, looking for bone 1.
+        var cur: int = bd.parent
+        while cur >= 0:
+            if cur == 1:
+                return 2
+            cur = int(bones_data[cur].parent)
+    return 1
+
+
+static func _anim_axis_compensation(anim_data: Variant, depth: int = 2) -> Basis:
     # Build a rotation that undoes the animation's frame-0 bone 0 + bone 1
     # pose, so vertex_mesh_up maps cleanly through rigid_remap into world
     # +Y. Without this Mario/Goomba/Koopa all tip differently because
@@ -511,9 +679,12 @@ static func _anim_axis_compensation(anim_data: Variant) -> Basis:
     )
     var r0 := Basis.from_euler(b0, EULER_ORDER_ZYX)
     var r1 := Basis.from_euler(b1, EULER_ORDER_ZYX)
-    # Frame-0 composed rotation applied to mesh vertices = r0 * r1 * v.
-    # We want to undo this so the axis_remap ends up targeting the rigid
-    # mapping. Apply the inverse by composing the transpose.
+    # depth=1: compensate only bone 0 (for goomba/chain_chomp where
+    # bone 1 is a sibling-only billboard bone whose rotation should NOT
+    # cancel against body bones). depth=2: compensate bones 0+1 (Mario,
+    # Koopa, etc. where everything descends through bone 1).
+    if depth <= 1:
+        return r0.transposed()
     return (r0 * r1).transposed()
 
 

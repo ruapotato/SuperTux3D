@@ -58,6 +58,29 @@ WARP_NODE_RE = re.compile(
 AREA_RE = re.compile(r"\bAREA\s*\((?P<args>[^)]*)\)", re.DOTALL)
 END_AREA_RE = re.compile(r"\bEND_AREA\s*\(\s*\)")
 
+# Macro-object entries inside areas/N/macro.inc.c. Compressed spawns that
+# reference a preset table from include/macro_presets.inc.c. Most of each
+# level's enemies (goombas, bob-ombs, chain chomp, koopas of certain
+# variants, etc.) live here — NOT in script.c. Easy to miss and I did
+# for a while.
+MACRO_OBJECT_RE = re.compile(
+    r"\bMACRO_OBJECT(?:_WITH_BHV_PARAM)?\s*\((?P<args>[^()]*(?:\([^()]*\)[^()]*)*)\)",
+    re.DOTALL,
+)
+
+# Preset entry inside macro_presets.inc.c. The comment before each entry
+# is the preset's identifier (matching what shows up in levels/*/areas/N/
+# macro.inc.c). We need the mapping to resolve macro preset → bhv/model/
+# bhvParam. Example line:
+#   /* macro_goomba            */ { bhvGoomba, MODEL_GOOMBA, 0 },
+MACRO_PRESET_RE = re.compile(
+    r"/\*\s*(?P<name>macro_\w+)\s*\*/\s*\{"
+    r"\s*(?P<bhv>\w+)\s*,"
+    r"\s*(?P<model>\w+)\s*,"
+    r"\s*(?P<param>[^}]+?)\s*\}",
+    re.DOTALL,
+)
+
 BLOCK_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 LINE_COMMENT_RE = re.compile(r"//[^\n]*")
 
@@ -83,6 +106,20 @@ def split_args(arg_text: str) -> list[str]:
     return out
 
 
+def parse_macro_presets(text: str) -> dict[str, dict]:
+    """Build preset_name → {bhv, model, param} dict from macro_presets.inc.c
+    content. The param field is kept as a raw string so we can preserve
+    expressions like `GOOMBA_TRIPLET_SPAWNER_BP_EXTRA_GOOMBAS(0) | GOOMBA_SIZE_REGULAR`."""
+    out: dict[str, dict] = {}
+    for m in MACRO_PRESET_RE.finditer(text):
+        out[m.group("name")] = {
+            "bhv": m.group("bhv").strip(),
+            "model": m.group("model").strip(),
+            "param": m.group("param").strip(),
+        }
+    return out
+
+
 def parse_int_safe(s: str) -> int | None:
     s = s.strip().rstrip(",").strip()
     if not s:
@@ -96,6 +133,40 @@ def parse_int_safe(s: str) -> int | None:
         return int(s)
     except ValueError:
         return None
+
+
+def parse_macro_file(macro_text: str, presets: dict[str, dict]) -> list[dict]:
+    """Parse a single areas/N/macro.inc.c text, returning a list of
+    object dicts in the same shape our OBJECT parser emits."""
+    text = BLOCK_COMMENT_RE.sub("", macro_text)
+    text = LINE_COMMENT_RE.sub("", text)
+    objects: list[dict] = []
+    for m in MACRO_OBJECT_RE.finditer(text):
+        args = split_args(m.group("args"))
+        if len(args) < 5:
+            continue
+        preset_name = args[0].strip()
+        preset = presets.get(preset_name)
+        if preset is None:
+            # Unknown preset — still emit a stub with the raw name so
+            # the spawner can log it.
+            preset = {"bhv": preset_name, "model": "MODEL_NONE", "param": "0"}
+        yaw = parse_int_safe(args[1])
+        pos = [parse_int_safe(args[i]) for i in (2, 3, 4)]
+        if yaw is None or None in pos:
+            continue
+        # MACRO_OBJECT_WITH_BHV_PARAM supplies its own bhvParam; otherwise
+        # use the preset's default param.
+        bhv_param = args[5].strip() if len(args) >= 6 else preset["param"]
+        objects.append({
+            "model": preset["model"],
+            "pos": pos,
+            "angle": [0, yaw, 0],
+            "bhv_param": bhv_param,
+            "bhv": preset["bhv"],
+            "acts": None,
+        })
+    return objects
 
 
 def parse(script_text: str) -> dict:
@@ -234,14 +305,42 @@ def main() -> int:
 
     data = parse(script.read_text(errors="ignore"))
     data["name"] = args.level_dir.name
+
+    # Load macro presets from the sm64 repo (levels/<name> → ../../include).
+    presets_path = args.level_dir.parent.parent / "include" / "macro_presets.inc.c"
+    presets: dict[str, dict] = {}
+    if presets_path.exists():
+        presets = parse_macro_presets(presets_path.read_text(errors="ignore"))
+
+    # Each area may have areas/<idx>/macro.inc.c with additional enemy
+    # spawns. Merge them into the matching area's object list.
+    macro_added = 0
+    if presets:
+        for area_dir in sorted((args.level_dir / "areas").glob("*/")):
+            try:
+                area_idx = int(area_dir.name)
+            except ValueError:
+                continue
+            macro_file = area_dir / "macro.inc.c"
+            if not macro_file.exists():
+                continue
+            macro_objects = parse_macro_file(
+                macro_file.read_text(errors="ignore"), presets
+            )
+            key = str(area_idx)
+            if key not in data["areas"]:
+                data["areas"][key] = {"geo": "", "objects": [], "warps": []}
+            data["areas"][key]["objects"].extend(macro_objects)
+            macro_added += len(macro_objects)
+
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(data, indent=2))
 
     obj_total = sum(len(a["objects"]) for a in data["areas"].values())
     warp_total = sum(len(a["warps"]) for a in data["areas"].values())
     print(f"wrote {args.output}: {len(data['areas'])} areas, "
-          f"{len(data['spawns'])} spawns, {obj_total} objects, "
-          f"{warp_total} warps")
+          f"{len(data['spawns'])} spawns, {obj_total} objects "
+          f"({macro_added} from macro.inc.c), {warp_total} warps")
     return 0
 
 

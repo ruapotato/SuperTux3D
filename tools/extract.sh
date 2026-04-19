@@ -94,7 +94,7 @@ python3 "$SCRIPT_DIR/convert_actor.py" \
 # meshes still load.
 declare -a ACTORS=(
   "goomba           goomba_geo                 goomba"
-  "koopa            koopa_without_shell_geo    koopa"
+  "koopa            koopa_with_shell_geo       koopa"
   "bobomb           black_bobomb_geo           bobomb"
   "bobomb           bobomb_buddy_geo           bobomb_buddy"
   "chain_chomp      chain_chomp_geo            chain_chomp"

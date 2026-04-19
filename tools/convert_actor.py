@@ -73,12 +73,36 @@ LIGHTS1_RE = re.compile(
 
 
 def parse_light_groups(text: str) -> dict[str, tuple[float, float, float]]:
+    """Pick a representative shade color for each light group.
+
+    The N64 computes per-vertex shade = ambient + diffuse * dot(N, L).
+    Unshaded rendering can't replicate that, so we need a single color
+    per group. Mario uses ambient ≈ diffuse/2 (same hue), so either works
+    and diffuse gives brighter output. But some actors — notably the
+    black Bob-omb's body — use ambient = 0x2c and diffuse = 0xb2, a 1:4
+    ratio that makes the in-game body look dark/black because the
+    ambient dominates in typical viewing conditions. Picking diffuse
+    renders it as medium grey, which blends into backgrounds.
+    Heuristic: if ambient < diffuse/3 (low ambient), blend 60% ambient +
+    40% diffuse for a visually darker result. Otherwise use diffuse.
+    """
     out: dict[str, tuple[float, float, float]] = {}
     for m in LIGHTS1_RE.finditer(text):
         name = m.group(1)
-        r = int(m.group(5), 16) / 255.0
-        g = int(m.group(6), 16) / 255.0
-        b = int(m.group(7), 16) / 255.0
+        ar = int(m.group(2), 16) / 255.0
+        ag = int(m.group(3), 16) / 255.0
+        ab = int(m.group(4), 16) / 255.0
+        dr = int(m.group(5), 16) / 255.0
+        dg = int(m.group(6), 16) / 255.0
+        db = int(m.group(7), 16) / 255.0
+        avg_a = (ar + ag + ab) / 3.0
+        avg_d = (dr + dg + db) / 3.0
+        if avg_d > 0.0 and avg_a < avg_d / 3.0:
+            r = 0.6 * ar + 0.4 * dr
+            g = 0.6 * ag + 0.4 * dg
+            b = 0.6 * ab + 0.4 * db
+        else:
+            r, g, b = dr, dg, db
         out[name] = (r, g, b)
     return out
 
@@ -191,6 +215,12 @@ class SubMeshBuilder:
     texture: str
     layer: str
     light_group: str = ""
+    # billboard=True when this submesh was emitted inside a GEO_BILLBOARD
+    # subtree (e.g. Bob-omb's eye quads, Goomba's eye sprite). The runtime
+    # uses this to either render as a camera-facing sprite or skip it
+    # (we currently skip, since the geometry is authored as a fixed-
+    # orientation quad and looks wrong when drawn statically).
+    billboard: bool = False
     positions: list[list[float]] = field(default_factory=list)
     normals: list[list[float]] = field(default_factory=list)
     uvs: list[list[int]] = field(default_factory=list)
@@ -271,6 +301,11 @@ class ArticulatedWalker:
         # Current rendering state.
         self._current_texture = "none"
         self._current_light_group = ""
+        # Depth counter incremented each time we enter a GEO_BILLBOARD and
+        # decremented on its GEO_CLOSE_NODE. Submeshes emitted while
+        # billboard_depth > 0 are tagged so the runtime can skip them
+        # (we don't implement camera-facing quads).
+        self._billboard_depth = 0
         self._vtx_cache: list[tuple[VtxEntry, tuple[float, float, float], tuple[float, float, float]] | None] = [None] * 32
 
         # Diagnostics.
@@ -320,13 +355,18 @@ class ArticulatedWalker:
     def _current_submesh(self, layer: str) -> SubMeshBuilder:
         self._ensure_root_bone()
         bone = self.bones[self._current_bone]
-        key = (self._current_texture, layer, self._current_light_group)
+        billboard = self._billboard_depth > 0
+        # Include billboard in the key so billboard and non-billboard
+        # geometry on the same bone don't merge (e.g. an actor with both
+        # a rigid DL and a billboard sprite on the same bone).
+        key = (self._current_texture, layer, self._current_light_group, billboard)
         sm = bone.sub_meshes.get(key)
         if sm is None:
             sm = SubMeshBuilder(
                 texture=self._current_texture,
                 layer=layer,
                 light_group=self._current_light_group,
+                billboard=billboard,
             )
             bone.sub_meshes[key] = sm
         return sm
@@ -461,8 +501,14 @@ class ArticulatedWalker:
             return idx
 
         is_animated_part = (op == "GEO_ANIMATED_PART")
+        is_billboard = (op == "GEO_BILLBOARD")
         saved_frame = [row[:] for row in self._local_stack[-1]]
         bone_entered = False
+        billboard_entered = False
+
+        if is_billboard:
+            self._billboard_depth += 1
+            billboard_entered = True
 
         if is_animated_part and len(args) >= 5:
             tx = parse_int(args[1])
@@ -500,6 +546,8 @@ class ArticulatedWalker:
         else:
             # Non-animated transforms restore to the parent's frame.
             self._local_stack[-1] = saved_frame
+        if billboard_entered:
+            self._billboard_depth -= 1
         return idx
 
     def _execute_non_bone_node(self, op: str, args: list[str]) -> None:
@@ -600,13 +648,18 @@ def convert(geo_path: Path, model_path: Path, entry: str) -> dict:
     bones_out: list[dict] = []
     for i, bone in enumerate(walker.bones):
         sub_meshes = []
-        for (tex, layer, lg), sm in bone.sub_meshes.items():
+        for key_tuple, sm in bone.sub_meshes.items():
+            # Key is now (tex, layer, lg, billboard); old consumers that
+            # serialize the key as "tex|layer|lg" still get a valid
+            # string (billboard is a separate field).
+            tex, layer, lg = key_tuple[0], key_tuple[1], key_tuple[2]
             shade = light_groups.get(lg) if lg else None
             sub_meshes.append({
                 "key": f"{tex}|{layer}|{lg}",
                 "texture": tex,
                 "layer": layer,
                 "light_group": lg,
+                "billboard": sm.billboard,
                 "shade_color": list(shade) if shade is not None else None,
                 "positions": sm.positions,
                 "normals": sm.normals,

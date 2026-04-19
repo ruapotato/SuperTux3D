@@ -55,13 +55,15 @@ const BHV_IMPLEMENTATIONS := {
 }
 
 
-# Behaviors that spawn as walking enemies. bhvBobombBuddy is NOT an
-# enemy (it's the pink non-hostile bob-omb that opens cannons) — we
-# spawn it as a distinctive debug marker instead.
+# Behaviors that spawn through enemy.gd. bhvBobombBuddy is a friendly
+# non-hostile NPC (the pink cannon-opening bob-omb) — it routes through
+# enemy.gd so it gets the real bobomb_buddy mesh, but enemy.gd puts it
+# in "static" mode so it just stands there without attacking.
 const ENEMY_BEHAVIORS := [
     "bhvGoomba", "bhvGoombaTripletSpawner",
     "bhvKoopa", "bhvKoopaShellUnderwater",
     "bhvBobomb",
+    "bhvBobombBuddy", "bhvBobombBuddyOpensCannon",
     "bhvChuckya",
     "bhvPiranhaPlant",
     "bhvMrBlizzard", "bhvMrBlizzardHidden",

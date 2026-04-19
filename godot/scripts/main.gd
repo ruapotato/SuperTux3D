@@ -80,8 +80,13 @@ func _ready() -> void:
     # sample its frame-0 bone 0 + bone 1 rotations. Same treatment every
     # animated actor gets — no Mario-special-case axis_remap any more.
     var mario_idle: Variant = _read_json("res://extracted/actors/mario/anims/anim_C5.json")
+    # skip_alpha_geo=true hides Mario's cap wings by default — the decomp
+    # uses an ASM callback to toggle them on when he wears the Wing Cap
+    # powerup, which we don't model. Without this flag wings sprout from
+    # the sides of his head.
     var actor: Dictionary = LevelLoader.load_actor(
-        MARIO_MESH_JSON, anchor, "mario", mario_idle
+        MARIO_MESH_JSON, anchor, "mario", mario_idle,
+        -1.0, true,
     )
     _setup_animator(actor)
 
