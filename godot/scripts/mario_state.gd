@@ -139,11 +139,13 @@ var input_attack_pressed: bool = false   # this frame (dive/punch)
 var input_camera_yaw: float = 0.0
 # Jump combo chain — tracks how many times in a row Mario has landed
 # briefly and pressed jump. 0 = next jump is a single jump, 1 = double,
-# 2 = triple. The combo advances on _begin_*_jump() and decays back to
-# 0 if the combo window elapses without another jump press.
+# 2 = triple. The combo advances on _begin_*_jump() and resets only
+# when Mario settles into a non-jump state (idle, brake stop, crouch).
+# A hard timeout also wipes the combo so Mario can't chain jumps with
+# long pauses between them — but the timer stays paused while airborne.
 var jump_combo: int = 0
 var jump_combo_timer: float = 0.0
-const JUMP_COMBO_WINDOW: float = 0.45
+const JUMP_COMBO_WINDOW: float = 0.6
 # Signal from the owning CharacterBody3D: did we bump a wall this frame?
 var is_on_wall: bool = false
 var wall_normal: Vector3 = Vector3.ZERO
@@ -201,7 +203,11 @@ func step(delta: float) -> void:
         set_action(ACT_IDLE)
     requested_anim = -1
     requested_anim_reset = false
-    if jump_combo_timer > 0.0:
+    # Only decay the combo timer while Mario is on the ground between
+    # jumps. Airborne time shouldn't burn the window — a single jump's
+    # full arc is longer than the window, so the previous implementation
+    # reset the combo before the player ever landed to press again.
+    if is_on_floor and jump_combo_timer > 0.0:
         jump_combo_timer = max(jump_combo_timer - delta, 0.0)
         if jump_combo_timer == 0.0:
             jump_combo = 0
@@ -271,6 +277,10 @@ func step(delta: float) -> void:
 func _act_idle(_delta: float) -> bool:
     if not is_on_floor:
         return set_action(ACT_FREEFALL)
+    # Any moment Mario's truly idle resets the jump combo so casually
+    # wandering + jumping doesn't rack up a phantom triple.
+    if action_time > 0.25:
+        jump_combo = 0
     if input_jump_pressed:
         # Standing jump: backflip if crouching held, else chained jump.
         if input_crouch:

@@ -84,52 +84,56 @@ func _build_visual() -> void:
             var actor_anchor := Node3D.new()
             actor_anchor.name = "ActorAnchor"
             add_child(actor_anchor)
+            # Decide axis mode: decomp anim data carries bone 0 =
+            # Ry(+90°) + bone 1 = Rz(+90°) across every actor (not just
+            # Mario), so if we're going to play an animation we must
+            # use "mario" mode so those rotations compensate out into
+            # upright/face-forward. Without an animation the mesh's
+            # natural frame needs "rigid".
+            var anim_data := _find_walk_animation(actor_sub)
+            var mode := "mario" if not anim_data.is_empty() else "rigid"
             var actor: Dictionary = LevelLoader.load_actor(
-                mesh_path, actor_anchor, "rigid"
+                mesh_path, actor_anchor, mode
             )
             _mesh = actor_anchor
-            _try_play_animation(actor_sub, actor)
+            if not anim_data.is_empty():
+                _start_animation(actor, anim_data)
         else:
             _build_placeholder_mesh()
     else:
         _build_placeholder_mesh()
 
 
-func _try_play_animation(actor_sub: String, actor: Dictionary) -> void:
-    # Pick the first available animation for this actor (usually the walk)
-    # and play it on a looping animator. If the enemy's bone count matches
-    # its anim's bone_count — which is guaranteed since they came from the
-    # same actors/<actor>/ directory — the animator applies just fine.
-    if actor.is_empty():
-        return
+func _find_walk_animation(actor_sub: String) -> Dictionary:
+    # Pick the first JSON in the actor's anims/ dir. For Koopa that's
+    # its walking cycle; for Goomba it's the only anim they have. We
+    # don't try to match anim-by-name — the first one is always fine
+    # as the default-pose walk cycle in the decomp's layout.
     var anims_dir := "res://extracted/actors/%s/anims" % actor_sub
     var d := DirAccess.open(anims_dir)
     if d == null:
-        return
-    var anim_files := d.get_files()
-    if anim_files.is_empty():
-        return
-    # Load the first JSON that matches bone count.
-    var bone_count: int = actor.bones.size()
-    var anim_data: Dictionary = {}
-    for f in anim_files:
+        return {}
+    for f in d.get_files():
         if not f.ends_with(".json"):
             continue
-        var path := "%s/%s" % [anims_dir, f]
-        var file := FileAccess.open(path, FileAccess.READ)
+        var file := FileAccess.open("%s/%s" % [anims_dir, f], FileAccess.READ)
         if file == null:
             continue
         var parsed: Variant = JSON.parse_string(file.get_as_text())
-        if parsed is Dictionary and int(parsed.bone_count) == bone_count:
-            anim_data = parsed
-            break
-    if anim_data.is_empty():
+        if parsed is Dictionary:
+            return parsed
+    return {}
+
+
+func _start_animation(actor: Dictionary, anim_data: Dictionary) -> void:
+    if actor.is_empty() or anim_data.is_empty():
         return
-    # Build a MarioAnimator bound to this actor's bones. We reuse the same
-    # class since the animation format is identical across actors.
+    # Verify bone counts match so anim tracks address valid bones.
+    if int(anim_data.bone_count) != actor.bones.size():
+        # Mismatched skeleton; skip rather than crash at runtime.
+        return
     _animator = MarioAnimator.new()
     var rest_rots: Array = []
-    var to_rad: float = TAU / 65536.0
     for b in actor.bones.size():
         var bone_node: Node3D = actor.bones[b]
         if bone_node != null:
@@ -137,8 +141,6 @@ func _try_play_animation(actor_sub: String, actor: Dictionary) -> void:
         else:
             rest_rots.append(Vector3.ZERO)
     _animator.setup(actor.bones, rest_rots)
-    # Slow the enemy walks down a bit — the decomp's native rate is 30 fps
-    # but enemies read too fast at 60 fps playback.
     _animator.frames_per_second = 30.0
     _animator.play(anim_data, 1.0, 0)
 
