@@ -282,12 +282,18 @@ class ArticulatedWalker:
     # -- bone management ----------------------------------------------------
 
     def _ensure_root_bone(self) -> None:
-        # Kept as a no-op hook. Originally we auto-created a synthetic root
-        # bone, but the decomp's animation data treats the FIRST
-        # GEO_ANIMATED_PART as animation bone 0 — an extra synthetic root
-        # would shift every animation track by one. Bones now begin at the
-        # first ANIMATED_PART we encounter.
-        pass
+        # Lazily create a synthetic root bone only when triangles need to be
+        # emitted and no GEO_ANIMATED_PART has been seen yet. Static actors
+        # (star, coin, 1up) have no ANIMATED_PART so without this their
+        # geometry would land on bone index -1 and crash. For actors with
+        # real animated skeletons (Mario, goomba, etc.) the first
+        # ANIMATED_PART runs before any draws, so this is a no-op.
+        if not self.bones:
+            self.bones.append(
+                Bone(parent=-1, name="root",
+                     translation=(0, 0, 0), rest_rotation=(0, 0, 0))
+            )
+            self._current_bone = 0
 
     def _begin_bone(
         self,
@@ -312,6 +318,7 @@ class ArticulatedWalker:
     # -- DL walker (draws into current bone) --------------------------------
 
     def _current_submesh(self, layer: str) -> SubMeshBuilder:
+        self._ensure_root_bone()
         bone = self.bones[self._current_bone]
         key = (self._current_texture, layer, self._current_light_group)
         sm = bone.sub_meshes.get(key)
@@ -392,7 +399,10 @@ class ArticulatedWalker:
     # -- geo walker ---------------------------------------------------------
 
     def walk(self, entry: str) -> None:
-        self._ensure_root_bone()
+        # Don't pre-create a root bone here. _ensure_root_bone is called
+        # lazily when triangles actually need to be emitted, so actors
+        # whose first geo command is GEO_ANIMATED_PART (Mario, goomba, …)
+        # aren't shifted by a phantom root bone.
         self._walk_siblings(self.layouts.get(entry, []), 0,
                             take_first_only=False, expect_close=False)
 

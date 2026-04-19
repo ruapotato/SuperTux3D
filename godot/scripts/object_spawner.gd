@@ -88,18 +88,38 @@ static func _make_enemy(bhv: String) -> Node3D:
     return e
 
 
+# pickup_kind → extracted actor mesh subdir, when we have one.
+const PICKUP_ACTORS := {
+    "coin_yellow": "coin_yellow",
+    "coin_blue":   "coin_blue",
+    "coin_red":    "coin_yellow",
+    "star":        "star",
+    "oneup":       "oneup",
+}
+
+
 static func _make_pickup(kind: String) -> Node3D:
-    # A small floating sphere with a color hint. Mario's pickup collision
-    # is handled in mario_stub.gd via an Area3D check later.
     var body := Area3D.new()
     body.name = "Pickup_" + kind
     body.set_meta("pickup_kind", kind)
 
     var shape := CollisionShape3D.new()
     var sphere := SphereShape3D.new()
-    sphere.radius = 0.3
+    sphere.radius = 0.35
     shape.shape = sphere
     body.add_child(shape)
+
+    # Prefer a real actor mesh where we have one extracted; fall back to
+    # the glowing sphere for caps (no cap actor yet) and any unknown kind.
+    var actor_sub: String = PICKUP_ACTORS.get(kind, "")
+    if actor_sub != "":
+        var mesh_path := "res://extracted/actors/%s/mesh.json" % actor_sub
+        if FileAccess.file_exists(mesh_path):
+            var anchor := Node3D.new()
+            anchor.name = "ActorAnchor"
+            body.add_child(anchor)
+            LevelLoader.load_actor(mesh_path, anchor)
+            return body
 
     var mesh_inst := MeshInstance3D.new()
     var sphere_mesh := SphereMesh.new()

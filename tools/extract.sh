@@ -101,6 +101,10 @@ declare -a ACTORS=(
   "piranha_plant    piranha_plant_geo          piranha_plant"
   "penguin          penguin_geo                penguin"
   "koopa_shell      koopa_shell_geo            koopa_shell"
+  "star             star_geo                   star"
+  "coin             yellow_coin_geo            coin_yellow"
+  "coin             blue_coin_geo              coin_blue"
+  "mushroom_1up     mushroom_1up_geo           oneup"
 )
 for spec in "${ACTORS[@]}"; do
   read -r adir entry sub <<< "$spec"
