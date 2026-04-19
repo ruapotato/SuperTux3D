@@ -91,6 +91,11 @@ python3 "$SCRIPT_DIR/convert_animation.py" \
   "$SM64_REPO/assets/anims" \
   "$EXTRACTED/actors/mario/anims"
 
+# 6.7 Generate placeholder sound effects (until we port the decomp's audio
+# engine, synthesize short WAVs for coin/jump/land/star/etc).
+log "generating placeholder sound effects"
+python3 "$SCRIPT_DIR/gen_sounds.py" "$EXTRACTED/sounds"
+
 # 7. Convert level geometry + collision to Godot-friendly JSON.
 log "converting level geometry and collision to Godot JSON"
 

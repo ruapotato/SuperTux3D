@@ -16,6 +16,14 @@ var _ray_down: RayCast3D
 var _ray_up: RayCast3D
 var _actor_anchor: Node3D
 var _pickup_area: Area3D
+var _sound_bank: Node
+var _prev_action_for_sfx: int = 0
+
+# Damage / invulnerability.
+var health: int = 8
+var invulnerable_time: float = 0.0
+signal took_damage
+signal died
 
 # Collected totals + timed power-ups. HUD in main.gd reads these.
 var coin_count: int = 0
@@ -94,6 +102,39 @@ func set_camera(cam: Camera3D) -> void:
     _camera_node = cam
 
 
+func bind_animator(animator: RefCounted, owner: Node) -> void:
+    _animator = animator
+    _anim_owner = owner
+
+
+func bind_sound_bank(bank: Node) -> void:
+    _sound_bank = bank
+
+
+func _play_sfx(name: String) -> void:
+    if _sound_bank != null:
+        _sound_bank.play(name)
+
+
+func take_damage(amount: int, _source: String) -> void:
+    if invulnerable_time > 0.0 or power_cap == "metal":
+        return
+    health = max(health - amount, 0)
+    invulnerable_time = 1.2
+    _play_sfx("punch")
+    emit_signal("took_damage")
+    if health <= 0:
+        _play_sfx("death")
+        emit_signal("died")
+        health = 8  # respawn with refresh; level_manager handles repositioning
+
+
+func on_enemy_squished() -> void:
+    # Small hop rebound after squishing an enemy, matches SM64 feel.
+    velocity.y = max(velocity.y, 8.0)
+    _play_sfx("punch")
+
+
 func _sample_rays() -> void:
     if _ray_down and _ray_down.is_colliding():
         var p: Vector3 = _ray_down.get_collision_point()
@@ -136,6 +177,7 @@ func _physics_process(delta: float) -> void:
     _state.wall_normal = get_wall_normal() if is_on_wall() else Vector3.ZERO
     _state.pos = global_position
     _state.anim_at_end = _animator != null and _animator.is_at_end()
+    _state.power_cap = power_cap
 
     _state.step(delta)
 
@@ -158,10 +200,44 @@ func _physics_process(delta: float) -> void:
         _actor_anchor.rotation.y = _state.face_yaw
 
     _sample_rays()
+    _play_state_sfx()
     if power_cap_time > 0.0:
         power_cap_time = max(power_cap_time - delta, 0.0)
         if power_cap_time == 0.0:
             power_cap = ""
+    if invulnerable_time > 0.0:
+        invulnerable_time = max(invulnerable_time - delta, 0.0)
+
+
+func _play_state_sfx() -> void:
+    # Trigger a sound on specific action transitions. We key off the action
+    # code changing rather than the animation event, so wall-kicks,
+    # double jumps, etc. all trigger once when they start.
+    var a: int = _state.action
+    if a == _prev_action_for_sfx:
+        return
+    _prev_action_for_sfx = a
+    match a:
+        MarioStateScript.ACT_JUMP, \
+        MarioStateScript.ACT_DOUBLE_JUMP, \
+        MarioStateScript.ACT_TRIPLE_JUMP, \
+        MarioStateScript.ACT_BACKFLIP, \
+        MarioStateScript.ACT_SIDE_FLIP, \
+        MarioStateScript.ACT_LONG_JUMP, \
+        MarioStateScript.ACT_WALL_KICK_AIR:
+            _play_sfx("jump")
+        MarioStateScript.ACT_JUMP_LAND, \
+        MarioStateScript.ACT_DOUBLE_JUMP_LAND, \
+        MarioStateScript.ACT_TRIPLE_JUMP_LAND, \
+        MarioStateScript.ACT_LONG_JUMP_LAND, \
+        MarioStateScript.ACT_BACKFLIP_LAND, \
+        MarioStateScript.ACT_SIDE_FLIP_LAND, \
+        MarioStateScript.ACT_FREEFALL_LAND:
+            _play_sfx("land")
+        MarioStateScript.ACT_GROUND_POUND_LAND:
+            _play_sfx("ground_pound")
+        MarioStateScript.ACT_PUNCHING:
+            _play_sfx("punch")
 
 
 func _on_pickup(other: Area3D) -> void:
@@ -171,24 +247,32 @@ func _on_pickup(other: Area3D) -> void:
     match kind:
         "coin_yellow":
             coin_count += 1
+            _play_sfx("coin")
         "coin_blue":
             coin_count += 5
+            _play_sfx("coin")
         "coin_red":
             coin_count += 2
+            _play_sfx("coin")
         "oneup":
             lives += 1
+            _play_sfx("oneup")
         "star":
             star_count += 1
+            _play_sfx("star")
             emit_signal("star_collected")
         "cap_wing":
             power_cap = "wing"
             power_cap_time = 20.0
+            _play_sfx("cap")
         "cap_metal":
             power_cap = "metal"
             power_cap_time = 20.0
+            _play_sfx("cap")
         "cap_vanish":
             power_cap = "vanish"
             power_cap_time = 20.0
+            _play_sfx("cap")
     other.queue_free()
 
 

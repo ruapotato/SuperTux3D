@@ -1,6 +1,8 @@
 extends Node
 
 # Spawns the OBJECT() macros parsed from a level's script.c into the world.
+
+const EnemyScript := preload("res://scripts/enemy.gd")
 # The decomp maps a (MODEL_*, bhv*) pair to a specific actor + behavior at
 # runtime; we stub most of those with placeholder nodes while the per-object
 # behaviors get ported incrementally. Coins and stars are the first real
@@ -32,32 +34,58 @@ const BHV_IMPLEMENTATIONS := {
 }
 
 
+# Behaviors that spawn as walking enemies.
+const ENEMY_BEHAVIORS := [
+    "bhvGoomba", "bhvGoombaTripletSpawner",
+    "bhvKoopa",
+    "bhvBobomb", "bhvBobombBuddy",
+    "bhvChuckya",
+    "bhvPiranhaPlant",
+    "bhvMrBlizzard", "bhvMrBlizzardHidden",
+    "bhvSmallPenguin",
+    "bhvScuttlebug",
+    "bhvMoneybag", "bhvMoneybagHidden",
+    "bhvSpindrift",
+    "bhvFlyGuy",
+    "bhvSnufit",
+]
+
+
 static func spawn_area_objects(
     objects: Array, parent: Node3D, _manager: Node
 ) -> void:
     var spawned := 0
+    var enemies := 0
+    var pickups := 0
     for obj in objects:
         var bhv: String = obj.get("bhv", "")
         var kind: String = BHV_IMPLEMENTATIONS.get(bhv, "")
         var node: Node3D = null
         if kind != "":
             node = _make_pickup(kind)
-        # We always spawn something so the level is populated visibly even
-        # before all behaviors are ported. Unrecognized objects get a small
-        # debug marker; they'll be replaced as we port their behaviors.
+            pickups += 1
+        elif bhv in ENEMY_BEHAVIORS:
+            node = _make_enemy(bhv)
+            enemies += 1
         if node == null:
             node = _make_debug_marker(bhv)
         var p: Array = obj.pos
         node.position = Vector3(p[0], p[1], p[2]) * LevelLoader.WORLD_SCALE
         var a: Array = obj.angle
-        var to_rad := TAU / 65536.0 if abs(a[1]) > 360 else PI / 180.0
-        # SM64 angles can be either s16 (65536=360°) or plain degrees
-        # depending on the macro. Most OBJECT() args are degrees; pick the
-        # heuristic by magnitude.
+        var to_rad := (TAU / 65536.0) if abs(a[1]) > 360 else (PI / 180.0)
         node.rotation.y = a[1] * to_rad
         parent.add_child(node)
         spawned += 1
-    print("[object_spawner] spawned %d objects" % spawned)
+    print("[object_spawner] spawned %d objects (%d pickups, %d enemies)"
+          % [spawned, pickups, enemies])
+
+
+static func _make_enemy(bhv: String) -> Node3D:
+    var e := CharacterBody3D.new()
+    e.set_script(EnemyScript)
+    e.bhv_name = bhv
+    e.name = "Enemy_" + bhv
+    return e
 
 
 static func _make_pickup(kind: String) -> Node3D:

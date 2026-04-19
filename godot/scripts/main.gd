@@ -3,6 +3,7 @@ extends Node3D
 const LevelLoader := preload("res://scripts/level_loader.gd")
 const MarioAnimator := preload("res://scripts/mario_animator.gd")
 const LevelManagerScript := preload("res://scripts/level_manager.gd")
+const SoundBankScript := preload("res://scripts/sound_bank.gd")
 const MARIO_MESH_JSON := "res://extracted/actors/mario/mesh.json"
 const ANIMS_DIR := "res://extracted/actors/mario/anims"
 const BOOT_LEVEL := "bob"   # starting level on launch
@@ -44,6 +45,8 @@ const FOCUS_OFFSET := Vector3(0, 1.0, 0)
 
 var _animator: RefCounted
 var _level_manager: Node
+var _sound_bank: Node
+var _death_pending: bool = false
 # Animation cache keyed by decomp ID (MARIO_ANIM_* integer). Loaded lazily
 # the first time a state requests it.
 var _anim_cache: Dictionary = {}
@@ -57,6 +60,13 @@ func _ready() -> void:
     var anchor: Node3D = mario.get_node("ActorAnchor")
     var actor: Dictionary = LevelLoader.load_actor(MARIO_MESH_JSON, anchor)
     _setup_animator(actor)
+
+    _sound_bank = SoundBankScript.new()
+    _sound_bank.name = "SoundBank"
+    add_child(_sound_bank)
+    _sound_bank.setup(8, mario)
+    if mario.has_method("bind_sound_bank"):
+        mario.bind_sound_bank(_sound_bank)
 
     _level_manager = LevelManagerScript.new()
     _level_manager.name = "LevelManager"
@@ -131,6 +141,18 @@ func _respawn() -> void:
     if _level_manager != null:
         _level_manager.load_level(_level_manager.current_level,
                                   _level_manager.current_area)
+    _death_pending = false
+    mario.health = 8
+    mario.invulnerable_time = 1.5
+
+
+func _respawn_after(delay: float) -> void:
+    var t := Timer.new()
+    t.wait_time = delay
+    t.one_shot = true
+    add_child(t)
+    t.timeout.connect(_respawn)
+    t.start()
 
 
 func _update_animation(delta: float) -> void:
@@ -162,9 +184,16 @@ func _process(delta: float) -> void:
     ) * CAM_DISTANCE
     camera_rig.global_position = focus + offset
     camera_rig.look_at(focus, Vector3.UP)
-    # Auto-respawn if we fall below the level.
+    # Auto-respawn on fall-plane crossing (Mario dropped below the level).
     if mario.global_position.y < -50.0:
+        if mario.lives > 0:
+            mario.lives -= 1
+        mario._play_sfx("death")
         _respawn()
+    # Respawn on death signal too.
+    if mario.health <= 0 and not _death_pending:
+        _death_pending = true
+        _respawn_after(0.5)
     var mario_stub := mario as CharacterBody3D
     var ray_down: String = mario.get("debug_ray_down_hit")
     var ray_up: String = mario.get("debug_ray_up_hit")

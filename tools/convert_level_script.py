@@ -190,24 +190,29 @@ def parse(script_text: str) -> dict:
             "acts": acts,
         })
 
-    # WARP_NODE entries
+    # WARP_NODE entries — the IDs are usually enum constants (WARP_NODE_XX)
+    # so we keep them as raw strings and let the runtime resolve matching
+    # node ids to warp locations.
     for m in WARP_NODE_RE.finditer(text):
         args = split_args(m.group("args"))
         if len(args) < 5:
             continue
-        node_id = parse_int_safe(args[0])
+        node_id_raw = args[0].strip()
+        # Try numeric first, fall back to the original token.
+        node_id_int = parse_int_safe(node_id_raw)
+        node_id: object = node_id_raw if node_id_int is None else node_id_int
         level = args[1].strip()
         dest_area = parse_int_safe(args[2])
+        dest_area_val: object = args[2].strip() if dest_area is None else dest_area
         dest_node = parse_int_safe(args[3])
+        dest_node_val: object = args[3].strip() if dest_node is None else dest_node
         op = args[4].strip()
-        if node_id is None:
-            continue
         area = ensure_area(area_at(m.start()))
         area["warps"].append({
             "id": node_id,
             "level": level,
-            "area": dest_area,
-            "node": dest_node,
+            "area": dest_area_val,
+            "node": dest_node_val,
             "op": op,
         })
 

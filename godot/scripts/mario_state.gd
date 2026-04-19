@@ -131,6 +131,10 @@ var jump_combo_timer: float = 0.0
 # Signal from the owning CharacterBody3D: did we bump a wall this frame?
 var is_on_wall: bool = false
 var wall_normal: Vector3 = Vector3.ZERO
+# Active power cap (from owner): "wing" gives reduced gravity + extra air
+# time, "metal" makes Mario impervious and slightly slower, "vanish"
+# currently cosmetic only.
+var power_cap: String = ""
 
 # ---- Mario state (subset of struct MarioState) --------------------------
 var action: int = ACT_UNINITIALIZED
@@ -544,9 +548,21 @@ func _apply_air_motion(delta: float, allow_steering: bool = true) -> void:
         if stick_dir.length() > 0.01:
             vel.x = move_toward(vel.x, stick_dir.x * WALK_MAX_VEL, AIR_STEERING * delta)
             vel.z = move_toward(vel.z, stick_dir.z * WALK_MAX_VEL, AIR_STEERING * delta)
-    vel.y -= GRAVITY * delta
-    if vel.y < TERMINAL_VEL:
-        vel.y = TERMINAL_VEL
+    var g := GRAVITY
+    if power_cap == "wing":
+        # Wing cap: lets you float — roughly quarter gravity and a more
+        # generous terminal velocity, matching SM64's wing-cap feel.
+        g *= 0.25
+        if input_jump_pressed and vel.y < 6.0:
+            vel.y = min(vel.y + 8.0, 10.0)  # re-press to flap higher
+    elif power_cap == "metal":
+        g *= 1.15   # metal Mario falls a bit faster
+    vel.y -= g * delta
+    var term := TERMINAL_VEL
+    if power_cap == "wing":
+        term = -6.0
+    if vel.y < term:
+        vel.y = term
 
 
 # ---- Airborne transition helpers ---------------------------------------
