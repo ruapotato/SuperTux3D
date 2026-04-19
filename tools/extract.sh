@@ -119,11 +119,21 @@ for spec in "${ACTORS[@]}"; do
     || warn "actor convert failed for $sub ($entry)"
 done
 
-# 6.6 Convert Mario animations to JSON. All 200+ animations; tiny files.
+# 6.6 Convert Mario + enemy animations to JSON.
 log "converting Mario animations"
 python3 "$SCRIPT_DIR/convert_animation.py" \
   "$SM64_REPO/assets/anims" \
   "$EXTRACTED/actors/mario/anims"
+
+log "converting enemy animations"
+for actor_sub in goomba koopa bobomb chain_chomp piranha_plant penguin; do
+  anims_dir="$SM64_REPO/actors/$actor_sub/anims"
+  [[ -d "$anims_dir" ]] || continue
+  python3 "$SCRIPT_DIR/convert_animation.py" \
+    "$anims_dir" \
+    "$EXTRACTED/actors/$actor_sub/anims" > /dev/null 2>&1 \
+    || warn "anim convert failed for $actor_sub"
+done
 
 # 6.7 Generate placeholder sound effects (for events we haven't mapped to
 # real AIFF samples yet — coin, star, cap, 1up, ground pound).

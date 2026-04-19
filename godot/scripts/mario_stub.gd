@@ -152,7 +152,7 @@ func take_damage(amount: int, _source: String) -> void:
         return
     health = max(health - amount, 0)
     invulnerable_time = 1.2
-    _play_sfx("punch")
+    _play_sfx("damage")     # Mario's "attacked" grunt from decomp
     emit_signal("took_damage")
     if health <= 0:
         _play_sfx("death")
@@ -291,22 +291,28 @@ func _update_shadow() -> void:
 
 
 func _play_state_sfx() -> void:
-    # Trigger a sound on specific action transitions. We key off the action
-    # code changing rather than the animation event, so wall-kicks,
-    # double jumps, etc. all trigger once when they start.
+    # Trigger a sound on specific action transitions. Each jump variant
+    # gets an appropriately-iconic voice clip instead of sharing one bank
+    # (wall kick gets "uh", triple jump gets "yahoo", dive gets "yah").
     var a: int = _state.action
     if a == _prev_action_for_sfx:
         return
     _prev_action_for_sfx = a
     match a:
-        MarioStateScript.ACT_JUMP, \
-        MarioStateScript.ACT_DOUBLE_JUMP, \
-        MarioStateScript.ACT_TRIPLE_JUMP, \
-        MarioStateScript.ACT_BACKFLIP, \
-        MarioStateScript.ACT_SIDE_FLIP, \
-        MarioStateScript.ACT_LONG_JUMP, \
-        MarioStateScript.ACT_WALL_KICK_AIR:
+        MarioStateScript.ACT_JUMP, MarioStateScript.ACT_SIDE_FLIP:
             _play_sfx("jump")
+        MarioStateScript.ACT_DOUBLE_JUMP:
+            _play_sfx("double_jump")
+        MarioStateScript.ACT_TRIPLE_JUMP:
+            _play_sfx("triple_jump")
+        MarioStateScript.ACT_LONG_JUMP:
+            _play_sfx("long_jump")
+        MarioStateScript.ACT_BACKFLIP:
+            _play_sfx("backflip")
+        MarioStateScript.ACT_WALL_KICK_AIR:
+            _play_sfx("wall_kick")
+        MarioStateScript.ACT_DIVE:
+            _play_sfx("dive")
         MarioStateScript.ACT_JUMP_LAND, \
         MarioStateScript.ACT_DOUBLE_JUMP_LAND, \
         MarioStateScript.ACT_TRIPLE_JUMP_LAND, \
@@ -341,6 +347,7 @@ func _on_pickup(other: Area3D) -> void:
         "star":
             star_count += 1
             _play_sfx("star")
+            _play_sfx("star_yahoo")
             emit_signal("star_collected")
         "cap_wing":
             power_cap = "wing"

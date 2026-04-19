@@ -132,10 +132,13 @@ var input_crouch: bool = false           # held
 var input_crouch_pressed: bool = false   # this frame
 var input_attack_pressed: bool = false   # this frame (dive/punch)
 var input_camera_yaw: float = 0.0
-# Double/triple jump chain — we count consecutive landings that happen
-# while still holding forward momentum. Reset on long pause or stop.
+# Jump combo chain — tracks how many times in a row Mario has landed
+# briefly and pressed jump. 0 = next jump is a single jump, 1 = double,
+# 2 = triple. The combo advances on _begin_*_jump() and decays back to
+# 0 if the combo window elapses without another jump press.
 var jump_combo: int = 0
 var jump_combo_timer: float = 0.0
+const JUMP_COMBO_WINDOW: float = 0.45
 # Signal from the owning CharacterBody3D: did we bump a wall this frame?
 var is_on_wall: bool = false
 var wall_normal: Vector3 = Vector3.ZERO
@@ -256,10 +259,10 @@ func _act_idle(_delta: float) -> bool:
     if not is_on_floor:
         return set_action(ACT_FREEFALL)
     if input_jump_pressed:
-        # Standing jump: backflip if crouching held, else single jump.
+        # Standing jump: backflip if crouching held, else chained jump.
         if input_crouch:
             return _begin_backflip()
-        return _begin_single_jump()
+        return _begin_chained_jump()
     if input_crouch_pressed:
         return set_action(ACT_CROUCHING)
     if input_attack_pressed:
@@ -286,14 +289,10 @@ func _act_walking(delta: float) -> bool:
         return set_action(ACT_FREEFALL)
     if input_jump_pressed:
         # Long jump: crouch while moving + jump. Otherwise the jump
-        # variant depends on the ongoing jump_combo counter.
+        # variant depends on the ongoing combo counter.
         if input_crouch:
             return _begin_long_jump()
-        if jump_combo >= 2 and forward_vel > RUN_ANIM_THRESHOLD:
-            return _begin_triple_jump()
-        if jump_combo >= 1:
-            return _begin_double_jump()
-        return _begin_single_jump()
+        return _begin_chained_jump()
     if input_crouch_pressed:
         if forward_vel > 4.0:
             return set_action(ACT_CROUCH_SLIDE)
@@ -545,14 +544,11 @@ func _act_freefall_land(_delta: float) -> bool:
 
 
 func _act_jump_land_stop(_delta: float) -> bool:
-    # "Stopped" landed state — behave like idle but hold the landing anim
-    # through its end frame (matches decomp where Mario doesn't immediately
-    # head-look after landing).
     _request_anim(MARIO_ANIM_LAND_FROM_SINGLE_JUMP, 1.0)
     if not is_on_floor:
         return set_action(ACT_FREEFALL)
     if input_jump_pressed:
-        return set_action(ACT_JUMP)
+        return _begin_chained_jump()
     if input_stick.length() > 0.1:
         return set_action(ACT_WALKING)
     if action_time > 0.10:
@@ -568,7 +564,7 @@ func _act_freefall_land_stop(_delta: float) -> bool:
     if not is_on_floor:
         return set_action(ACT_FREEFALL)
     if input_jump_pressed:
-        return set_action(ACT_JUMP)
+        return _begin_chained_jump()
     if input_stick.length() > 0.1:
         return set_action(ACT_WALKING)
     if action_time > 0.10:
@@ -671,13 +667,25 @@ func _common_air_transitions(default_land: int) -> bool:
 
 # ---- Jump initiators ---------------------------------------------------
 
+# Dispatcher: pick single/double/triple based on current combo state.
+func _begin_chained_jump() -> bool:
+    # Decay any stale combo before reading.
+    if jump_combo_timer <= 0.0:
+        jump_combo = 0
+    # Triple jump only if the player is moving fast enough (classic
+    # SM64 constraint — you can't triple jump from a standstill).
+    if jump_combo >= 2 and forward_vel >= RUN_ANIM_THRESHOLD:
+        return _begin_triple_jump()
+    if jump_combo >= 1:
+        return _begin_double_jump()
+    return _begin_single_jump()
+
+
 func _begin_single_jump() -> bool:
     set_action(ACT_JUMP)
     vel.y = JUMP_IMPULSE
-    # Starting a new jump continues the combo if we were on the ground
-    # briefly (the "you have a window" feel of SM64 chain-jumps).
     jump_combo = 1
-    jump_combo_timer = 0.5
+    jump_combo_timer = JUMP_COMBO_WINDOW
     return true
 
 
@@ -685,7 +693,7 @@ func _begin_double_jump() -> bool:
     set_action(ACT_DOUBLE_JUMP)
     vel.y = DOUBLE_JUMP_IMPULSE
     jump_combo = 2
-    jump_combo_timer = 0.5
+    jump_combo_timer = JUMP_COMBO_WINDOW
     return true
 
 

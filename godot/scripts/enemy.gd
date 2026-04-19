@@ -5,6 +5,7 @@ extends CharacterBody3D
 
 const GRAVITY := 30.0
 const LevelLoader := preload("res://scripts/level_loader.gd")
+const MarioAnimator := preload("res://scripts/mario_animator.gd")
 
 # bhv name → (actor mesh subdir, approximate world-scale factor). Actors
 # use the same actor-space axes as Mario, so the same loader applies.
@@ -34,6 +35,7 @@ var _mesh: Node3D   # MeshInstance3D or loaded actor root
 var _mode: String = "patrol"     # patrol / chase / static / bomb / pop
 var _fuse: float = 0.0
 var _exploded: bool = false
+var _animator: RefCounted
 
 
 func _ready() -> void:
@@ -82,13 +84,63 @@ func _build_visual() -> void:
             var actor_anchor := Node3D.new()
             actor_anchor.name = "ActorAnchor"
             add_child(actor_anchor)
-            # Rigid mode: no Mario-specific baked-in animation rotation.
-            LevelLoader.load_actor(mesh_path, actor_anchor, "rigid")
+            var actor: Dictionary = LevelLoader.load_actor(
+                mesh_path, actor_anchor, "rigid"
+            )
             _mesh = actor_anchor
+            _try_play_animation(actor_sub, actor)
         else:
             _build_placeholder_mesh()
     else:
         _build_placeholder_mesh()
+
+
+func _try_play_animation(actor_sub: String, actor: Dictionary) -> void:
+    # Pick the first available animation for this actor (usually the walk)
+    # and play it on a looping animator. If the enemy's bone count matches
+    # its anim's bone_count — which is guaranteed since they came from the
+    # same actors/<actor>/ directory — the animator applies just fine.
+    if actor.is_empty():
+        return
+    var anims_dir := "res://extracted/actors/%s/anims" % actor_sub
+    var d := DirAccess.open(anims_dir)
+    if d == null:
+        return
+    var anim_files := d.get_files()
+    if anim_files.is_empty():
+        return
+    # Load the first JSON that matches bone count.
+    var bone_count: int = actor.bones.size()
+    var anim_data: Dictionary = {}
+    for f in anim_files:
+        if not f.ends_with(".json"):
+            continue
+        var path := "%s/%s" % [anims_dir, f]
+        var file := FileAccess.open(path, FileAccess.READ)
+        if file == null:
+            continue
+        var parsed: Variant = JSON.parse_string(file.get_as_text())
+        if parsed is Dictionary and int(parsed.bone_count) == bone_count:
+            anim_data = parsed
+            break
+    if anim_data.is_empty():
+        return
+    # Build a MarioAnimator bound to this actor's bones. We reuse the same
+    # class since the animation format is identical across actors.
+    _animator = MarioAnimator.new()
+    var rest_rots: Array = []
+    var to_rad: float = TAU / 65536.0
+    for b in actor.bones.size():
+        var bone_node: Node3D = actor.bones[b]
+        if bone_node != null:
+            rest_rots.append(bone_node.rotation)
+        else:
+            rest_rots.append(Vector3.ZERO)
+    _animator.setup(actor.bones, rest_rots)
+    # Slow the enemy walks down a bit — the decomp's native rate is 30 fps
+    # but enemies read too fast at 60 fps playback.
+    _animator.frames_per_second = 30.0
+    _animator.play(anim_data, 1.0, 0)
 
     # Collision capsule so the enemy can stand on the floor.
     var cs := CollisionShape3D.new()
@@ -145,6 +197,8 @@ func _physics_process(delta: float) -> void:
     if _squished or _exploded:
         return
     _time += delta
+    if _animator != null:
+        _animator.tick(delta)
     var mario := _find_mario()
     var dir := Vector3.ZERO
 

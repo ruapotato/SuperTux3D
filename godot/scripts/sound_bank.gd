@@ -25,16 +25,25 @@ const SOUND_NAMES := [
     "bgm_castle", "bgm_course", "bgm_water", "bgm_bowser", "bgm_sub",
 ]
 const SOUND_ALIASES := {
-    "death": "whoa",
-    "land":  "heavy_land",
-    "punch": "ooof",
+    "death":       "whoa",
+    "land":        "heavy_land",
+    "punch":       "ooof",
+    "title":       "here_we_go",
+    "star_yahoo":  "yahoo",
+    "double_jump": "jump2",
+    "triple_jump": "yahoo",
+    "long_jump":   "yahoo",
+    "backflip":    "jump2",
+    "wall_kick":   "uh",
+    "dive":        "yah",
+    "damage":      "attacked",
 }
 
-# Weighted random banks — when any of these event names is requested, we
-# pick a real AIFF-derived clip at random so Mario doesn't repeat the
-# same vocal on every jump. First entry is the default.
+# Weighted random banks for repeatable events. First entry = default.
+# "here_we_go" is Mario's "Let's-a go!" title voice; it's explicitly
+# kept OUT of the single-jump bank (previous version had it there).
 const SOUND_BANKS := {
-    "jump": ["jump", "jump2", "yah", "haha", "here_we_go"],
+    "jump": ["jump", "jump2", "yah", "haha"],
     "land": ["heavy_land", "plop"],
 }
 

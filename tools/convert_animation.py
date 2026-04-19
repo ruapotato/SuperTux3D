@@ -40,16 +40,23 @@ import sys
 from pathlib import Path
 
 
+# Mario animations declare their Animation struct as an array (`anim_XX[]`);
+# enemy actors omit the brackets (`goomba_seg8_anim_... = {}`). Accept
+# either form. Similarly, indices / values table names vary:
+#   Mario:   `anim_XX_indices`, `anim_XX_values`
+#   Goomba:  `goomba_seg8_animindex_...`, `goomba_seg8_animvalue_...`
+# We match any u16/s16 array and resolve by the symbol name the struct
+# references rather than by a fixed suffix.
 STRUCT_RE = re.compile(
-    r"const\s+struct\s+Animation\s+(\w+)\s*\[\s*\]\s*=\s*\{(.*?)\};",
+    r"const\s+struct\s+Animation\s+(\w+)\s*(?:\[\s*\])?\s*=\s*\{(.*?)\};",
     re.DOTALL,
 )
 INDICES_RE = re.compile(
-    r"const\s+u16\s+(\w+_indices)\s*\[\s*\]\s*=\s*\{(.*?)\};",
+    r"const\s+u16\s+(\w+)\s*\[\s*\]\s*=\s*\{(.*?)\};",
     re.DOTALL,
 )
 VALUES_RE = re.compile(
-    r"const\s+s16\s+(\w+_values)\s*\[\s*\]\s*=\s*\{(.*?)\};",
+    r"const\s+s16\s+(\w+)\s*\[\s*\]\s*=\s*\{(.*?)\};",
     re.DOTALL,
 )
 
