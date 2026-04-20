@@ -130,6 +130,11 @@ func _ready() -> void:
 	cs.shape = shape
 	cs.name = "Col"
 	add_child(cs)
+	# The converter may attach a surface_kind meta ("snow" / "ice" /
+	# "sand" etc.) so mario_state's floor_surface check picks up the
+	# right friction when Mario stands on a themed terrain. Mario reads
+	# set_meta("surface_kind") on the collider; we already have it on
+	# this node thanks to the converter, no-op if absent.
 
 
 func _color_meta(key: String, default_c: Color) -> Color:

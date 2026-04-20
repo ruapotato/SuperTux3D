@@ -38,7 +38,10 @@ const ELEVATOR_MODES := ["call", "loop", "toggle"]
 
 # Mouse-hittable object kinds, in z-order of preference when multiple
 # overlap. Rooms are last so point-items on top take priority.
-const HIT_ORDER := ["keys", "locks", "blocks", "extras", "rooms", "terrain_patches"]
+const HIT_ORDER := [
+	"pickups", "enemies", "warps", "keys", "locks", "blocks",
+	"extras", "volumes", "rooms", "terrain_patches",
+]
 
 var blueprint: Dictionary = {}
 var current_file: String = ""
@@ -96,21 +99,43 @@ var _dialog: FileDialog
 var _save_as_mode: bool = false
 
 const TOOLS := [
-	["select",       "Select / Move", "V"],
-	["room",         "Room (drag)",   "R"],
-	["door",         "Door",          "D"],
-	["window",       "Window",        "W"],
-	["stair",        "Stair",         "S"],
-	["spiral_stair", "Spiral Stair",  "Y"],
-	["elevator",     "Elevator",      "E"],
-	["pillar",       "Pillar",        "I"],
-	["platform",     "Platform",      "F"],
-	["block",        "Block",         "B"],
-	["key",          "Key",           "K"],
-	["lock",         "Lock (barrier)","L"],
-	["terrain",      "Terrain (drag)","T"],
-	["spawn",        "Spawn Point",   "G"],
-	["temp_spawn",   "Temp Spawn (for Play)", "H"],
+	["select",       "Select / Move",          "V"],
+	["room",         "Room (drag)",            "R"],
+	["door",         "Door",                   "D"],
+	["window",       "Window",                 "W"],
+	["stair",        "Stair",                  "S"],
+	["spiral_stair", "Spiral Stair",           "Y"],
+	["elevator",     "Elevator",               "E"],
+	["pillar",       "Pillar",                 "I"],
+	["platform",     "Platform",               "F"],
+	["block",        "Block",                  "B"],
+	["key",          "Key",                    "K"],
+	["lock",         "Lock (barrier)",         "L"],
+	["terrain",      "Terrain (drag)",         "T"],
+	["enemy",        "Enemy",                  "N"],
+	["pickup",       "Pickup",                 "C"],
+	["water",        "Water Volume (drag)",    "U"],
+	["lava",         "Lava Volume (drag)",     "J"],
+	["warp",         "Warp",                   "X"],
+	["spawn",        "Spawn Point",            "G"],
+	["temp_spawn",   "Temp Spawn (for Play)",  "M"],
+]
+
+const ENEMY_BHVS := [
+	"bhvGoomba", "bhvKoopa", "bhvBobomb",
+	"bhvChuckya", "bhvPiranhaPlant", "bhvMrBlizzard",
+	"bhvSmallPenguin", "bhvScuttlebug",
+	"bhvBobombBuddy", "bhvCuttlefish", "bhvChainChomp",
+]
+const PICKUP_KINDS := [
+	"coin_yellow", "coin_blue", "coin_red",
+	"star", "oneup",
+	"cap_wing", "cap_metal", "cap_vanish",
+	"key_bronze", "key_silver", "key_gold",
+]
+const VOLUME_SURFACE_KINDS := [
+	"", "snow", "sand", "ice", "slippery", "very_slippery",
+	"burning", "shallow_quicksand", "deep_quicksand",
 ]
 
 # Keycode → tool_mode. Built at startup from TOOLS so we have a fast
@@ -293,6 +318,10 @@ func _new_blueprint() -> void:
 		"blocks": [],
 		"extras": [],
 		"terrain_patches": [],
+		"enemies": [],
+		"pickups": [],
+		"volumes": [],
+		"warps": [],
 	}
 	current_file = ""
 	_file_label.text = "(new, unsaved)"
@@ -359,7 +388,8 @@ func _read_from(path: String) -> void:
 		return
 	blueprint = parsed
 	# Ensure the container arrays exist so inspector edits don't KeyError.
-	for k in ["rooms", "connectors", "locks", "keys", "blocks", "extras", "terrain_patches"]:
+	for k in ["rooms", "connectors", "locks", "keys", "blocks", "extras", "terrain_patches",
+			  "enemies", "pickups", "volumes", "warps"]:
 		if not blueprint.has(k) or typeof(blueprint[k]) != TYPE_ARRAY:
 			blueprint[k] = []
 	current_file = path
@@ -560,6 +590,11 @@ func _on_canvas_click(world: Vector2, button: int, shift: bool, ctrl: bool) -> v
 		"block":   _begin_action(); _add_block(world)
 		"key":     _begin_action(); _add_key(world)
 		"lock":    _begin_action(); _add_lock(world)
+		"enemy":   _begin_action(); _add_enemy(world)
+		"pickup":  _begin_action(); _add_pickup(world)
+		"water":   pass  # drag-create
+		"lava":    pass  # drag-create
+		"warp":    _begin_action(); _add_warp(world)
 		"spawn":   _begin_action(); _set_spawn(world)
 		"temp_spawn": _set_temp_spawn(world)
 	_canvas.queue_redraw()
@@ -576,7 +611,7 @@ func _on_canvas_drag(world: Vector2, delta: Vector2) -> void:
 		_begin_action()  # coalesces the whole drag into one undo step
 		_move_selected(delta)
 		_canvas.queue_redraw()
-	elif tool_mode == "room" or tool_mode == "terrain":
+	elif tool_mode == "room" or tool_mode == "terrain" or tool_mode == "water" or tool_mode == "lava":
 		_canvas.queue_redraw()  # preview rect
 
 
@@ -591,6 +626,9 @@ func _on_canvas_release(world: Vector2, button: int) -> void:
 	elif tool_mode == "terrain" and button == MOUSE_BUTTON_LEFT:
 		_begin_action()
 		_finalize_terrain_drag(world)
+	elif (tool_mode == "water" or tool_mode == "lava") and button == MOUSE_BUTTON_LEFT:
+		_begin_action()
+		_finalize_volume_drag(world, tool_mode)
 	_drag_moving = false
 	_end_action()
 	_canvas.queue_redraw()
@@ -698,6 +736,21 @@ func _hit_test(kind: String, item: Dictionary, world: Vector2) -> bool:
 			var sz: float = float(item.get("size_z", 10))
 			var r := Rect2(float(o[0]), float(o[2]), sx, sz)
 			return r.has_point(world)
+		"enemies", "pickups":
+			var p: Array = item.get("pos", [0, 0, 0])
+			return Vector2(float(p[0]), float(p[2])).distance_to(world) < 0.6
+		"warps":
+			var p2: Array = item.get("pos", [0, 0, 0])
+			var sz_w: Array = item.get("size", [2.5, 3, 0.4])
+			var rect := Rect2(float(p2[0]) - float(sz_w[0]) * 0.5,
+							   float(p2[2]) - float(sz_w[2]) * 0.5,
+							   float(sz_w[0]), float(sz_w[2]))
+			return rect.has_point(world)
+		"volumes":
+			var o2: Array = item.get("origin", [0, 0, 0])
+			var sz_v: Array = item.get("size", [4, 1, 4])
+			var rv := Rect2(float(o2[0]), float(o2[2]), float(sz_v[0]), float(sz_v[2]))
+			return rv.has_point(world)
 		"rooms":
 			var o: Array = item["origin"]
 			var s: Array = item["size"]
@@ -1103,6 +1156,66 @@ func _add_lock(world: Vector2) -> void:
 	_mark_dirty()
 
 
+func _add_enemy(world: Vector2) -> void:
+	var item := {
+		"name": _next_name("enemies", "Enemy"),
+		"bhv": ENEMY_BHVS[0],
+		"pos": [_snap_v(world.x), current_floor_y, _snap_v(world.y)],
+		"patrol_radius": 3.0,
+	}
+	_ensure_array("enemies").append(item)
+	_select_last("enemies")
+	_mark_dirty()
+
+
+func _add_pickup(world: Vector2) -> void:
+	var item := {
+		"name": _next_name("pickups", "Pickup"),
+		"kind": "coin_yellow",
+		"pos": [_snap_v(world.x), current_floor_y + 1.0, _snap_v(world.y)],
+	}
+	_ensure_array("pickups").append(item)
+	_select_last("pickups")
+	_mark_dirty()
+
+
+func _add_warp(world: Vector2) -> void:
+	var item := {
+		"name": _next_name("warps", "Warp"),
+		"pos": [_snap_v(world.x), current_floor_y, _snap_v(world.y)],
+		"size": [2.5, 3.0, 0.4],
+		"target_level": "",
+	}
+	_ensure_array("warps").append(item)
+	_select_last("warps")
+	_mark_dirty()
+
+
+func _finalize_volume_drag(end_world: Vector2, kind: String) -> void:
+	var start: Vector2 = _canvas._drag_start_world
+	var a := Vector2(min(start.x, end_world.x), min(start.y, end_world.y))
+	var b := Vector2(max(start.x, end_world.x), max(start.y, end_world.y))
+	var size := b - a
+	if size.x < 1.0 or size.y < 1.0:
+		return
+	# Water: volume sits BELOW the current floor so the top surface
+	# is AT the floor y, letting authors sculpt lakes flush. Lava: top
+	# is a thin slab AT floor y (dangerous when you step on it).
+	var y_origin: float = current_floor_y - 2.0 if kind == "water" else current_floor_y
+	var y_size: float = 2.0 if kind == "water" else 0.3
+	var item := {
+		"name": _next_name("volumes", kind.capitalize()),
+		"kind": kind,
+		"origin": [_snap_v(a.x), y_origin, _snap_v(a.y)],
+		"size": [_snap_v(size.x), y_size, _snap_v(size.y)],
+	}
+	_ensure_array("volumes").append(item)
+	selected_kind = "volumes"
+	selected_index = blueprint["volumes"].size() - 1
+	_mark_dirty()
+	_rebuild_inspector()
+
+
 func _set_spawn(world: Vector2) -> void:
 	blueprint["spawn_point"] = [_snap_v(world.x), current_floor_y + 1.0, _snap_v(world.y)]
 	selected_kind = "spawn"
@@ -1169,9 +1282,13 @@ func _move_selected(delta_world: Vector2) -> void:
 	if selected_index >= arr.size():
 		return
 	var item: Dictionary = arr[selected_index]
-	# Rooms use "origin"; terrain_patches also use "origin"; everything
-	# else uses "pos". One key pick instead of per-kind branches.
-	var key: String = "origin" if (selected_kind == "rooms" or selected_kind == "terrain_patches") else "pos"
+	# Rooms / terrain_patches / volumes use "origin"; everything else
+	# uses "pos". One key pick instead of per-kind branches.
+	var key: String = "origin" if (
+		selected_kind == "rooms"
+		or selected_kind == "terrain_patches"
+		or selected_kind == "volumes"
+	) else "pos"
 	if not item.has(key):
 		return
 	var p: Array = item[key]
@@ -1258,14 +1375,8 @@ func _sculpt_at(world: Vector2, lower: bool) -> void:
 func _rebuild_inspector() -> void:
 	for c in _inspector.get_children():
 		c.queue_free()
-	if selected_kind == "" or selected_index < 0:
-		if selected_kind == "spawn":
-			_inspector_spawn()
-		else:
-			var hint := Label.new()
-			hint.text = "Click an item to edit,\nor drag to create a Room."
-			hint.modulate = Color(0.75, 0.75, 0.8)
-			_inspector.add_child(hint)
+	if selected_kind == "" or (selected_kind != "opening" and selected_kind != "spawn" and selected_index < 0):
+		_inspector_level_properties()
 		return
 	match selected_kind:
 		"rooms":            _inspector_room()
@@ -1275,6 +1386,10 @@ func _rebuild_inspector() -> void:
 		"locks":            _inspector_lock()
 		"terrain_patches":  _inspector_terrain()
 		"opening":          _inspector_opening()
+		"enemies":          _inspector_enemy()
+		"pickups":          _inspector_pickup()
+		"volumes":          _inspector_volume()
+		"warps":            _inspector_warp()
 		"spawn":            _inspector_spawn()
 
 
@@ -1732,6 +1847,127 @@ func _inspector_opening() -> void:
 	if String(op.get("type", "door")) == "window":
 		_mkspin(_mkrow("Sill"), float(op.get("sill", 1.5)), 0.0, 5.0, 0.1, func(v: float) -> void:
 			op["sill"] = v; _mark_dirty())
+
+
+func _inspector_level_properties() -> void:
+	_inspector_header("Level Properties")
+	# BGM — any track name recognised by SoundBank. Blank = use the
+	# default for this level name (LEVEL_BGM dict).
+	var bgm_opts: Array = [
+		"", "bgm_castle", "bgm_course", "bgm_water", "bgm_bowser", "bgm_sub",
+	]
+	_mkoption(_mkrow("BGM"), bgm_opts, String(blueprint.get("bgm", "")), func(s: String) -> void:
+		if s == "":
+			blueprint.erase("bgm")
+		else:
+			blueprint["bgm"] = s
+		_mark_dirty())
+	# Water level Y override — usually inferred from a `water` volume,
+	# but an explicit value wins when set. Leave blank (i.e. -inf) to
+	# disable swimming entirely for this level.
+	var has_wl: bool = blueprint.has("water_level_y")
+	var wl_row := _mkrow("Water Y")
+	var wl_check := CheckBox.new()
+	wl_check.button_pressed = has_wl
+	wl_check.tooltip_text = "Override the auto-computed water surface Y."
+	wl_row.add_child(wl_check)
+	var wl_spin := SpinBox.new()
+	wl_spin.min_value = -999
+	wl_spin.max_value = 999
+	wl_spin.step = 0.5
+	wl_spin.allow_greater = true
+	wl_spin.allow_lesser = true
+	wl_spin.value = float(blueprint.get("water_level_y", 0.0))
+	wl_spin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	wl_spin.editable = has_wl
+	wl_row.add_child(wl_spin)
+	wl_check.toggled.connect(func(on: bool) -> void:
+		wl_spin.editable = on
+		if on:
+			blueprint["water_level_y"] = wl_spin.value
+		else:
+			blueprint.erase("water_level_y")
+		_mark_dirty())
+	wl_spin.value_changed.connect(func(v: float) -> void:
+		if wl_check.button_pressed:
+			blueprint["water_level_y"] = v
+			_mark_dirty())
+	# Sky colours — used when standalone_level is true.
+	var sky_dict: Dictionary = blueprint.get("sky") if blueprint.get("sky") is Dictionary else {}
+	var sep := HSeparator.new()
+	_inspector.add_child(sep)
+	_inspector.add_child(_mklabel("Sky"))
+	_mkcolor_row(sky_dict, "horizon_color", Color(0.52, 0.75, 0.98))
+	_inspector.add_child(_mklabel("Ambient light"))
+	_mkcolor_row(sky_dict, "ambient_color", Color(0.8, 0.82, 0.78))
+	# Stash back in case it was missing.
+	blueprint["sky"] = sky_dict
+	var hint := Label.new()
+	hint.text = "\nClick any object to inspect.\nDrag to create Room / Terrain / Water / Lava."
+	hint.modulate = Color(0.75, 0.75, 0.8)
+	_inspector.add_child(hint)
+
+
+func _inspector_enemy() -> void:
+	var item := _current_item()
+	if item.is_empty(): return
+	_inspector_header("Enemy: %s" % item.get("name", "(unnamed)"))
+	_mkline(_mkrow("Name"), String(item.get("name", "")), func(s: String) -> void:
+		item["name"] = s; _mark_dirty())
+	_mkoption(_mkrow("Behavior"), ENEMY_BHVS, String(item.get("bhv", ENEMY_BHVS[0])), func(s: String) -> void:
+		item["bhv"] = s; _mark_dirty())
+	_vec3_row("Pos", item, "pos")
+	_mkspin(_mkrow("Patrol r"), float(item.get("patrol_radius", 3.0)), 0.0, 30.0, 0.5, func(v: float) -> void:
+		item["patrol_radius"] = v; _mark_dirty())
+
+
+func _inspector_pickup() -> void:
+	var item := _current_item()
+	if item.is_empty(): return
+	_inspector_header("Pickup: %s" % item.get("name", "(unnamed)"))
+	_mkline(_mkrow("Name"), String(item.get("name", "")), func(s: String) -> void:
+		item["name"] = s; _mark_dirty())
+	_mkoption(_mkrow("Kind"), PICKUP_KINDS, String(item.get("kind", "coin_yellow")), func(s: String) -> void:
+		item["kind"] = s; _mark_dirty(); _canvas.queue_redraw())
+	_vec3_row("Pos", item, "pos")
+
+
+func _inspector_volume() -> void:
+	var item := _current_item()
+	if item.is_empty(): return
+	_inspector_header("Volume: %s" % item.get("name", "(unnamed)"))
+	_mkline(_mkrow("Name"), String(item.get("name", "")), func(s: String) -> void:
+		item["name"] = s; _mark_dirty())
+	_mkoption(_mkrow("Kind"), ["water", "lava", "ice", "quicksand"],
+		String(item.get("kind", "water")), func(s: String) -> void:
+			item["kind"] = s; _mark_dirty(); _canvas.queue_redraw())
+	_vec3_row("Origin", item, "origin")
+	_vec3_row("Size", item, "size")
+
+
+func _inspector_warp() -> void:
+	var item := _current_item()
+	if item.is_empty(): return
+	_inspector_header("Warp: %s" % item.get("name", "(unnamed)"))
+	_mkline(_mkrow("Name"), String(item.get("name", "")), func(s: String) -> void:
+		item["name"] = s; _mark_dirty())
+	_mkline(_mkrow("Target level"), String(item.get("target_level", "")), func(s: String) -> void:
+		item["target_level"] = s; _mark_dirty())
+	_vec3_row("Pos", item, "pos")
+	_vec3_row("Size (trigger)", item, "size")
+	_mkspin(_mkrow("Requires stars"), int(item.get("requires_stars", 0)), 0, 120, 1, func(v: float) -> void:
+		if int(v) == 0:
+			item.erase("requires_stars")
+		else:
+			item["requires_stars"] = int(v)
+		_mark_dirty())
+	_mkoption(_mkrow("Requires key"), ["", "bronze", "silver", "gold"],
+		String(item.get("requires_key", "")), func(s: String) -> void:
+			if s == "":
+				item.erase("requires_key")
+			else:
+				item["requires_key"] = s
+			_mark_dirty())
 
 
 func _inspector_spawn() -> void:

@@ -213,6 +213,14 @@ func _draw_current_floor(bp: Dictionary) -> void:
 		if not _lock_on_floor(lk, current_y):
 			continue
 		_draw_lock(lk, _is_selected("locks", i))
+	for i in range(bp.get("volumes", []).size()):
+		_draw_volume(bp["volumes"][i], _is_selected("volumes", i))
+	for i in range(bp.get("warps", []).size()):
+		_draw_warp(bp["warps"][i], _is_selected("warps", i))
+	for i in range(bp.get("enemies", []).size()):
+		_draw_enemy(bp["enemies"][i], _is_selected("enemies", i))
+	for i in range(bp.get("pickups", []).size()):
+		_draw_pickup(bp["pickups"][i], _is_selected("pickups", i))
 
 
 func _is_selected(kind: String, index: int) -> bool:
@@ -504,7 +512,8 @@ func _draw_spawn(bp: Dictionary) -> void:
 func _draw_tool_preview() -> void:
 	if editor == null:
 		return
-	if editor.tool_mode != "room" and editor.tool_mode != "terrain":
+	var mode: String = editor.tool_mode
+	if mode not in ["room", "terrain", "water", "lava"]:
 		return
 	if not _dragging_item:
 		return
@@ -515,10 +524,102 @@ func _draw_tool_preview() -> void:
 	var r_tl := world_to_canvas(tl)
 	var r_br := world_to_canvas(br)
 	var rect := Rect2(r_tl, r_br - r_tl)
-	var tint: Color = Color(0.45, 0.85, 0.45, 0.18) if editor.tool_mode == "terrain" else Color(1, 1, 1, 0.15)
-	var edge: Color = Color(0.55, 1.0, 0.55, 0.9) if editor.tool_mode == "terrain" else Color(1, 1, 1, 0.8)
+	var tint: Color = Color(1, 1, 1, 0.15)
+	var edge: Color = Color(1, 1, 1, 0.8)
+	match mode:
+		"terrain": tint = Color(0.45, 0.85, 0.45, 0.18); edge = Color(0.55, 1.0, 0.55, 0.9)
+		"water":   tint = Color(0.25, 0.55, 0.95, 0.22); edge = Color(0.35, 0.7, 1.0, 0.9)
+		"lava":    tint = Color(1.0, 0.35, 0.10, 0.22);  edge = Color(1.0, 0.55, 0.15, 0.95)
 	draw_rect(rect, tint, true)
 	draw_rect(rect, edge, false, 2.0)
+
+
+const VOLUME_COLOR := {
+	"water":     Color(0.25, 0.55, 0.95),
+	"lava":      Color(1.0, 0.35, 0.10),
+	"ice":       Color(0.70, 0.90, 1.00),
+	"quicksand": Color(0.78, 0.65, 0.30),
+}
+
+const PICKUP_COLOR := {
+	"coin_yellow": Color(1.0, 0.85, 0.10),
+	"coin_blue":   Color(0.20, 0.50, 1.0),
+	"coin_red":    Color(1.0, 0.25, 0.25),
+	"star":        Color(1.0, 1.0, 0.30),
+	"oneup":       Color(0.35, 1.0, 0.40),
+	"cap_wing":    Color(1.0, 1.0, 0.88),
+	"cap_metal":   Color(0.75, 0.75, 0.85),
+	"cap_vanish":  Color(0.85, 0.45, 1.0),
+	"key_bronze":  Color(0.80, 0.55, 0.30),
+	"key_silver":  Color(0.88, 0.88, 0.92),
+	"key_gold":    Color(0.98, 0.85, 0.35),
+}
+
+
+func _draw_volume(vol: Dictionary, selected: bool) -> void:
+	var o: Array = vol.get("origin", [0, 0, 0])
+	var s: Array = vol.get("size", [4, 1, 4])
+	var tl := world_to_canvas(Vector2(float(o[0]), float(o[2])))
+	var br := world_to_canvas(Vector2(float(o[0]) + float(s[0]), float(o[2]) + float(s[2])))
+	var rect := Rect2(tl, br - tl)
+	var col: Color = VOLUME_COLOR.get(String(vol.get("kind", "water")), Color.GRAY)
+	draw_rect(rect, Color(col.r, col.g, col.b, 0.28), true)
+	draw_rect(rect, col if not selected else ROOM_SELECTED, false, 3.0 if selected else 1.5)
+	var font := ThemeDB.fallback_font
+	draw_string(font, tl + Vector2(6, 14),
+		String(vol.get("name", vol.get("kind", "vol"))).to_upper(),
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 11, col)
+
+
+func _draw_warp(warp: Dictionary, selected: bool) -> void:
+	var p: Array = warp.get("pos", [0, 0, 0])
+	var sz: Array = warp.get("size", [2.5, 3, 0.4])
+	var w: float = float(sz[0]); var d: float = float(sz[2])
+	var cx: float = float(p[0]); var cz: float = float(p[2])
+	var tl := world_to_canvas(Vector2(cx - w * 0.5, cz - d * 0.5))
+	var br := world_to_canvas(Vector2(cx + w * 0.5, cz + d * 0.5))
+	var rect := Rect2(tl, br - tl)
+	var col := Color(0.6, 0.4, 1.0)
+	draw_rect(rect, Color(col.r, col.g, col.b, 0.4), true)
+	draw_rect(rect, col if not selected else ROOM_SELECTED, false, 3.0 if selected else 2.0)
+	var font := ThemeDB.fallback_font
+	draw_string(font, tl + Vector2(4, 14),
+		"→ " + String(warp.get("target_level", "?")),
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.9, 0.8, 1.0))
+
+
+func _draw_enemy(enemy: Dictionary, selected: bool) -> void:
+	var p: Array = enemy.get("pos", [0, 0, 0])
+	var center := world_to_canvas(Vector2(float(p[0]), float(p[2])))
+	var col := Color(0.95, 0.30, 0.30)
+	draw_circle(center, 8.0, col)
+	draw_arc(center, 8.0, 0, TAU, 16, Color.BLACK, 1.0)
+	if selected:
+		draw_arc(center, 11.0, 0, TAU, 24, ROOM_SELECTED, 2.0)
+	var font := ThemeDB.fallback_font
+	var bhv: String = String(enemy.get("bhv", ""))
+	draw_string(font, center + Vector2(10, 4),
+		bhv.trim_prefix("bhv"), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1, 0.8, 0.8))
+
+
+func _draw_pickup(pickup: Dictionary, selected: bool) -> void:
+	var p: Array = pickup.get("pos", [0, 0, 0])
+	var center := world_to_canvas(Vector2(float(p[0]), float(p[2])))
+	var kind: String = String(pickup.get("kind", "coin_yellow"))
+	var col: Color = PICKUP_COLOR.get(kind, Color.WHITE)
+	# Stars draw as a 5-point star glyph so they stand out from coins.
+	if kind == "star":
+		var pts := PackedVector2Array()
+		for k in range(10):
+			var r: float = 9.0 if k % 2 == 0 else 4.0
+			var ang: float = -PI * 0.5 + k * PI * 0.2
+			pts.append(center + Vector2(cos(ang), sin(ang)) * r)
+		draw_colored_polygon(pts, col)
+	else:
+		draw_circle(center, 6.0, col)
+		draw_arc(center, 6.0, 0, TAU, 16, Color.BLACK, 1.0)
+	if selected:
+		draw_arc(center, 11.0, 0, TAU, 24, ROOM_SELECTED, 2.0)
 
 
 func _draw_terrain_patch(patch: Dictionary, selected: bool) -> void:

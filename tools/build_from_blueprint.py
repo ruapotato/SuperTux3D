@@ -786,18 +786,42 @@ def build_scene(blueprint: dict, scene_name: str) -> Scene:
     root_body = ""
     if "spawn_point" in blueprint:
         sp = blueprint["spawn_point"]
-        root_body = f'metadata/spawn_point = {vec(sp[0], sp[1], sp[2])}\n'
+        root_body += f'metadata/spawn_point = {vec(sp[0], sp[1], sp[2])}\n'
+    # Optional per-level overrides read by level_manager.gd at load time.
+    # `water_level_y` is auto-derived from the TOP surface of any water
+    # volume if not specified — authors don't have to duplicate it.
+    effective_water_y = blueprint.get("water_level_y")
+    if effective_water_y is None:
+        for vol in blueprint.get("volumes", []):
+            if str(vol.get("kind", "")) != "water":
+                continue
+            oy = float(vol["origin"][1])
+            sy = float(vol.get("size", [0, 0, 0])[1])
+            top = oy + sy
+            if effective_water_y is None or top > effective_water_y:
+                effective_water_y = top
+    if effective_water_y is not None:
+        root_body += f'metadata/water_level_y = {float(effective_water_y)}\n'
+    if "bgm" in blueprint:
+        root_body += f'metadata/bgm = "{str(blueprint["bgm"])}"\n'
     scene.node(scene_name, None, "Node3D", root_body)
     # When requested, inject a basic Environment + Sun so the scene
     # loads as a standalone playable level. Without this the blueprint
     # output is just geometry — no lighting, black ambient.
     if blueprint.get("standalone_level", False):
+        sky = blueprint.get("sky") or {}
+        def _col(k: str, default: tuple[float, float, float]) -> str:
+            c = sky.get(k) if sky.get(k) else default
+            return f"Color({float(c[0])}, {float(c[1])}, {float(c[2])}, 1)"
+        bg = _col("horizon_color", (0.52, 0.75, 0.98))
+        amb = _col("ambient_color", (0.8, 0.82, 0.78))
+        amb_energy = float(sky.get("ambient_energy", 0.8))
         env_body = (
             'background_mode = 1\n'
-            'background_color = Color(0.52, 0.75, 0.98, 1)\n'
+            f'background_color = {bg}\n'
             'ambient_light_source = 2\n'
-            'ambient_light_color = Color(0.8, 0.82, 0.78, 1)\n'
-            'ambient_light_energy = 0.8\n'
+            f'ambient_light_color = {amb}\n'
+            f'ambient_light_energy = {amb_energy}\n'
         )
         env_id = scene.sub("Environment", env_body)
         scene.node("WorldEnvironment", scene_name, "WorldEnvironment",
@@ -1220,7 +1244,140 @@ def build_scene(blueprint: dict, scene_name: str) -> Scene:
             f'metadata/terrain_slope_threshold = {slope_thr}\n'
             f'metadata/terrain_slope_softness = {slope_soft}\n'
         )
+        # Surface kind (snow / sand / ice / …) so mario_state's
+        # floor_surface picks up the right friction + effects when the
+        # player stands on a themed terrain.
+        if patch.get("surface_kind"):
+            body += f'metadata/surface_kind = "{str(patch["surface_kind"])}"\n'
         scene.node(pname, scene_name, "StaticBody3D", body)
+
+    # Enemies: level_manager._spawn_markers walks the scene for nodes
+    # with `metadata/enemy_bhv` and spawns real enemy.gd bodies at each
+    # marker's world position. The marker itself stays in place (free
+    # Node3D, no children); we keep it parented so save/load + scene
+    # inspection show authored positions.
+    for enemy in blueprint.get("enemies", []):
+        ex, ey, ez = enemy["pos"]
+        bhv = str(enemy.get("bhv", "bhvGoomba"))
+        ename = enemy.get("name") or f"Enemy_{bhv}_{ex}_{ey}_{ez}"
+        body = (
+            f'transform = {xform_translate(ex, ey, ez)}\n'
+            f'metadata/enemy_bhv = "{bhv}"\n'
+        )
+        if enemy.get("patrol_radius") is not None:
+            body += f'metadata/enemy_patrol_radius = {float(enemy["patrol_radius"])}\n'
+        scene.node(ename, scene_name, "Node3D", body)
+
+    # Pickups: same pattern — metadata/pickup_kind, level_manager spawns
+    # the visual + Area3D at runtime. Kinds come from the ObjectSpawner
+    # whitelist (coin_*, star, oneup, cap_*, key_*).
+    for pickup in blueprint.get("pickups", []):
+        px_p, py_p, pz_p = pickup["pos"]
+        kind = str(pickup.get("kind", "coin_yellow"))
+        pname = pickup.get("name") or f"Pickup_{kind}_{px_p}_{py_p}_{pz_p}"
+        body = (
+            f'transform = {xform_translate(px_p, py_p, pz_p)}\n'
+            f'metadata/pickup_kind = "{kind}"\n'
+        )
+        scene.node(pname, scene_name, "Node3D", body)
+
+    # Warps: Area3D with `metadata/warp_to` + optional requires_stars /
+    # lock_key. level_manager wires body_entered → load_level at load
+    # time, including the gating logic the existing lock system uses.
+    for warp in blueprint.get("warps", []):
+        wx, wy, wz = warp["pos"]
+        sz_w = warp.get("size", [2.5, 3.0, 2.5])
+        wname = warp.get("name") or f"Warp_{wx}_{wy}_{wz}"
+        target = str(warp.get("target_level", ""))
+        body = (
+            f'transform = {xform_translate(wx, wy + float(sz_w[1]) * 0.5, wz)}\n'
+            f'collision_layer = 0\n'
+            f'collision_mask = 1\n'
+            f'metadata/warp_to = "{target}"\n'
+        )
+        if warp.get("requires_stars"):
+            body += f'metadata/requires_stars = {int(warp["requires_stars"])}\n'
+        if warp.get("requires_key"):
+            body += f'metadata/lock_key = "{str(warp["requires_key"])}"\n'
+        scene.node(wname, scene_name, "Area3D", body)
+        shape_id = scene.sub(
+            "BoxShape3D",
+            f"size = {vec(float(sz_w[0]), float(sz_w[1]), float(sz_w[2]))}\n",
+        )
+        scene.node("Col", f"{scene_name}/{wname}", "CollisionShape3D",
+                   f'shape = SubResource("{shape_id}")\n')
+        # Glowing portal visual — hints at where the warp is.
+        mesh_id = scene.sub(
+            "BoxMesh",
+            f"size = {vec(float(sz_w[0]) * 0.8, float(sz_w[1]), 0.2)}\n",
+        )
+        glow = scene.sub(
+            "StandardMaterial3D",
+            (
+                "albedo_color = Color(0.4, 0.7, 1.0, 0.45)\n"
+                "emission_enabled = true\n"
+                "emission = Color(0.3, 0.6, 1.0, 1)\n"
+                "emission_energy_multiplier = 1.6\n"
+                "transparency = 1\n"
+            ),
+        )
+        scene.node(
+            "Mesh", f"{scene_name}/{wname}", "MeshInstance3D",
+            f'mesh = SubResource("{mesh_id}")\n'
+            f'surface_material_override/0 = SubResource("{glow}")\n',
+        )
+
+    # Volumes: water/lava/ice/quicksand. Water gets a translucent blue
+    # top surface + sets root water_level_y if not already authored.
+    # Lava/ice/quicksand each emit a StaticBody3D with surface_kind meta
+    # so mario_state's floor_surface check reads the right friction +
+    # hazard behaviour.
+    VOLUME_VISUALS = {
+        "water":     {"color": (0.20, 0.45, 0.95, 0.55), "emit": (0.10, 0.22, 0.45), "surface": "water"},
+        "lava":      {"color": (1.00, 0.40, 0.08, 0.95), "emit": (1.00, 0.25, 0.02), "surface": "burning"},
+        "ice":       {"color": (0.70, 0.90, 1.00, 0.75), "emit": (0.25, 0.45, 0.55), "surface": "ice"},
+        "quicksand": {"color": (0.78, 0.65, 0.30, 0.95), "emit": (0.30, 0.22, 0.08), "surface": "shallow_quicksand"},
+    }
+    for vol in blueprint.get("volumes", []):
+        vk = str(vol.get("kind", "water"))
+        spec = VOLUME_VISUALS.get(vk)
+        if spec is None:
+            continue
+        vox, voy, voz = vol["origin"]
+        vsx, vsy, vsz = vol.get("size", [4.0, 1.0, 4.0])
+        vname = vol.get("name") or f"Vol_{vk}_{vox}_{voy}_{voz}"
+        c = spec["color"]; e = spec["emit"]
+        body = (
+            f'transform = {xform_translate(float(vox) + float(vsx) * 0.5, float(voy) + float(vsy) * 0.5, float(voz) + float(vsz) * 0.5)}\n'
+            f'collision_layer = 1\n'
+            f'collision_mask = 1\n'
+            f'metadata/volume_kind = "{vk}"\n'
+            f'metadata/surface_kind = "{spec["surface"]}"\n'
+        )
+        scene.node(vname, scene_name, "StaticBody3D", body)
+        mesh_id = scene.sub(
+            "BoxMesh",
+            f"size = {vec(float(vsx), float(vsy), float(vsz))}\n",
+        )
+        mat_src = (
+            f"albedo_color = Color({c[0]}, {c[1]}, {c[2]}, {c[3]})\n"
+            "emission_enabled = true\n"
+            f"emission = Color({e[0]}, {e[1]}, {e[2]}, 1)\n"
+            "emission_energy_multiplier = 0.6\n"
+            "roughness = 0.3\n"
+        )
+        if c[3] < 0.99:
+            mat_src += "transparency = 1\n"
+        mat_id = scene.sub("StandardMaterial3D", mat_src)
+        scene.node("Mesh", f"{scene_name}/{vname}", "MeshInstance3D",
+                   f'mesh = SubResource("{mesh_id}")\n'
+                   f'surface_material_override/0 = SubResource("{mat_id}")\n')
+        shape_id = scene.sub(
+            "BoxShape3D",
+            f"size = {vec(float(vsx), float(vsy), float(vsz))}\n",
+        )
+        scene.node("Col", f"{scene_name}/{vname}", "CollisionShape3D",
+                   f'shape = SubResource("{shape_id}")\n')
 
     return scene
 

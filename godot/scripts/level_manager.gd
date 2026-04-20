@@ -65,9 +65,18 @@ func load_level(level_name: String, area: int = 1) -> bool:
 
     current_level = level_name
     current_area = area
+    # Blueprint-authored levels can override bgm + water via root
+    # metadata (`metadata/bgm`, `metadata/water_level_y`). Fall back
+    # to the hardcoded dicts for hand-authored levels.
+    var bgm_track: String = LEVEL_BGM.get(level_name, "bgm_course")
+    if level_root.has_meta("bgm"):
+        bgm_track = str(level_root.get_meta("bgm"))
     if sound_bank != null and sound_bank.has_method("play_bgm"):
-        sound_bank.play_bgm(LEVEL_BGM.get(level_name, "bgm_course"))
-    mario.water_level_y = LEVEL_WATER_Y.get(level_name, -INF)
+        sound_bank.play_bgm(bgm_track)
+    var water_y: float = float(LEVEL_WATER_Y.get(level_name, -INF))
+    if level_root.has_meta("water_level_y"):
+        water_y = float(level_root.get_meta("water_level_y"))
+    mario.water_level_y = water_y
     if save_data != null:
         save_data.last_level = level_name
         save_data.last_area = area
