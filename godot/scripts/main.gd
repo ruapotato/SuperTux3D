@@ -131,11 +131,11 @@ func _on_mario_died() -> void:
     _death_pending = true
     mario.lives -= 1
     if mario.lives <= 0:
-        # Game over: reset lives, return to castle hub with full HP.
+        # Game over: reset lives, return to the hub with full HP.
         mario.lives = 4
         mario.coin_count = 0
-        mario._play_sfx("game_over")
-        _go_to_castle()
+        mario._play_sfx("death")
+        _go_to_hub()
         _respawn_after(2.0)
     else:
         _respawn_after(1.5)

@@ -124,23 +124,33 @@ func _spawn_markers(level_root: Node) -> void:
             var n3: Node3D = n
             if n.has_meta("enemy_bhv"):
                 var bhv: String = str(n.get_meta("enemy_bhv"))
+                var world_pos: Vector3 = n3.global_position
+                var world_yaw: float = n3.rotation.y
                 var e := CharacterBody3D.new()
                 e.set_script(EnemyScript)
                 e.set("bhv_name", bhv)
                 e.name = "Enemy_" + bhv
-                e.global_position = n3.global_position
-                e.rotation.y = n3.rotation.y
+                # Add to the tree first, THEN set global_position — Godot
+                # raises a "!is_inside_tree" error if we touch the global
+                # transform of a node that isn't parented yet.
                 world_root.add_child(e)
+                e.global_position = world_pos
+                e.rotation.y = world_yaw
                 spawn_count.enemy += 1
             if n.has_meta("pickup_kind"):
                 var kind: String = str(n.get_meta("pickup_kind"))
+                var world_pos_p: Vector3 = n3.global_position
                 var p: Node3D = ObjectSpawner._make_pickup(kind)
-                p.global_position = n3.global_position
                 world_root.add_child(p)
+                p.global_position = world_pos_p
                 spawn_count.pickup += 1
             if n.has_meta("warp_to") and n is Area3D:
                 var target_level: String = str(n.get_meta("warp_to"))
-                (n as Area3D).body_entered.connect(
+                var area: Area3D = n as Area3D
+                # Force mask=1 so Mario's layer-1 body triggers the warp —
+                # the scene authoring set mask=2 which misses everything.
+                area.collision_mask = 1
+                area.body_entered.connect(
                     func(body: Node) -> void:
                         if body == mario:
                             call_deferred("load_level", target_level, 1))

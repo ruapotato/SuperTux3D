@@ -1,6 +1,8 @@
-[gd_scene load_steps=9 format=3 uid="uid://bchomp006"]
+[gd_scene load_steps=15 format=3 uid="uid://bchomp006"]
 
-; Clean-room Chain Chomp. Big black spiky ball, white teeth ring, single red eye.
+; Clean-room Chain Chomp. Big dark ball, jagged teeth, glowing red eye, chain stub.
+; Added: prism teeth (jagged), bigger sclera + glowing red pupil, gum line,
+; chain stub cylinder at rear, more spikes across the surface.
 ; Base at y=0, faces -Z (mouth toward -Z).
 
 [sub_resource type="SphereMesh" id="ball_mesh"]
@@ -10,38 +12,67 @@ radial_segments = 20
 rings = 12
 
 [sub_resource type="StandardMaterial3D" id="ball_mat"]
-albedo_color = Color(0.06, 0.06, 0.08, 1)
+albedo_color = Color(0.07, 0.07, 0.1, 1)
 shading_mode = 0
 
-[sub_resource type="BoxMesh" id="spike_mesh"]
-size = Vector3(0.06, 0.12, 0.06)
+[sub_resource type="StandardMaterial3D" id="ball_highlight_mat"]
+albedo_color = Color(0.22, 0.22, 0.26, 1)
+shading_mode = 0
 
-[sub_resource type="BoxMesh" id="tooth_mesh"]
-size = Vector3(0.05, 0.09, 0.05)
+[sub_resource type="PrismMesh" id="spike_mesh"]
+size = Vector3(0.08, 0.14, 0.08)
+left_to_right = 0.5
+
+[sub_resource type="PrismMesh" id="tooth_mesh"]
+size = Vector3(0.07, 0.13, 0.06)
+left_to_right = 0.5
 
 [sub_resource type="StandardMaterial3D" id="tooth_mat"]
-albedo_color = Color(0.98, 0.98, 0.95, 1)
+albedo_color = Color(0.98, 0.98, 0.93, 1)
 shading_mode = 0
 
-[sub_resource type="SphereMesh" id="eye_mesh"]
-radius = 0.07
-height = 0.14
-radial_segments = 10
+[sub_resource type="TorusMesh" id="gum_mesh"]
+inner_radius = 0.2
+outer_radius = 0.26
+
+[sub_resource type="StandardMaterial3D" id="gum_mat"]
+albedo_color = Color(0.55, 0.1, 0.12, 1)
+shading_mode = 0
+
+[sub_resource type="SphereMesh" id="sclera_mesh"]
+radius = 0.1
+height = 0.2
+radial_segments = 12
 rings = 8
 
-[sub_resource type="StandardMaterial3D" id="eye_white_mat"]
+[sub_resource type="StandardMaterial3D" id="sclera_mat"]
 albedo_color = Color(0.98, 0.98, 0.95, 1)
 shading_mode = 0
 
 [sub_resource type="SphereMesh" id="pupil_mesh"]
-radius = 0.03
-height = 0.06
-radial_segments = 8
-rings = 6
+radius = 0.045
+height = 0.09
+radial_segments = 10
+rings = 8
 
 [sub_resource type="StandardMaterial3D" id="pupil_mat"]
-albedo_color = Color(0.85, 0.1, 0.1, 1)
+albedo_color = Color(0.95, 0.08, 0.08, 1)
 shading_mode = 0
+emission_enabled = true
+emission = Color(1, 0.1, 0.1, 1)
+emission_energy_multiplier = 1.8
+
+[sub_resource type="CylinderMesh" id="chain_stub_mesh"]
+top_radius = 0.08
+bottom_radius = 0.1
+height = 0.18
+radial_segments = 12
+
+[sub_resource type="StandardMaterial3D" id="chain_mat"]
+albedo_color = Color(0.55, 0.55, 0.6, 1)
+shading_mode = 0
+metallic = 0.7
+roughness = 0.4
 
 [node name="EnemyVisual" type="Node3D"]
 
@@ -51,71 +82,101 @@ mesh = SubResource("ball_mesh")
 surface_material_override/0 = SubResource("ball_mat")
 
 [node name="SpikeTop" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.82, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
 mesh = SubResource("spike_mesh")
-surface_material_override/0 = SubResource("ball_mat")
+surface_material_override/0 = SubResource("ball_highlight_mat")
+
+[node name="SpikeBackUp" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.6, 0.8, 0, -0.8, 0.6, 0, 0.72, 0.3)
+mesh = SubResource("spike_mesh")
+surface_material_override/0 = SubResource("ball_highlight_mat")
 
 [node name="SpikeBack" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.4, 0.42)
 mesh = SubResource("spike_mesh")
-surface_material_override/0 = SubResource("ball_mat")
+surface_material_override/0 = SubResource("ball_highlight_mat")
 
 [node name="SpikeUpperL" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.7, 0.7, 0, -0.7, 0.7, 0, 0, 0, 1, -0.3, 0.72, 0)
 mesh = SubResource("spike_mesh")
-surface_material_override/0 = SubResource("ball_mat")
+surface_material_override/0 = SubResource("ball_highlight_mat")
 
 [node name="SpikeUpperR" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.7, -0.7, 0, 0.7, 0.7, 0, 0, 0, 1, 0.3, 0.72, 0)
 mesh = SubResource("spike_mesh")
-surface_material_override/0 = SubResource("ball_mat")
+surface_material_override/0 = SubResource("ball_highlight_mat")
 
 [node name="SpikeSideL" type="MeshInstance3D" parent="."]
 transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, -0.42, 0.4, 0)
 mesh = SubResource("spike_mesh")
-surface_material_override/0 = SubResource("ball_mat")
+surface_material_override/0 = SubResource("ball_highlight_mat")
 
 [node name="SpikeSideR" type="MeshInstance3D" parent="."]
 transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0.42, 0.4, 0)
 mesh = SubResource("spike_mesh")
-surface_material_override/0 = SubResource("ball_mat")
+surface_material_override/0 = SubResource("ball_highlight_mat")
 
-[node name="Tooth1" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.18, 0.25, -0.36)
+[node name="SpikeBackLow" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -0.6, 0.8, 0, -0.8, -0.6, 0, 0.1, 0.3)
+mesh = SubResource("spike_mesh")
+surface_material_override/0 = SubResource("ball_highlight_mat")
+
+[node name="GumRing" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0.87, 0, -0.87, 0.5, 0, 0.36, -0.34)
+mesh = SubResource("gum_mesh")
+surface_material_override/0 = SubResource("gum_mat")
+
+[node name="ToothLower1" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.98, 0.2, 0, -0.2, 0.98, 0, 0, 0, 1, -0.2, 0.24, -0.34)
 mesh = SubResource("tooth_mesh")
 surface_material_override/0 = SubResource("tooth_mat")
 
-[node name="Tooth2" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.06, 0.22, -0.39)
+[node name="ToothLower2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.07, 0.2, -0.39)
 mesh = SubResource("tooth_mesh")
 surface_material_override/0 = SubResource("tooth_mat")
 
-[node name="Tooth3" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.06, 0.22, -0.39)
+[node name="ToothLower3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07, 0.2, -0.39)
 mesh = SubResource("tooth_mesh")
 surface_material_override/0 = SubResource("tooth_mat")
 
-[node name="Tooth4" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.18, 0.25, -0.36)
+[node name="ToothLower4" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.98, -0.2, 0, 0.2, 0.98, 0, 0, 0, 1, 0.2, 0.24, -0.34)
 mesh = SubResource("tooth_mesh")
 surface_material_override/0 = SubResource("tooth_mat")
 
 [node name="ToothUpper1" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, -1, -0.12, 0.5, -0.36)
+transform = Transform3D(0.98, 0.2, 0, 0.2, -0.98, 0, 0, 0, -1, -0.18, 0.52, -0.34)
 mesh = SubResource("tooth_mesh")
 surface_material_override/0 = SubResource("tooth_mat")
 
 [node name="ToothUpper2" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, -1, 0.12, 0.5, -0.36)
+transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, -1, -0.06, 0.56, -0.39)
 mesh = SubResource("tooth_mesh")
 surface_material_override/0 = SubResource("tooth_mat")
 
-[node name="Eye" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.58, -0.32)
-mesh = SubResource("eye_mesh")
-surface_material_override/0 = SubResource("eye_white_mat")
+[node name="ToothUpper3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, -1, 0.06, 0.56, -0.39)
+mesh = SubResource("tooth_mesh")
+surface_material_override/0 = SubResource("tooth_mat")
+
+[node name="ToothUpper4" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.98, -0.2, 0, -0.2, -0.98, 0, 0, 0, -1, 0.18, 0.52, -0.34)
+mesh = SubResource("tooth_mesh")
+surface_material_override/0 = SubResource("tooth_mat")
+
+[node name="Sclera" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.62, -0.3)
+mesh = SubResource("sclera_mesh")
+surface_material_override/0 = SubResource("sclera_mat")
 
 [node name="Pupil" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.58, -0.38)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.62, -0.38)
 mesh = SubResource("pupil_mesh")
 surface_material_override/0 = SubResource("pupil_mat")
+
+[node name="ChainStub" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.4, 0.5)
+mesh = SubResource("chain_stub_mesh")
+surface_material_override/0 = SubResource("chain_mat")

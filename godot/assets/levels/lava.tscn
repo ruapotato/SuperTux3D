@@ -1,10 +1,17 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=36 format=3]
+
+; LAVA — Rock maze over burning sea.
+; Landmarks: Central Volcano with spiral path, Lava Falls, Swinging
+;   Boulder (static placeholder), Secret Tunnel Behind Lava, Rock Arch.
+; Tiers: outer rock ring / mid platforms / volcano summit.
+; 13 enemies (many bobombs, 3 piranha flame-plants, goombas, 1 chuckya),
+;   28 coins, summit star, hidden tunnel 1-up, vanish cap in tunnel.
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_1"]
-sky_top_color = Color(0.25, 0.1, 0.08, 1)
-sky_horizon_color = Color(0.7, 0.25, 0.1, 1)
-ground_bottom_color = Color(0.15, 0.05, 0.03, 1)
-ground_horizon_color = Color(0.5, 0.15, 0.05, 1)
+sky_top_color = Color(0.12, 0.07, 0.14, 1)
+sky_horizon_color = Color(0.75, 0.22, 0.08, 1)
+ground_bottom_color = Color(0.4, 0.08, 0.05, 1)
+ground_horizon_color = Color(0.8, 0.3, 0.1, 1)
 
 [sub_resource type="Sky" id="Sky_2"]
 sky_material = SubResource("Sky_1")
@@ -13,65 +20,147 @@ sky_material = SubResource("Sky_1")
 background_mode = 2
 sky = SubResource("Sky_2")
 ambient_light_source = 2
-ambient_light_color = Color(0.85, 0.35, 0.15, 1)
+ambient_light_color = Color(0.9, 0.45, 0.25, 1)
 ambient_light_energy = 0.9
-
-[sub_resource type="StandardMaterial3D" id="Mat_Rock"]
-shading_mode = 0
-albedo_color = Color(0.4, 0.2, 0.15, 1)
+fog_enabled = true
+fog_light_color = Color(0.6, 0.2, 0.1, 1)
+fog_density = 0.01
 
 [sub_resource type="StandardMaterial3D" id="Mat_Lava"]
 shading_mode = 0
-albedo_color = Color(1, 0.45, 0.08, 1)
+albedo_color = Color(0.95, 0.32, 0.06, 1)
 emission_enabled = true
-emission = Color(1, 0.35, 0.05, 1)
+emission = Color(1.0, 0.45, 0.08, 1)
 emission_energy_multiplier = 1.5
 
-[sub_resource type="StandardMaterial3D" id="Mat_Step"]
+[sub_resource type="StandardMaterial3D" id="Mat_Rock"]
 shading_mode = 0
-albedo_color = Color(0.55, 0.28, 0.2, 1)
+albedo_color = Color(0.25, 0.18, 0.16, 1)
 
-[sub_resource type="StandardMaterial3D" id="Mat_Volcano"]
+[sub_resource type="StandardMaterial3D" id="Mat_RockHot"]
 shading_mode = 0
-albedo_color = Color(0.3, 0.15, 0.1, 1)
+albedo_color = Color(0.45, 0.2, 0.1, 1)
+emission_enabled = true
+emission = Color(0.5, 0.1, 0.05, 1)
+emission_energy_multiplier = 0.3
 
-[sub_resource type="BoxMesh" id="Box_OuterRing"]
-material = SubResource("Mat_Rock")
-size = Vector3(50, 1, 10)
+[sub_resource type="StandardMaterial3D" id="Mat_Obsidian"]
+shading_mode = 0
+albedo_color = Color(0.08, 0.06, 0.1, 1)
+metallic = 0.4
 
-[sub_resource type="BoxShape3D" id="BS_OuterRing"]
-size = Vector3(50, 1, 10)
+[sub_resource type="StandardMaterial3D" id="Mat_Boulder"]
+shading_mode = 0
+albedo_color = Color(0.35, 0.28, 0.22, 1)
 
-[sub_resource type="BoxMesh" id="Box_SideRing"]
-material = SubResource("Mat_Rock")
-size = Vector3(10, 1, 30)
-
-[sub_resource type="BoxShape3D" id="BS_SideRing"]
-size = Vector3(10, 1, 30)
-
-[sub_resource type="BoxMesh" id="Box_LavaPool"]
+[sub_resource type="BoxMesh" id="Mesh_LavaSea"]
 material = SubResource("Mat_Lava")
-size = Vector3(30, 0.2, 30)
+size = Vector3(120, 0.4, 120)
 
-[sub_resource type="CylinderMesh" id="Cyl_Step"]
-material = SubResource("Mat_Step")
-top_radius = 1.4
-bottom_radius = 1.5
-height = 2
+[sub_resource type="BoxShape3D" id="Shape_LavaSea"]
+size = Vector3(120, 0.4, 120)
 
-[sub_resource type="CylinderShape3D" id="CS_Step"]
-height = 2
-radius = 1.5
+[sub_resource type="CylinderMesh" id="Mesh_OuterRing"]
+material = SubResource("Mat_Rock")
+top_radius = 50
+bottom_radius = 50
+height = 4
+rings = 1
 
-[sub_resource type="PrismMesh" id="Prism_Volcano"]
-material = SubResource("Mat_Volcano")
-size = Vector3(20, 18, 20)
+[sub_resource type="CylinderShape3D" id="Shape_OuterRing"]
+radius = 50
+height = 4
 
-[sub_resource type="CylinderMesh" id="Cyl_VolcanoLava"]
+[sub_resource type="BoxMesh" id="Mesh_Platform"]
+material = SubResource("Mat_Rock")
+size = Vector3(8, 2, 8)
+
+[sub_resource type="BoxShape3D" id="Shape_Platform"]
+size = Vector3(8, 2, 8)
+
+[sub_resource type="BoxMesh" id="Mesh_PlatformSmall"]
+material = SubResource("Mat_Rock")
+size = Vector3(5, 1.4, 5)
+
+[sub_resource type="BoxShape3D" id="Shape_PlatformSmall"]
+size = Vector3(5, 1.4, 5)
+
+[sub_resource type="CylinderMesh" id="Mesh_VolcanoBase"]
+material = SubResource("Mat_RockHot")
+top_radius = 14
+bottom_radius = 18
+height = 6
+
+[sub_resource type="CylinderShape3D" id="Shape_VolcanoBase"]
+radius = 18
+height = 6
+
+[sub_resource type="CylinderMesh" id="Mesh_VolcanoMid"]
+material = SubResource("Mat_RockHot")
+top_radius = 9
+bottom_radius = 12
+height = 5
+
+[sub_resource type="CylinderShape3D" id="Shape_VolcanoMid"]
+radius = 12
+height = 5
+
+[sub_resource type="CylinderMesh" id="Mesh_VolcanoTop"]
+material = SubResource("Mat_Obsidian")
+top_radius = 5.5
+bottom_radius = 7
+height = 3
+
+[sub_resource type="CylinderShape3D" id="Shape_VolcanoTop"]
+radius = 7
+height = 3
+
+[sub_resource type="BoxMesh" id="Mesh_SpiralRamp"]
+material = SubResource("Mat_RockHot")
+size = Vector3(3, 0.6, 9)
+
+[sub_resource type="BoxShape3D" id="Shape_SpiralRamp"]
+size = Vector3(3, 0.6, 9)
+
+[sub_resource type="SphereMesh" id="Mesh_Boulder"]
+material = SubResource("Mat_Boulder")
+radius = 2.6
+height = 5.2
+
+[sub_resource type="BoxShape3D" id="Shape_Boulder"]
+size = Vector3(5.2, 5.2, 5.2)
+
+[sub_resource type="BoxMesh" id="Mesh_Falls"]
 material = SubResource("Mat_Lava")
-top_radius = 2
-bottom_radius = 2
-height = 0.4
+size = Vector3(6, 8, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_ArchLeg"]
+material = SubResource("Mat_Rock")
+size = Vector3(2, 6, 2)
+
+[sub_resource type="BoxShape3D" id="Shape_ArchLeg"]
+size = Vector3(2, 6, 2)
+
+[sub_resource type="BoxMesh" id="Mesh_ArchTop"]
+material = SubResource("Mat_Rock")
+size = Vector3(9, 1.5, 2)
+
+[sub_resource type="BoxShape3D" id="Shape_ArchTop"]
+size = Vector3(9, 1.5, 2)
+
+[sub_resource type="BoxMesh" id="Mesh_TunnelWall"]
+material = SubResource("Mat_Obsidian")
+size = Vector3(10, 5, 1.2)
+
+[sub_resource type="BoxShape3D" id="Shape_TunnelWall"]
+size = Vector3(10, 5, 1.2)
+
+[sub_resource type="BoxMesh" id="Mesh_TunnelRoof"]
+material = SubResource("Mat_Obsidian")
+size = Vector3(10, 1.2, 8)
+
+[sub_resource type="BoxShape3D" id="Shape_TunnelRoof"]
+size = Vector3(10, 1.2, 8)
 
 [node name="LevelRoot" type="Node3D"]
 
@@ -79,125 +168,498 @@ height = 0.4
 environment = SubResource("Env_1")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.866, -0.35, 0.35, 0, 0.707, 0.707, -0.5, -0.612, 0.612, 0, 20, 0)
-light_color = Color(1, 0.7, 0.5, 1)
-light_energy = 0.7
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 30, 0)
+light_color = Color(1.0, 0.75, 0.5, 1)
+light_energy = 0.8
 
-[node name="FillLight" type="OmniLight3D" parent="."]
+; Lava sea surface (burning!)
+[node name="LavaSeaMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.2, 0)
+mesh = SubResource("Mesh_LavaSea")
+
+[node name="LavaSeaBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+metadata/surface_kind = "burning"
+
+[node name="Col" type="CollisionShape3D" parent="LavaSeaBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.2, 0)
+shape = SubResource("Shape_LavaSea")
+
+; Outer safe ring (not full 360 — has gaps)
+[node name="OuterRingMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 0)
+mesh = SubResource("Mesh_OuterRing")
+
+[node name="OuterRingBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="OuterRingBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 0)
+shape = SubResource("Shape_OuterRing")
+
+; Volcano tiers
+[node name="VBaseMesh" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
-light_color = Color(1, 0.4, 0.1, 1)
-light_energy = 2
-omni_range = 30
+mesh = SubResource("Mesh_VolcanoBase")
 
-[node name="NorthRingMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, -20)
-mesh = SubResource("Box_OuterRing")
-
-[node name="NorthRingBody" type="StaticBody3D" parent="."]
+[node name="VBaseBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
-[node name="Col" type="CollisionShape3D" parent="NorthRingBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, -20)
-shape = SubResource("BS_OuterRing")
+[node name="Col" type="CollisionShape3D" parent="VBaseBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+shape = SubResource("Shape_VolcanoBase")
 
-[node name="SouthRingMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 20)
-mesh = SubResource("Box_OuterRing")
+[node name="VMidMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.5, 0)
+mesh = SubResource("Mesh_VolcanoMid")
 
-[node name="SouthRingBody" type="StaticBody3D" parent="."]
+[node name="VMidBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
-[node name="Col" type="CollisionShape3D" parent="SouthRingBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 20)
-shape = SubResource("BS_OuterRing")
+[node name="Col" type="CollisionShape3D" parent="VMidBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.5, 0)
+shape = SubResource("Shape_VolcanoMid")
 
-[node name="WestRingMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, -0.5, 0)
-mesh = SubResource("Box_SideRing")
+[node name="VTopMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12.5, 0)
+mesh = SubResource("Mesh_VolcanoTop")
 
-[node name="WestRingBody" type="StaticBody3D" parent="."]
+[node name="VTopBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
-[node name="Col" type="CollisionShape3D" parent="WestRingBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, -0.5, 0)
-shape = SubResource("BS_SideRing")
+[node name="Col" type="CollisionShape3D" parent="VTopBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12.5, 0)
+shape = SubResource("Shape_VolcanoTop")
 
-[node name="EastRingMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, -0.5, 0)
-mesh = SubResource("Box_SideRing")
+; Spiral ramps around volcano
+[node name="VRamp1" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.94, -0.34, 0, 0.34, 0.94, 0, 0, 0, 1, 16, 2, 4)
+mesh = SubResource("Mesh_SpiralRamp")
 
-[node name="EastRingBody" type="StaticBody3D" parent="."]
+[node name="VRamp1Body" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
-[node name="Col" type="CollisionShape3D" parent="EastRingBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, -0.5, 0)
-shape = SubResource("BS_SideRing")
+[node name="Col" type="CollisionShape3D" parent="VRamp1Body"]
+transform = Transform3D(0.94, -0.34, 0, 0.34, 0.94, 0, 0, 0, 1, 16, 2, 4)
+shape = SubResource("Shape_SpiralRamp")
 
-[node name="LavaPool" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.9, 0)
-mesh = SubResource("Box_LavaPool")
+[node name="VRamp2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.94, -0.34, 0, 0.34, 0.94, 0, 0, 0, 1, -11, 7, -2)
+mesh = SubResource("Mesh_SpiralRamp")
 
-[node name="Step1Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0, 0)
-mesh = SubResource("Cyl_Step")
-
-[node name="Step1Body" type="StaticBody3D" parent="."]
+[node name="VRamp2Body" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
-[node name="Col" type="CollisionShape3D" parent="Step1Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0, 0)
-shape = SubResource("CS_Step")
+[node name="Col" type="CollisionShape3D" parent="VRamp2Body"]
+transform = Transform3D(0.94, -0.34, 0, 0.34, 0.94, 0, 0, 0, 1, -11, 7, -2)
+shape = SubResource("Shape_SpiralRamp")
 
-[node name="Step2Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, 0)
-mesh = SubResource("Cyl_Step")
+[node name="VRamp3" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.94, -0.34, 0, 0.34, 0.94, 0, 0, 0, 1, 7, 11, 3)
+mesh = SubResource("Mesh_SpiralRamp")
 
-[node name="Step2Body" type="StaticBody3D" parent="."]
+[node name="VRamp3Body" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
-[node name="Col" type="CollisionShape3D" parent="Step2Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, 0)
-shape = SubResource("CS_Step")
+[node name="Col" type="CollisionShape3D" parent="VRamp3Body"]
+transform = Transform3D(0.94, -0.34, 0, 0.34, 0.94, 0, 0, 0, 1, 7, 11, 3)
+shape = SubResource("Shape_SpiralRamp")
 
-[node name="Step3Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 0)
-mesh = SubResource("Cyl_Step")
+; Rock stepping platforms over lava (maze)
+[node name="Plat1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 1, 10)
+mesh = SubResource("Mesh_Platform")
 
-[node name="Step3Body" type="StaticBody3D" parent="."]
+[node name="Plat1Body" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
-[node name="Col" type="CollisionShape3D" parent="Step3Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 0)
-shape = SubResource("CS_Step")
+[node name="Col" type="CollisionShape3D" parent="Plat1Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 1, 10)
+shape = SubResource("Shape_Platform")
 
-[node name="Step4Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0, 0)
-mesh = SubResource("Cyl_Step")
+[node name="Plat2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 2, -5)
+mesh = SubResource("Mesh_PlatformSmall")
 
-[node name="Step4Body" type="StaticBody3D" parent="."]
+[node name="Plat2Body" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
-[node name="Col" type="CollisionShape3D" parent="Step4Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0, 0)
-shape = SubResource("CS_Step")
+[node name="Col" type="CollisionShape3D" parent="Plat2Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 2, -5)
+shape = SubResource("Shape_PlatformSmall")
 
-[node name="VolcanoMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, -45)
-mesh = SubResource("Prism_Volcano")
+[node name="Plat3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 1.5, -18)
+mesh = SubResource("Mesh_Platform")
 
-[node name="VolcanoLava" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 17, -45)
-mesh = SubResource("Cyl_VolcanoLava")
+[node name="Plat3Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
 
+[node name="Col" type="CollisionShape3D" parent="Plat3Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 1.5, -18)
+shape = SubResource("Shape_Platform")
+
+[node name="Plat4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2.5, -28)
+mesh = SubResource("Mesh_PlatformSmall")
+
+[node name="Plat4Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="Plat4Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2.5, -28)
+shape = SubResource("Shape_PlatformSmall")
+
+[node name="Plat5" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 1.5, -28)
+mesh = SubResource("Mesh_Platform")
+
+[node name="Plat5Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="Plat5Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 1.5, -28)
+shape = SubResource("Shape_Platform")
+
+[node name="Plat6" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32, 2, -14)
+mesh = SubResource("Mesh_PlatformSmall")
+
+[node name="Plat6Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="Plat6Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32, 2, -14)
+shape = SubResource("Shape_PlatformSmall")
+
+[node name="Plat7" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34, 1.5, 8)
+mesh = SubResource("Mesh_Platform")
+
+[node name="Plat7Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="Plat7Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34, 1.5, 8)
+shape = SubResource("Shape_Platform")
+
+[node name="Plat8" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 2, 22)
+mesh = SubResource("Mesh_PlatformSmall")
+
+[node name="Plat8Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="Plat8Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 2, 22)
+shape = SubResource("Shape_PlatformSmall")
+
+; Swinging boulder hazard (big sphere at angle)
+[node name="BoulderMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 5.5, 22)
+mesh = SubResource("Mesh_Boulder")
+
+[node name="BoulderBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="BoulderBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 5.5, 22)
+shape = SubResource("Shape_Boulder")
+
+; Lava Falls (landmark)
+[node name="FallsMesh1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 4, 30)
+mesh = SubResource("Mesh_Falls")
+
+[node name="FallsMesh2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -32, 4, -32)
+mesh = SubResource("Mesh_Falls")
+
+; Rock arch (landmark/landmark gate)
+[node name="ArchL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 3, 24)
+mesh = SubResource("Mesh_ArchLeg")
+
+[node name="ArchLBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="ArchLBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 3, 24)
+shape = SubResource("Shape_ArchLeg")
+
+[node name="ArchR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 3, 24)
+mesh = SubResource("Mesh_ArchLeg")
+
+[node name="ArchRBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="ArchRBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 3, 24)
+shape = SubResource("Shape_ArchLeg")
+
+[node name="ArchTopMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 6.75, 24)
+mesh = SubResource("Mesh_ArchTop")
+
+[node name="ArchTopBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="ArchTopBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 6.75, 24)
+shape = SubResource("Shape_ArchTop")
+
+; Secret tunnel behind lava falls (back wall)
+[node name="TunnelBack" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 2.5, 34)
+mesh = SubResource("Mesh_TunnelWall")
+
+[node name="TunnelBackBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="TunnelBackBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 2.5, 34)
+shape = SubResource("Shape_TunnelWall")
+
+[node name="TunnelLSide" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 31, 2.5, 30)
+mesh = SubResource("Mesh_TunnelWall")
+
+[node name="TunnelLSideBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="TunnelLSideBody"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 31, 2.5, 30)
+shape = SubResource("Shape_TunnelWall")
+
+[node name="TunnelRoof" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 5.5, 30)
+mesh = SubResource("Mesh_TunnelRoof")
+
+[node name="TunnelRoofBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="TunnelRoofBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 5.5, 30)
+shape = SubResource("Shape_TunnelRoof")
+
+; Spawn
 [node name="SpawnArea" type="Area3D" parent="."]
 collision_layer = 0
 collision_mask = 0
-metadata/spawn_point = Vector3(0, 1, 20)
+metadata/spawn_point = Vector3(40, 1, 40)
+
+; Enemies
+[node name="Bobomb_Ring1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 1, 0)
+metadata/enemy_bhv = "bhvBobomb"
+
+[node name="Bobomb_Ring2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36, 1, 0)
+metadata/enemy_bhv = "bhvBobomb"
+
+[node name="Bobomb_Ring3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 36)
+metadata/enemy_bhv = "bhvBobomb"
+
+[node name="Bobomb_Ring4" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -36)
+metadata/enemy_bhv = "bhvBobomb"
+
+[node name="Bobomb_Plat1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 3, 10)
+metadata/enemy_bhv = "bhvBobomb"
+
+[node name="Bobomb_Plat5" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 3.5, -28)
+metadata/enemy_bhv = "bhvBobomb"
+
+[node name="FlamePlant1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, 0)
+metadata/enemy_bhv = "bhvPiranhaPlant"
+
+[node name="FlamePlant2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 11, 0)
+metadata/enemy_bhv = "bhvPiranhaPlant"
+
+[node name="FlamePlant3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 11, 4)
+metadata/enemy_bhv = "bhvPiranhaPlant"
+
+[node name="Goomba_Plat3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 3.5, -18)
+metadata/enemy_bhv = "bhvGoomba"
+
+[node name="Goomba_Plat7" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34, 3.5, 8)
+metadata/enemy_bhv = "bhvGoomba"
+
+[node name="Goomba_Ring" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 1, -26)
+metadata/enemy_bhv = "bhvGoomba"
+
+[node name="Chuckya_Plat5" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 3.5, -28)
+metadata/enemy_bhv = "bhvChuckya"
+
+; Yellow coins
+[node name="CoinR1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 1, 0)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinR2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 1, 12)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinR3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 1, 24)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinR4" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32, 1, 24)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinR5" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, 1, 0)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinR6" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32, 1, -24)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinR7" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -40)
+metadata/pickup_kind = "coin_yellow"
+
+; Platform hop trail
+[node name="CoinP1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 2.5, 10)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinP2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 3.5, -5)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinP3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 3, -18)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinP4" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 4, -28)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinP5" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 3, -28)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinP6" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32, 3.5, -14)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinP7" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34, 3, 8)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinP8" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 3.5, 22)
+metadata/pickup_kind = "coin_yellow"
+
+; Volcano spiral coins
+[node name="CoinV1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 6.5, 0)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinV2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.5, 14)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinV3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 6.5, 0)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinV4" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.5, -14)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinV5" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 11.5, 0)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinV6" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 11.5, 0)
+metadata/pickup_kind = "coin_yellow"
+
+; Red coins in the 8-plat ring
+[node name="RedCoin1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 2.5, 10)
+metadata/pickup_kind = "coin_red"
+
+[node name="RedCoin2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 3, -5)
+metadata/pickup_kind = "coin_red"
+
+[node name="RedCoin3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 2.5, -18)
+metadata/pickup_kind = "coin_red"
+
+[node name="RedCoin4" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 3.5, -28)
+metadata/pickup_kind = "coin_red"
+
+[node name="RedCoin5" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 2.5, -28)
+metadata/pickup_kind = "coin_red"
+
+[node name="RedCoin6" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32, 3, -14)
+metadata/pickup_kind = "coin_red"
+
+[node name="RedCoin7" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34, 2.5, 8)
+metadata/pickup_kind = "coin_red"
+
+[node name="RedCoin8" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 3, 22)
+metadata/pickup_kind = "coin_red"
+
+[node name="BlueCoin_Arch" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 8.5, 24)
+metadata/pickup_kind = "coin_blue"
+
+; Star on volcano summit
+[node name="Star_Volcano" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 15, 0)
+metadata/pickup_kind = "star"
+
+; 1-up in secret tunnel
+[node name="OneUp_Tunnel" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 1, 32)
+metadata/pickup_kind = "oneup"
+
+; Vanish cap in secret tunnel (walk through lava-falls)
+[node name="VanishCap_Tunnel" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 1, 28)
+metadata/pickup_kind = "cap_vanish"

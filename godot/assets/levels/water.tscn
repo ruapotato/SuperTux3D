@@ -1,10 +1,18 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=36 format=3]
+
+; WATER — Open lagoon with swimmable pool.
+; Landmarks: Sunken Shipwreck (tilted hull + broken mast), Pillar Island
+;   (tall single column with star on top), Deep Trench, Sand Bar Beach,
+;   Coral Shelf.
+; Tiers: trench floor / lagoon surface / sand bar / pillar summit.
+; 10 enemies (piranha plants on beaches, goombas on sand bars, bobombs),
+;   35 coins, pillar star, vanish cap inside hull.
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_1"]
-sky_top_color = Color(0.3, 0.55, 0.85, 1)
-sky_horizon_color = Color(0.85, 0.85, 0.7, 1)
+sky_top_color = Color(0.35, 0.6, 0.88, 1)
+sky_horizon_color = Color(0.75, 0.88, 0.95, 1)
 ground_bottom_color = Color(0.2, 0.35, 0.55, 1)
-ground_horizon_color = Color(0.5, 0.6, 0.65, 1)
+ground_horizon_color = Color(0.55, 0.72, 0.85, 1)
 
 [sub_resource type="Sky" id="Sky_2"]
 sky_material = SubResource("Sky_1")
@@ -13,78 +21,139 @@ sky_material = SubResource("Sky_1")
 background_mode = 2
 sky = SubResource("Sky_2")
 ambient_light_source = 2
-ambient_light_color = Color(0.6, 0.7, 0.8, 1)
-ambient_light_energy = 0.8
+ambient_light_color = Color(0.6, 0.72, 0.85, 1)
+ambient_light_energy = 0.85
+fog_enabled = true
+fog_light_color = Color(0.5, 0.7, 0.85, 1)
+fog_density = 0.004
 
 [sub_resource type="StandardMaterial3D" id="Mat_Sand"]
 shading_mode = 0
-albedo_color = Color(0.88, 0.82, 0.55, 1)
+albedo_color = Color(0.92, 0.85, 0.62, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_WetSand"]
+shading_mode = 0
+albedo_color = Color(0.7, 0.6, 0.42, 1)
 
 [sub_resource type="StandardMaterial3D" id="Mat_Water"]
 shading_mode = 0
-albedo_color = Color(0.25, 0.55, 0.85, 0.75)
+albedo_color = Color(0.32, 0.55, 0.82, 0.7)
 transparency = 1
+emission_enabled = true
+emission = Color(0.25, 0.45, 0.72, 1)
+emission_energy_multiplier = 0.25
+
+[sub_resource type="StandardMaterial3D" id="Mat_Wood"]
+shading_mode = 0
+albedo_color = Color(0.35, 0.22, 0.13, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_WoodDark"]
+shading_mode = 0
+albedo_color = Color(0.22, 0.14, 0.1, 1)
 
 [sub_resource type="StandardMaterial3D" id="Mat_Stone"]
 shading_mode = 0
-albedo_color = Color(0.55, 0.52, 0.48, 1)
+albedo_color = Color(0.58, 0.58, 0.6, 1)
 
-[sub_resource type="StandardMaterial3D" id="Mat_Hull"]
+[sub_resource type="StandardMaterial3D" id="Mat_Coral"]
 shading_mode = 0
-albedo_color = Color(0.35, 0.22, 0.15, 1)
+albedo_color = Color(0.85, 0.4, 0.45, 1)
 
-[sub_resource type="StandardMaterial3D" id="Mat_Mast"]
+[sub_resource type="StandardMaterial3D" id="Mat_Palm"]
 shading_mode = 0
-albedo_color = Color(0.5, 0.35, 0.2, 1)
+albedo_color = Color(0.2, 0.55, 0.25, 1)
 
-[sub_resource type="StandardMaterial3D" id="Mat_Sail"]
-shading_mode = 0
-albedo_color = Color(0.92, 0.88, 0.8, 1)
+[sub_resource type="BoxMesh" id="Mesh_Floor"]
+material = SubResource("Mat_WetSand")
+size = Vector3(120, 1, 120)
 
-[sub_resource type="BoxMesh" id="Box_Floor"]
+[sub_resource type="BoxShape3D" id="Shape_Floor"]
+size = Vector3(120, 1, 120)
+
+[sub_resource type="BoxMesh" id="Mesh_Trench"]
+material = SubResource("Mat_WetSand")
+size = Vector3(20, 5, 24)
+
+[sub_resource type="BoxShape3D" id="Shape_Trench"]
+size = Vector3(20, 5, 24)
+
+[sub_resource type="BoxMesh" id="Mesh_SandBarA"]
 material = SubResource("Mat_Sand")
-size = Vector3(60, 1, 60)
+size = Vector3(24, 2, 18)
 
-[sub_resource type="BoxShape3D" id="BS_Floor"]
-size = Vector3(60, 1, 60)
+[sub_resource type="BoxShape3D" id="Shape_SandBarA"]
+size = Vector3(24, 2, 18)
 
-[sub_resource type="BoxMesh" id="Box_Beach"]
+[sub_resource type="BoxMesh" id="Mesh_SandBarB"]
 material = SubResource("Mat_Sand")
-size = Vector3(60, 2, 15)
+size = Vector3(22, 2, 16)
 
-[sub_resource type="BoxShape3D" id="BS_Beach"]
-size = Vector3(60, 2, 15)
+[sub_resource type="BoxShape3D" id="Shape_SandBarB"]
+size = Vector3(22, 2, 16)
 
-[sub_resource type="BoxMesh" id="Box_WaterSurf"]
-material = SubResource("Mat_Water")
-size = Vector3(60, 0.05, 45)
-
-[sub_resource type="CylinderMesh" id="Cyl_Pillar"]
+[sub_resource type="CylinderMesh" id="Mesh_Pillar"]
 material = SubResource("Mat_Stone")
-top_radius = 1.2
-bottom_radius = 1.4
-height = 5
+top_radius = 2.5
+bottom_radius = 3.2
+height = 16
 
-[sub_resource type="CylinderShape3D" id="CS_Pillar"]
-height = 5
-radius = 1.4
+[sub_resource type="CylinderShape3D" id="Shape_Pillar"]
+radius = 3.2
+height = 16
 
-[sub_resource type="BoxMesh" id="Box_Hull"]
-material = SubResource("Mat_Hull")
-size = Vector3(10, 2, 3)
+[sub_resource type="CylinderMesh" id="Mesh_PillarTop"]
+material = SubResource("Mat_Stone")
+top_radius = 3.5
+bottom_radius = 3.5
+height = 1.0
 
-[sub_resource type="BoxShape3D" id="BS_Hull"]
-size = Vector3(10, 2, 3)
+[sub_resource type="CylinderShape3D" id="Shape_PillarTop"]
+radius = 3.5
+height = 1.0
 
-[sub_resource type="CylinderMesh" id="Cyl_Mast"]
-material = SubResource("Mat_Mast")
-top_radius = 0.15
-bottom_radius = 0.2
-height = 6
+[sub_resource type="BoxMesh" id="Mesh_WaterPlane"]
+material = SubResource("Mat_Water")
+size = Vector3(120, 0.2, 120)
 
-[sub_resource type="BoxMesh" id="Box_Sail"]
-material = SubResource("Mat_Sail")
-size = Vector3(0.1, 4, 3)
+[sub_resource type="BoxMesh" id="Mesh_HullBody"]
+material = SubResource("Mat_Wood")
+size = Vector3(14, 3, 5)
+
+[sub_resource type="BoxShape3D" id="Shape_HullBody"]
+size = Vector3(14, 3, 5)
+
+[sub_resource type="BoxMesh" id="Mesh_HullSide"]
+material = SubResource("Mat_WoodDark")
+size = Vector3(14, 2, 0.4)
+
+[sub_resource type="BoxShape3D" id="Shape_HullSide"]
+size = Vector3(14, 2, 0.4)
+
+[sub_resource type="CylinderMesh" id="Mesh_Mast"]
+material = SubResource("Mat_Wood")
+top_radius = 0.3
+bottom_radius = 0.5
+height = 7
+
+[sub_resource type="CylinderShape3D" id="Shape_Mast"]
+radius = 0.5
+height = 7
+
+[sub_resource type="SphereMesh" id="Mesh_Coral"]
+material = SubResource("Mat_Coral")
+radius = 1.2
+height = 2.4
+
+[sub_resource type="CylinderMesh" id="Mesh_PalmTrunk"]
+material = SubResource("Mat_Wood")
+top_radius = 0.35
+bottom_radius = 0.5
+height = 4
+
+[sub_resource type="SphereMesh" id="Mesh_PalmLeaves"]
+material = SubResource("Mat_Palm")
+radius = 1.6
+height = 1.6
 
 [node name="LevelRoot" type="Node3D"]
 
@@ -92,70 +161,353 @@ size = Vector3(0.1, 4, 3)
 environment = SubResource("Env_1")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 25, 0)
-light_color = Color(1, 0.97, 0.85, 1)
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 35, 0)
+light_color = Color(1.0, 0.98, 0.88, 1)
 
-[node name="SeaFloorMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.5, 0)
-mesh = SubResource("Box_Floor")
+; Deep floor (the "sea floor")
+[node name="FloorMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6, 0)
+mesh = SubResource("Mesh_Floor")
 
-[node name="SeaFloorBody" type="StaticBody3D" parent="."]
+[node name="FloorBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
-[node name="Col" type="CollisionShape3D" parent="SeaFloorBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.5, 0)
-shape = SubResource("BS_Floor")
+[node name="Col" type="CollisionShape3D" parent="FloorBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6, 0)
+shape = SubResource("Shape_Floor")
 
-[node name="BeachMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 25)
-mesh = SubResource("Box_Beach")
+; Deep trench (lower than floor)
+[node name="TrenchMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -8.5, 0)
+mesh = SubResource("Mesh_Trench")
 
-[node name="BeachBody" type="StaticBody3D" parent="."]
+[node name="TrenchBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
-[node name="Col" type="CollisionShape3D" parent="BeachBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 25)
-shape = SubResource("BS_Beach")
+[node name="Col" type="CollisionShape3D" parent="TrenchBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -8.5, 0)
+shape = SubResource("Shape_Trench")
 
-[node name="WaterSurface" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.5)
-mesh = SubResource("Box_WaterSurf")
+; Sand bar island A (east)
+[node name="SandBarAMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0.5, 20)
+mesh = SubResource("Mesh_SandBarA")
 
+[node name="SandBarABody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="SandBarABody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0.5, 20)
+shape = SubResource("Shape_SandBarA")
+
+; Sand bar B (west)
+[node name="SandBarBMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28, 0.5, -22)
+mesh = SubResource("Mesh_SandBarB")
+
+[node name="SandBarBBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="SandBarBBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28, 0.5, -22)
+shape = SubResource("Shape_SandBarB")
+
+; Pillar Island (landmark - star summit)
 [node name="PillarMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, -0.5, -8)
-mesh = SubResource("Cyl_Pillar")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 30)
+mesh = SubResource("Mesh_Pillar")
 
 [node name="PillarBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
 [node name="Col" type="CollisionShape3D" parent="PillarBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, -0.5, -8)
-shape = SubResource("CS_Pillar")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 30)
+shape = SubResource("Shape_Pillar")
 
+[node name="PillarTopMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10.5, 30)
+mesh = SubResource("Mesh_PillarTop")
+
+[node name="PillarTopBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="PillarTopBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10.5, 30)
+shape = SubResource("Shape_PillarTop")
+
+; Sunken Shipwreck (tilted, broken mast) - landmark
 [node name="HullMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.5, -12)
-mesh = SubResource("Box_Hull")
+transform = Transform3D(0.97, -0.26, 0, 0.26, 0.97, 0, 0, 0, 1, -14, -3.5, 10)
+mesh = SubResource("Mesh_HullBody")
 
 [node name="HullBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
 [node name="Col" type="CollisionShape3D" parent="HullBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.5, -12)
-shape = SubResource("BS_Hull")
+transform = Transform3D(0.97, -0.26, 0, 0.26, 0.97, 0, 0, 0, 1, -14, -3.5, 10)
+shape = SubResource("Shape_HullBody")
+
+[node name="HullSideFrontMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.97, -0.26, 0, 0.26, 0.97, 0, 0, 0, 1, -14, -2, 12.4)
+mesh = SubResource("Mesh_HullSide")
+
+[node name="HullSideFrontBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="HullSideFrontBody"]
+transform = Transform3D(0.97, -0.26, 0, 0.26, 0.97, 0, 0, 0, 1, -14, -2, 12.4)
+shape = SubResource("Shape_HullSide")
+
+[node name="HullSideBackMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.97, -0.26, 0, 0.26, 0.97, 0, 0, 0, 1, -14, -2, 7.6)
+mesh = SubResource("Mesh_HullSide")
+
+[node name="HullSideBackBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="HullSideBackBody"]
+transform = Transform3D(0.97, -0.26, 0, 0.26, 0.97, 0, 0, 0, 1, -14, -2, 7.6)
+shape = SubResource("Shape_HullSide")
 
 [node name="MastMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 4.5, -12)
-mesh = SubResource("Cyl_Mast")
+transform = Transform3D(0.77, 0.64, 0, -0.64, 0.77, 0, 0, 0, 1, -12, 1, 10)
+mesh = SubResource("Mesh_Mast")
 
-[node name="SailMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 4.5, -12)
-mesh = SubResource("Box_Sail")
+[node name="MastBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
 
+[node name="Col" type="CollisionShape3D" parent="MastBody"]
+transform = Transform3D(0.77, 0.64, 0, -0.64, 0.77, 0, 0, 0, 1, -12, 1, 10)
+shape = SubResource("Shape_Mast")
+
+; Coral shelf decoration
+[node name="Coral1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, -5, -25)
+mesh = SubResource("Mesh_Coral")
+
+[node name="Coral2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1.3, 20, -5, -20)
+mesh = SubResource("Mesh_Coral")
+
+[node name="Coral3" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.9, 0, 0, 0, 0.9, 0, 0, 0, 0.9, 12, -5, -30)
+mesh = SubResource("Mesh_Coral")
+
+; Palm trees on sand bars
+[node name="Palm1Trunk" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 3.5, 22)
+mesh = SubResource("Mesh_PalmTrunk")
+
+[node name="Palm1Leaves" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 5.5, 22)
+mesh = SubResource("Mesh_PalmLeaves")
+
+[node name="Palm2Trunk" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, 3.5, -20)
+mesh = SubResource("Mesh_PalmTrunk")
+
+[node name="Palm2Leaves" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, 5.5, -20)
+mesh = SubResource("Mesh_PalmLeaves")
+
+; Water plane (surface at y=0 — matches water_level_y in level_manager)
+[node name="WaterSurfaceMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("Mesh_WaterPlane")
+
+; Spawn on sand bar (safe)
 [node name="SpawnArea" type="Area3D" parent="."]
 collision_layer = 0
 collision_mask = 0
-metadata/spawn_point = Vector3(0, 2, 25)
+metadata/spawn_point = Vector3(30, 2.5, 20)
+
+; Enemies
+[node name="Piranha_BarA1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 1.8, 22)
+metadata/enemy_bhv = "bhvPiranhaPlant"
+
+[node name="Piranha_BarA2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 1.8, 16)
+metadata/enemy_bhv = "bhvPiranhaPlant"
+
+[node name="Piranha_BarB1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24, 1.8, -20)
+metadata/enemy_bhv = "bhvPiranhaPlant"
+
+[node name="Piranha_BarB2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32, 1.8, -26)
+metadata/enemy_bhv = "bhvPiranhaPlant"
+
+[node name="Goomba_BarA1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 1.8, 24)
+metadata/enemy_bhv = "bhvGoomba"
+
+[node name="Goomba_BarA2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 1.8, 14)
+metadata/enemy_bhv = "bhvGoomba"
+
+[node name="Goomba_BarB1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 1.8, -16)
+metadata/enemy_bhv = "bhvGoomba"
+
+[node name="Goomba_BarB2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, 1.8, -20)
+metadata/enemy_bhv = "bhvGoomba"
+
+[node name="Bobomb_PillarBase" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, -5, 28)
+metadata/enemy_bhv = "bhvBobomb"
+
+[node name="Koopa_BarA" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 1.8, 18)
+metadata/enemy_bhv = "bhvKoopa"
+
+; Yellow coins - Bar A ring
+[node name="CoinY1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 2.3, 22)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinY2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 2.3, 24)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinY3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 2.3, 22)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinY4" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 2.3, 20)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinY5" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 2.3, 16)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinY6" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 2.3, 14)
+metadata/pickup_kind = "coin_yellow"
+
+; Bar B ring
+[node name="CoinY7" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 2.3, -18)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinY8" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26, 2.3, -22)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinY9" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, 2.3, -24)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinY10" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34, 2.3, -22)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinY11" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28, 2.3, -26)
+metadata/pickup_kind = "coin_yellow"
+
+; Underwater trail - trench to pillar
+[node name="CoinY12" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -3, 18)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinY13" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, -3, 22)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinY14" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3, 25)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinY15" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, -3, 22)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinY16" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3, 10)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinY17" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, -3, 0)
+metadata/pickup_kind = "coin_yellow"
+
+; Pillar top ring
+[node name="CoinY18" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11.5, 28)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinY19" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 11.5, 30)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinY20" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11.5, 32)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinY21" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 11.5, 30)
+metadata/pickup_kind = "coin_yellow"
+
+; Red coins — deep trench challenge set (need swim)
+[node name="RedCoin1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -8, -4)
+metadata/pickup_kind = "coin_red"
+
+[node name="RedCoin2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -8, -4)
+metadata/pickup_kind = "coin_red"
+
+[node name="RedCoin3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -8, 4)
+metadata/pickup_kind = "coin_red"
+
+[node name="RedCoin4" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -8, 4)
+metadata/pickup_kind = "coin_red"
+
+[node name="RedCoin5" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -8, 8)
+metadata/pickup_kind = "coin_red"
+
+[node name="RedCoin6" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -8, -8)
+metadata/pickup_kind = "coin_red"
+
+[node name="RedCoin7" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, -8, 0)
+metadata/pickup_kind = "coin_red"
+
+[node name="RedCoin8" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, -8, 0)
+metadata/pickup_kind = "coin_red"
+
+[node name="BlueCoin_Hull" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, -2.5, 10)
+metadata/pickup_kind = "coin_blue"
+
+; Star on pillar summit
+[node name="Star_Pillar" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12.5, 30)
+metadata/pickup_kind = "star"
+
+; 1-up inside shipwreck
+[node name="OneUp_ShipSecret" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, -2, 10)
+metadata/pickup_kind = "oneup"
+
+; Vanish cap on coral shelf
+[node name="VanishCap_Coral" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, -4.5, -22)
+metadata/pickup_kind = "cap_vanish"

@@ -85,6 +85,10 @@ func _build_visual() -> void:
         var scene: PackedScene = load(scene_path)
         var visual: Node3D = scene.instantiate()
         visual.name = "Visual"
+        # Enemy scenes were authored facing +Z (looking "back" in Godot
+        # convention). Flip the visual 180° around Y so the eyes and
+        # fronts end up at -Z, matching the movement direction.
+        visual.rotate_y(PI)
         add_child(visual)
         _mesh = visual
         # Add a collision capsule so the enemy stands on the floor.
@@ -115,14 +119,41 @@ func _build_placeholder_mesh() -> void:
 
 
 func _build_hurt_area() -> void:
+    # Per-bhv hurt volume. Most enemies are sphere-ish around hip
+    # height; piranha plant is a tall capsule because its head is at
+    # +1m; chain chomp is big and spherical.
     _hurt_area = Area3D.new()
     _hurt_area.name = "HurtArea"
     var cs := CollisionShape3D.new()
-    var sph := SphereShape3D.new()
-    sph.radius = 0.55
-    cs.shape = sph
-    cs.position.y = 0.4
+    match bhv_name:
+        "bhvPiranhaPlant":
+            var cap := CapsuleShape3D.new()
+            cap.radius = 0.45
+            cap.height = 1.4
+            cs.shape = cap
+            cs.position.y = 0.75
+        "bhvChainChomp":
+            var sph := SphereShape3D.new()
+            sph.radius = 0.8
+            cs.shape = sph
+            cs.position.y = 0.8
+        "bhvKoopa", "bhvKoopaShellUnderwater":
+            var cap := CapsuleShape3D.new()
+            cap.radius = 0.4
+            cap.height = 0.9
+            cs.shape = cap
+            cs.position.y = 0.5
+        _:
+            var sph := SphereShape3D.new()
+            sph.radius = 0.55
+            cs.shape = sph
+            cs.position.y = 0.45
     _hurt_area.add_child(cs)
+    # Layer 4 (arbitrary), mask 1 so Mario's body triggers us. Without
+    # this the hurt area uses default layer/mask and won't collide with
+    # Mario's CharacterBody3D in some project settings.
+    _hurt_area.collision_layer = 0
+    _hurt_area.collision_mask = 1
     add_child(_hurt_area)
     _hurt_area.body_entered.connect(_on_body_entered)
 
@@ -218,9 +249,15 @@ func _on_body_entered(body: Node) -> void:
     if _squished:
         return
     if body is CharacterBody3D and body.has_method("take_damage"):
-        # If Mario is clearly above (falling, ground-pounding), squish.
-        var mario_y: float = body.global_position.y
-        if mario_y > global_position.y + 0.6 and body.velocity.y <= 0.0:
+        # Stomp if the player came from above — check either a vertical
+        # offset (they're above our head) OR they're falling and
+        # somewhere in the top half of our volume. Was too strict before
+        # — tall enemies and high-stomp impacts weren't registering.
+        var player_y: float = body.global_position.y
+        var enemy_y: float = global_position.y
+        var from_above: bool = player_y > enemy_y + 0.3
+        var falling: bool = body.velocity.y < 2.0
+        if from_above and falling:
             _squish()
             if body.has_method("on_enemy_squished"):
                 body.on_enemy_squished()

@@ -113,7 +113,7 @@ const RUN_MAX_VEL          := 14.4
 const WALK_ACCEL           := 18.0
 const BRAKE_DECEL          := 45.0
 const IDLE_FRICTION        := 30.0
-const AIR_STEERING         := 6.0
+const AIR_STEERING         := 28.0
 const JUMP_IMPULSE         := 12.6    # single jump (decomp 42/frame)
 const DOUBLE_JUMP_IMPULSE  := 15.6    # decomp 52/frame
 const TRIPLE_JUMP_IMPULSE  := 20.7    # decomp 69/frame
@@ -724,8 +724,28 @@ func _apply_air_motion(delta: float, allow_steering: bool = true) -> void:
     if allow_steering:
         var stick_dir := _stick_to_world_dir()
         if stick_dir.length() > 0.01:
-            vel.x = move_toward(vel.x, stick_dir.x * WALK_MAX_VEL, AIR_STEERING * delta)
-            vel.z = move_toward(vel.z, stick_dir.z * WALK_MAX_VEL, AIR_STEERING * delta)
+            # 2D-Mario-style air control: the stick continuously steers
+            # horizontal velocity toward the target. Strong accel when
+            # reversing direction (so you can save a missed jump) but
+            # cap on the max speed so you can't out-run your launch.
+            var target_x: float = stick_dir.x * RUN_MAX_VEL
+            var target_z: float = stick_dir.z * RUN_MAX_VEL
+            var rate_x: float = AIR_STEERING * delta
+            var rate_z: float = AIR_STEERING * delta
+            # If the stick points opposite the current velocity, ramp
+            # the steering rate up — this is the "save your jump"
+            # moment where air control really needs to bite.
+            if vel.x * target_x < 0.0:
+                rate_x *= 2.5
+            if vel.z * target_z < 0.0:
+                rate_z *= 2.5
+            vel.x = move_toward(vel.x, target_x, rate_x)
+            vel.z = move_toward(vel.z, target_z, rate_z)
+        else:
+            # Without input, slight horizontal air drag so you don't
+            # slide forever at terminal velocity in a neutral-stick jump.
+            vel.x = move_toward(vel.x, 0.0, AIR_STEERING * 0.3 * delta)
+            vel.z = move_toward(vel.z, 0.0, AIR_STEERING * 0.3 * delta)
     var g := GRAVITY
     if power_cap == "wing":
         # Wing cap: lets you float — roughly quarter gravity and a more

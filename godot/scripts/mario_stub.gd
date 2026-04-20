@@ -271,6 +271,11 @@ func _physics_process(delta: float) -> void:
         power_cap_time = max(power_cap_time - delta, 0.0)
         if power_cap_time == 0.0:
             power_cap = ""
+    # Below the world → take lethal damage. Catches falls into pits
+    # before the safety floor does (the floor exists to prevent
+    # infinite falls, not to save the player).
+    if global_position.y < -15.0 and invulnerable_time <= 0.0:
+        take_damage(health, "void")
     if invulnerable_time > 0.0:
         invulnerable_time = max(invulnerable_time - delta, 0.0)
     # I-frame blink: toggle mesh visibility at ~8 Hz so the player can see

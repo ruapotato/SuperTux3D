@@ -1,6 +1,8 @@
-[gd_scene load_steps=13 format=3 uid="uid://bpiranha005"]
+[gd_scene load_steps=24 format=3 uid="uid://bpiranha005"]
 
-; Clean-room Piranha Plant. Green stalk, red pot/mouth with white dots, leaves.
+; Clean-room Piranha Plant. Segmented green stalk, red toothy bulb, arched leaves.
+; Added: 3 stalk rings, 6 fang prisms around the mouth rim, pink tongue,
+; dark soil cap in pot, colored pot rim band, arched leaves, gentle sway.
 ; Base at y=0, faces -Z (mouth opens toward -Z).
 
 [sub_resource type="CylinderMesh" id="pot_mesh"]
@@ -10,32 +12,56 @@ height = 0.25
 radial_segments = 16
 
 [sub_resource type="StandardMaterial3D" id="pot_mat"]
-albedo_color = Color(0.45, 0.28, 0.15, 1)
+albedo_color = Color(0.5, 0.3, 0.17, 1)
 shading_mode = 0
 
-[sub_resource type="CylinderMesh" id="stalk_mesh"]
-top_radius = 0.08
-bottom_radius = 0.1
-height = 0.5
-radial_segments = 10
+[sub_resource type="CylinderMesh" id="pot_rim_mesh"]
+top_radius = 0.24
+bottom_radius = 0.24
+height = 0.05
+radial_segments = 18
+
+[sub_resource type="StandardMaterial3D" id="pot_rim_mat"]
+albedo_color = Color(0.72, 0.5, 0.25, 1)
+shading_mode = 0
+
+[sub_resource type="CylinderMesh" id="soil_mesh"]
+top_radius = 0.2
+bottom_radius = 0.2
+height = 0.04
+radial_segments = 14
+
+[sub_resource type="StandardMaterial3D" id="soil_mat"]
+albedo_color = Color(0.18, 0.1, 0.06, 1)
+shading_mode = 0
+
+[sub_resource type="CylinderMesh" id="stalk_ring_mesh"]
+top_radius = 0.09
+bottom_radius = 0.11
+height = 0.16
+radial_segments = 12
 
 [sub_resource type="StandardMaterial3D" id="stalk_mat"]
 albedo_color = Color(0.15, 0.62, 0.2, 1)
 shading_mode = 0
 
+[sub_resource type="StandardMaterial3D" id="stalk_dark_mat"]
+albedo_color = Color(0.1, 0.48, 0.14, 1)
+shading_mode = 0
+
 [sub_resource type="SphereMesh" id="head_mesh"]
-radius = 0.25
-height = 0.5
+radius = 0.26
+height = 0.52
 radial_segments = 16
 rings = 10
 
 [sub_resource type="StandardMaterial3D" id="head_mat"]
-albedo_color = Color(0.92, 0.15, 0.18, 1)
+albedo_color = Color(0.94, 0.15, 0.18, 1)
 shading_mode = 0
 
 [sub_resource type="SphereMesh" id="dot_mesh"]
-radius = 0.04
-height = 0.08
+radius = 0.045
+height = 0.09
 radial_segments = 8
 rings = 6
 
@@ -44,24 +70,62 @@ albedo_color = Color(0.98, 0.98, 0.98, 1)
 shading_mode = 0
 
 [sub_resource type="BoxMesh" id="mouth_mesh"]
-size = Vector3(0.3, 0.06, 0.12)
+size = Vector3(0.34, 0.08, 0.12)
 
 [sub_resource type="StandardMaterial3D" id="mouth_mat"]
-albedo_color = Color(0.15, 0.03, 0.05, 1)
+albedo_color = Color(0.12, 0.02, 0.04, 1)
+shading_mode = 0
+
+[sub_resource type="PrismMesh" id="fang_mesh"]
+size = Vector3(0.05, 0.08, 0.04)
+left_to_right = 0.5
+
+[sub_resource type="StandardMaterial3D" id="fang_mat"]
+albedo_color = Color(0.98, 0.97, 0.9, 1)
+shading_mode = 0
+
+[sub_resource type="SphereMesh" id="tongue_mesh"]
+radius = 0.08
+height = 0.06
+radial_segments = 10
+rings = 6
+
+[sub_resource type="StandardMaterial3D" id="tongue_mat"]
+albedo_color = Color(0.95, 0.45, 0.55, 1)
 shading_mode = 0
 
 [sub_resource type="SphereMesh" id="leaf_mesh"]
-radius = 0.12
-height = 0.1
+radius = 0.14
+height = 0.08
 radial_segments = 10
 rings = 6
 
 [sub_resource type="StandardMaterial3D" id="leaf_mat"]
-albedo_color = Color(0.2, 0.75, 0.25, 1)
+albedo_color = Color(0.22, 0.78, 0.28, 1)
 shading_mode = 0
 
-[sub_resource type="BoxMesh" id="rim_mesh"]
-size = Vector3(0.46, 0.05, 0.46)
+[sub_resource type="Animation" id="sway_anim"]
+resource_name = "sway"
+length = 2.4
+loop_mode = 1
+step = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:rotation")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.6, 1.2, 1.8, 2.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0.02, 0, 0.03), Vector3(0, 0, 0), Vector3(-0.02, 0, -0.03), Vector3(0, 0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="anim_lib"]
+_data = {
+"sway": SubResource("sway_anim")
+}
 
 [node name="EnemyVisual" type="Node3D"]
 
@@ -71,56 +135,107 @@ mesh = SubResource("pot_mesh")
 surface_material_override/0 = SubResource("pot_mat")
 
 [node name="PotRim" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
-mesh = SubResource("rim_mesh")
-surface_material_override/0 = SubResource("pot_mat")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.245, 0)
+mesh = SubResource("pot_rim_mesh")
+surface_material_override/0 = SubResource("pot_rim_mat")
 
-[node name="Stalk" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
-mesh = SubResource("stalk_mesh")
+[node name="Soil" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.27, 0)
+mesh = SubResource("soil_mesh")
+surface_material_override/0 = SubResource("soil_mat")
+
+[node name="StalkSeg1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.36, 0)
+mesh = SubResource("stalk_ring_mesh")
+surface_material_override/0 = SubResource("stalk_mat")
+
+[node name="StalkSeg2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.52, 0)
+mesh = SubResource("stalk_ring_mesh")
+surface_material_override/0 = SubResource("stalk_dark_mat")
+
+[node name="StalkSeg3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.68, 0)
+mesh = SubResource("stalk_ring_mesh")
 surface_material_override/0 = SubResource("stalk_mat")
 
 [node name="LeafL" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.5, 0.5, 0, -0.5, 0.5, 0, 0, 0, 1, -0.18, 0.55, 0)
+transform = Transform3D(0.45, 0.55, 0, -0.55, 0.45, 0, 0, 0, 1, -0.22, 0.58, 0)
 mesh = SubResource("leaf_mesh")
 surface_material_override/0 = SubResource("leaf_mat")
 
 [node name="LeafR" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.5, -0.5, 0, 0.5, 0.5, 0, 0, 0, 1, 0.18, 0.55, 0)
+transform = Transform3D(0.45, -0.55, 0, 0.55, 0.45, 0, 0, 0, 1, 0.22, 0.58, 0)
 mesh = SubResource("leaf_mesh")
 surface_material_override/0 = SubResource("leaf_mat")
 
 [node name="Head" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.98, 0)
 mesh = SubResource("head_mesh")
 surface_material_override/0 = SubResource("head_mat")
 
 [node name="Mouth" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.92, -0.22)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, -0.22)
 mesh = SubResource("mouth_mesh")
 surface_material_override/0 = SubResource("mouth_mat")
 
+[node name="Tongue" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.93, -0.23)
+mesh = SubResource("tongue_mesh")
+surface_material_override/0 = SubResource("tongue_mat")
+
+[node name="Fang1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.14, 1.02, -0.22)
+mesh = SubResource("fang_mesh")
+surface_material_override/0 = SubResource("fang_mat")
+
+[node name="Fang2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.04, -0.24)
+mesh = SubResource("fang_mesh")
+surface_material_override/0 = SubResource("fang_mat")
+
+[node name="Fang3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14, 1.02, -0.22)
+mesh = SubResource("fang_mesh")
+surface_material_override/0 = SubResource("fang_mat")
+
+[node name="Fang4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, -1, -0.14, 0.88, -0.22)
+mesh = SubResource("fang_mesh")
+surface_material_override/0 = SubResource("fang_mat")
+
+[node name="Fang5" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, -1, 0, 0.86, -0.24)
+mesh = SubResource("fang_mesh")
+surface_material_override/0 = SubResource("fang_mat")
+
+[node name="Fang6" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, -1, 0.14, 0.88, -0.22)
+mesh = SubResource("fang_mesh")
+surface_material_override/0 = SubResource("fang_mat")
+
 [node name="Dot1" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.12, 1.05, -0.18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.13, 1.08, -0.18)
 mesh = SubResource("dot_mesh")
 surface_material_override/0 = SubResource("dot_mat")
 
 [node name="Dot2" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.12, 1.05, -0.18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.13, 1.08, -0.18)
 mesh = SubResource("dot_mesh")
 surface_material_override/0 = SubResource("dot_mat")
 
 [node name="Dot3" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.12, -0.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0.93, -0.08)
 mesh = SubResource("dot_mesh")
 surface_material_override/0 = SubResource("dot_mat")
 
 [node name="Dot4" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.18, 0.82, -0.12)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0.93, -0.08)
 mesh = SubResource("dot_mesh")
 surface_material_override/0 = SubResource("dot_mat")
 
-[node name="Dot5" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.18, 0.82, -0.12)
-mesh = SubResource("dot_mesh")
-surface_material_override/0 = SubResource("dot_mat")
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("anim_lib")
+}
+autoplay = "sway"
