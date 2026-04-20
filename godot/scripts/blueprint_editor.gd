@@ -68,6 +68,18 @@ var _sculpt_active: bool = false
 var _sculpt_radius: int = 1
 var _sculpt_strength: float = 0.4
 
+# Paint state — same pattern but writes the selected terrain patch's
+# `surface_grid` cells instead of heights. Shift/right-click erases
+# (sets kind back to ""). Brush radius is a CELL radius, 0 = single cell.
+var _paint_active: bool = false
+var _paint_kind: String = "water"
+var _paint_radius: int = 1
+
+const TERRAIN_PAINT_KINDS := [
+	"", "water", "burning", "ice", "slippery", "very_slippery",
+	"snow", "sand", "shallow_quicksand", "deep_quicksand",
+]
+
 # Temporary spawn override for Play-in-editor. Not saved to JSON — this
 # is session-only state. Shape is [x, y, z]; an empty array means "use
 # the blueprint's spawn_point normally."
@@ -560,6 +572,12 @@ func _on_canvas_click(world: Vector2, button: int, shift: bool, ctrl: bool) -> v
 	# terrain patch is selected, both mouse buttons modify heights
 	# (left/right = raise/lower; shift flips). Selection and creation
 	# are suspended until the user disables sculpt mode.
+	if _paint_active and selected_kind == "terrain_patches":
+		_begin_action()
+		var erase: bool = shift or button == MOUSE_BUTTON_RIGHT
+		_paint_at(world, erase)
+		_canvas.queue_redraw()
+		return
 	if _sculpt_active and selected_kind == "terrain_patches":
 		_begin_action()
 		var lower: bool = shift or button == MOUSE_BUTTON_RIGHT
@@ -601,6 +619,10 @@ func _on_canvas_click(world: Vector2, button: int, shift: bool, ctrl: bool) -> v
 
 
 func _on_canvas_drag(world: Vector2, delta: Vector2) -> void:
+	if _paint_active and selected_kind == "terrain_patches":
+		_paint_at(world, Input.is_key_pressed(KEY_SHIFT))
+		_canvas.queue_redraw()
+		return
 	if _sculpt_active and selected_kind == "terrain_patches":
 		# _begin_action already snapshotted on the initial click; drag
 		# continues the same stroke.
@@ -902,9 +924,14 @@ func _finalize_terrain_drag(end_world: Vector2) -> void:
 	heights.resize(res * res)
 	for i in range(res * res):
 		heights[i] = 0.0
-	# Material is intentionally blank so the runtime uses the slope
-	# blend (grass on flats, dirt on slopes). Authors can override in
-	# the inspector if they want a specific themed texture.
+	# surface_grid is (res-1)² strings, default all "" (un-painted).
+	# The runtime reads this to split collision into kind-specific
+	# sub-bodies so painted lava / water / ice behave correctly.
+	var surface_grid: Array = []
+	var cell_count: int = (res - 1) * (res - 1)
+	surface_grid.resize(cell_count)
+	for si in range(cell_count):
+		surface_grid[si] = ""
 	var patch := {
 		"name": _next_name("terrain_patches", "Terrain"),
 		"origin": [_snap_v(a.x), current_floor_y, _snap_v(a.y)],
@@ -912,6 +939,7 @@ func _finalize_terrain_drag(end_world: Vector2) -> void:
 		"size_z": _snap_v(size.y),
 		"resolution": res,
 		"heights": heights,
+		"surface_grid": surface_grid,
 		"material": "",
 	}
 	_ensure_array("terrain_patches").append(patch)
@@ -1332,6 +1360,48 @@ func _current_opening() -> Dictionary:
 	return ops[_sel_op_idx]
 
 
+func _paint_at(world: Vector2, erase: bool) -> void:
+	if selected_kind != "terrain_patches" or selected_index < 0:
+		return
+	var patch: Dictionary = blueprint["terrain_patches"][selected_index]
+	var origin: Array = patch["origin"]
+	var sx: float = float(patch.get("size_x", 10))
+	var sz: float = float(patch.get("size_z", 10))
+	var res: int = int(patch.get("resolution", 8))
+	if res < 2 or sx <= 0 or sz <= 0:
+		return
+	var cell_count: int = (res - 1) * (res - 1)
+	var grid: Array = patch.get("surface_grid", [])
+	if grid.size() != cell_count:
+		grid = []
+		grid.resize(cell_count)
+		for i in range(cell_count):
+			grid[i] = ""
+		patch["surface_grid"] = grid
+	# World → patch-local → cell index. Cells are (res-1)×(res-1);
+	# vertex spacing is size/(res-1) so cell i,j spans local
+	# [i*cs .. (i+1)*cs].
+	var lx: float = world.x - float(origin[0])
+	var lz: float = world.y - float(origin[2])
+	if lx < 0 or lz < 0 or lx > sx or lz > sz:
+		return
+	var cs_x: float = sx / float(res - 1)
+	var cs_z: float = sz / float(res - 1)
+	var ci: int = clamp(int(floor(lx / cs_x)), 0, res - 2)
+	var cj: int = clamp(int(floor(lz / cs_z)), 0, res - 2)
+	var value: String = "" if erase else _paint_kind
+	var r: int = max(_paint_radius, 0)
+	for i in range(max(ci - r, 0), min(ci + r + 1, res - 1)):
+		for j in range(max(cj - r, 0), min(cj + r + 1, res - 1)):
+			# Circular brush by cell distance.
+			var d: float = Vector2(float(i) - float(ci), float(j) - float(cj)).length()
+			if d > float(r) + 0.01:
+				continue
+			grid[i * (res - 1) + j] = value
+	patch["surface_grid"] = grid
+	_mark_dirty()
+
+
 func _sculpt_at(world: Vector2, lower: bool) -> void:
 	if selected_kind != "terrain_patches" or selected_index < 0:
 		return
@@ -1743,10 +1813,52 @@ func _inspector_terrain() -> void:
 		_canvas.queue_redraw())
 	_inspector.add_child(smooth_btn)
 
+	# --- Paint controls ---
+	var sep2 := HSeparator.new()
+	_inspector.add_child(sep2)
+	var hdr2 := Label.new()
+	hdr2.text = "Paint Surface"
+	hdr2.add_theme_color_override("font_color", Color(0.65, 0.85, 1.0))
+	_inspector.add_child(hdr2)
+	var paint_row := _mkrow("Paint mode")
+	_mkcheck(paint_row, _paint_active, func(v: bool) -> void:
+		_paint_active = v
+		# Paint + sculpt are mutually exclusive — picking one disables
+		# the other so click events have one clear destination.
+		if v:
+			_sculpt_active = false
+		_status("Paint %s — click to paint, shift-click to erase" % ("ON" if v else "OFF")))
+	_mkoption(_mkrow("Kind"), TERRAIN_PAINT_KINDS, _paint_kind, func(s: String) -> void:
+		_paint_kind = s)
+	_mkspin(_mkrow("Brush r"), _paint_radius, 0, 8, 1, func(v: float) -> void:
+		_paint_radius = int(v))
+	var clear_paint_btn := Button.new()
+	clear_paint_btn.text = "Clear all paint"
+	clear_paint_btn.pressed.connect(func() -> void:
+		var r: int = int(item.get("resolution", 16))
+		var cells: int = (r - 1) * (r - 1)
+		var g: Array = []
+		g.resize(cells)
+		for i in range(cells):
+			g[i] = ""
+		item["surface_grid"] = g
+		_mark_dirty()
+		_canvas.queue_redraw())
+	_inspector.add_child(clear_paint_btn)
+
 
 func _resize_terrain(patch: Dictionary, new_res: int) -> void:
 	var old_res: int = int(patch.get("resolution", 16))
 	var old_heights: Array = patch.get("heights", [])
+	# Always rebuild surface_grid at the new cell count — re-painting
+	# is cheap and a bilinear-resampled paint mask rarely matches what
+	# the author intended (cell boundaries shift).
+	var new_cells: int = (new_res - 1) * (new_res - 1)
+	var new_grid: Array = []
+	new_grid.resize(new_cells)
+	for i in range(new_cells):
+		new_grid[i] = ""
+	patch["surface_grid"] = new_grid
 	if old_heights.size() != old_res * old_res or new_res == old_res:
 		patch["resolution"] = new_res
 		var flat: Array = []

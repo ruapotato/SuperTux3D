@@ -1224,15 +1224,10 @@ def build_scene(blueprint: dict, scene_name: str) -> Scene:
         script_id = scene.ext_resource(
             "res://scripts/terrain_patch.gd", "Script")
         # Sink the whole patch 2cm to stop Z-fighting with room floor
-        # slabs that share the same origin.y. Authors set terrain at
-        # "floor height"; the tiny drop keeps the two from rendering
-        # on the exact same plane. Collision picks whichever surface
-        # is higher so the player still stands on the floor slab.
+        # slabs that share the same origin.y.
         TERRAIN_Z_OFFSET = 0.02
         body = (
             f'transform = {xform_translate(ox, oy - TERRAIN_Z_OFFSET, oz)}\n'
-            f'collision_layer = 1\n'
-            f'collision_mask = 1\n'
             f'script = ExtResource("{script_id}")\n'
             f'metadata/terrain_heights = {heights_literal}\n'
             f'metadata/terrain_size_x = {size_x}\n'
@@ -1244,12 +1239,18 @@ def build_scene(blueprint: dict, scene_name: str) -> Scene:
             f'metadata/terrain_slope_threshold = {slope_thr}\n'
             f'metadata/terrain_slope_softness = {slope_soft}\n'
         )
-        # Surface kind (snow / sand / ice / …) so mario_state's
-        # floor_surface picks up the right friction + effects when the
-        # player stands on a themed terrain.
-        if patch.get("surface_kind"):
-            body += f'metadata/surface_kind = "{str(patch["surface_kind"])}"\n'
-        scene.node(pname, scene_name, "StaticBody3D", body)
+        # Per-cell surface-kind paint grid ((res-1)² entries). Empty
+        # string means "no paint, use the default body for collision".
+        # Runtime splits collision into one StaticBody3D per unique
+        # kind, each carrying its own metadata/surface_kind so mario's
+        # floor_surface check resolves per-cell.
+        surface_grid = patch.get("surface_grid") or []
+        if len(surface_grid) != (res - 1) * (res - 1):
+            surface_grid = [""] * ((res - 1) * (res - 1))
+        grid_literal = "[" + ", ".join(
+            f'"{str(s)}"' for s in surface_grid) + "]"
+        body += f'metadata/terrain_surface_grid = {grid_literal}\n'
+        scene.node(pname, scene_name, "Node3D", body)
 
     # Enemies: level_manager._spawn_markers walks the scene for nodes
     # with `metadata/enemy_bhv` and spawns real enemy.gd bodies at each

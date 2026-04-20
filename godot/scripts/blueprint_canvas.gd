@@ -622,22 +622,36 @@ func _draw_pickup(pickup: Dictionary, selected: bool) -> void:
 		draw_arc(center, 11.0, 0, TAU, 24, ROOM_SELECTED, 2.0)
 
 
+const PAINT_TINT := {
+	"water":             Color(0.25, 0.55, 0.95),
+	"burning":           Color(1.00, 0.35, 0.08),
+	"ice":               Color(0.70, 0.90, 1.00),
+	"slippery":          Color(0.75, 0.85, 0.95),
+	"very_slippery":     Color(0.80, 0.95, 1.00),
+	"snow":              Color(0.95, 0.97, 1.00),
+	"sand":              Color(0.90, 0.80, 0.45),
+	"shallow_quicksand": Color(0.78, 0.65, 0.30),
+	"deep_quicksand":    Color(0.55, 0.40, 0.18),
+}
+
+
 func _draw_terrain_patch(patch: Dictionary, selected: bool) -> void:
 	var o: Array = patch.get("origin", [0, 0, 0])
 	var sx: float = float(patch.get("size_x", 10))
 	var sz: float = float(patch.get("size_z", 10))
 	var res: int = int(patch.get("resolution", 8))
 	var heights: Array = patch.get("heights", [])
+	var surface_grid: Array = patch.get("surface_grid", [])
 	var ox: float = float(o[0])
 	var oz: float = float(o[2])
-	# Base patch fill (dark) so there's always something under the grid.
 	var tl := world_to_canvas(Vector2(ox, oz))
 	var br := world_to_canvas(Vector2(ox + sx, oz + sz))
 	var rect := Rect2(tl, br - tl)
 	draw_rect(rect, Color(0.10, 0.18, 0.14, 0.8), true)
-	# Height-coloured cells. We colour each CELL (i..i+1, j..j+1) using
-	# the mean of its 4 corner heights, so smooth sculpts read as a
-	# continuous gradient instead of discrete vertex points.
+	# Height-coloured cells, tinted by surface_grid[cell] when painted.
+	# Each cell is tiled with a single colour that merges (a) the height
+	# gradient (dark = low, bright = high) and (b) the painted surface
+	# kind if any.
 	if res >= 2 and heights.size() == res * res:
 		var min_h: float = 1e9
 		var max_h: float = -1e9
@@ -648,6 +662,8 @@ func _draw_terrain_patch(patch: Dictionary, selected: bool) -> void:
 		var span: float = max(max_h - min_h, 0.01)
 		var cw_m: float = sx / float(res - 1)
 		var ch_m: float = sz / float(res - 1)
+		var expected_cells: int = (res - 1) * (res - 1)
+		var has_grid: bool = surface_grid.size() == expected_cells
 		for i in range(res - 1):
 			for j in range(res - 1):
 				var avg: float = 0.25 * (
@@ -659,6 +675,10 @@ func _draw_terrain_patch(patch: Dictionary, selected: bool) -> void:
 				var t: float = clamp((avg - min_h) / span, 0.0, 1.0)
 				var col: Color = Color(0.15, 0.25, 0.15).lerp(
 					Color(0.95, 0.88, 0.55), t)
+				if has_grid:
+					var kind: String = String(surface_grid[i * (res - 1) + j])
+					if kind != "" and PAINT_TINT.has(kind):
+						col = col.lerp(PAINT_TINT[kind], 0.6)
 				var ctl := world_to_canvas(Vector2(ox + float(i) * cw_m, oz + float(j) * ch_m))
 				var cbr := world_to_canvas(Vector2(ox + float(i + 1) * cw_m, oz + float(j + 1) * ch_m))
 				draw_rect(Rect2(ctl, cbr - ctl), col, true)

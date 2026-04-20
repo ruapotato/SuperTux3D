@@ -1,22 +1,41 @@
-extends StaticBody3D
+extends Node3D
 
 # Runtime-built heightfield terrain. The converter emits one of these
 # per `terrain_patches` entry in a blueprint; the node stores its
 # parameters as metadata and _ready() turns them into:
 #
 #   - a MeshInstance3D with an ArrayMesh (triangle grid, per-vertex
-#     normals from finite differences of neighbouring heights)
-#   - a CollisionShape3D with a ConcavePolygonShape3D (trimesh) built
-#     from the same vertex set so collision follows the sculpt exactly
+#     normals from finite differences of neighbouring heights,
+#     per-vertex slope-blended colours modulated by surface painting)
+#   - one StaticBody3D per UNIQUE painted surface kind found in
+#     `surface_grid` (plus a "default" body for un-painted cells).
+#     Each body carries its own CollisionShape3D (trimesh of its
+#     cells' triangles) and metadata/surface_kind, which mario_state
+#     reads off get_slide_collision().get_collider(). That's how one
+#     painted terrain can have ice, lava, and grass all coexisting.
 #
 # Origin is the south-west corner of the patch at base_y=origin.y.
 # Each vertex world-space Y = origin.y + heights[i*res + j]. resolution
 # is the vertex count per side, so a patch with resolution=8 has 64
 # vertices / 49 quad cells / 98 triangles — cheap.
 #
-# Editable in the blueprint editor's terrain tool; the converter
-# re-serialises the heights on every Build so sculpt changes round-trip
-# without ever touching the .tscn by hand.
+# Authored in the blueprint editor's terrain tool + paint sub-mode;
+# the converter re-serialises heights + surface_grid on every Build.
+
+const SURFACE_TINTS := {
+	"water":             Color(0.25, 0.55, 0.95),
+	"burning":           Color(1.00, 0.35, 0.08),
+	"ice":               Color(0.70, 0.90, 1.00),
+	"slippery":          Color(0.75, 0.85, 0.95),
+	"very_slippery":     Color(0.80, 0.95, 1.00),
+	"snow":              Color(0.95, 0.97, 1.00),
+	"sand":              Color(0.90, 0.80, 0.45),
+	"shallow_quicksand": Color(0.78, 0.65, 0.30),
+	"deep_quicksand":    Color(0.55, 0.40, 0.18),
+}
+
+const DEFAULT_TINT_STRENGTH := 0.65
+
 
 func _ready() -> void:
 	var raw: Variant = get_meta("terrain_heights", PackedFloat32Array())
@@ -33,15 +52,22 @@ func _ready() -> void:
 	var size_z: float = float(get_meta("terrain_size_z", 10.0))
 	var res: int = int(get_meta("terrain_resolution", 8))
 	var mat_path: String = str(get_meta("terrain_material", ""))
-	# Slope-aware colouring. Flat cells pick up flat_color (grass green
-	# by default), sloped cells pick up slope_color (dirt brown). The
-	# blend uses each vertex's normal.y and a smoothstep between
-	# (threshold - softness) and (threshold + softness), baked into
-	# ARRAY_COLOR so we don't need a custom shader.
 	var flat_color: Color = _color_meta("terrain_flat_color", Color(0.35, 0.55, 0.22))
 	var slope_color: Color = _color_meta("terrain_slope_color", Color(0.45, 0.32, 0.18))
 	var slope_threshold: float = float(get_meta("terrain_slope_threshold", 0.72))
 	var slope_softness: float = float(get_meta("terrain_slope_softness", 0.15))
+	# Per-cell surface kinds. Absent / wrong length → all default ("").
+	var sg_raw: Variant = get_meta("terrain_surface_grid", null)
+	var cell_count: int = (res - 1) * (res - 1)
+	var surface_grid: Array = []
+	if sg_raw is Array:
+		for s in sg_raw:
+			surface_grid.append(str(s))
+	if surface_grid.size() != cell_count:
+		surface_grid = []
+		for _i in range(cell_count):
+			surface_grid.append("")
+
 	if res < 2 or heights.size() != res * res or size_x <= 0.0 or size_z <= 0.0:
 		return
 
@@ -62,9 +88,6 @@ func _ready() -> void:
 			verts[idx] = Vector3(float(i) * cell_x, heights[idx], float(j) * cell_z)
 			uvs[idx] = Vector2(float(i) / float(res - 1), float(j) / float(res - 1))
 
-	# Per-vertex normals via central difference — good enough for shaded
-	# rolling terrain without full face-normal averaging. Each vertex
-	# gets a slope-blended colour baked in at the same time.
 	var lo: float = slope_threshold - slope_softness
 	var hi: float = slope_threshold + slope_softness
 	for i in range(res):
@@ -80,7 +103,32 @@ func _ready() -> void:
 			normals[idx] = n
 			var up: float = clamp(n.y, 0.0, 1.0)
 			var t: float = smoothstep(lo, hi, up)
-			colors[idx] = slope_color.lerp(flat_color, t)
+			var base: Color = slope_color.lerp(flat_color, t)
+			# Surface-kind tint: average the tints of the (up to 4)
+			# cells surrounding this vertex. Cells with kind "" don't
+			# contribute so edges feather smoothly into default.
+			var tint_sum := Color(0, 0, 0, 0)
+			var tint_weight: float = 0.0
+			for di in [-1, 0]:
+				for dj in [-1, 0]:
+					var ci: int = i + di
+					var cj: int = j + dj
+					if ci < 0 or cj < 0 or ci >= res - 1 or cj >= res - 1:
+						continue
+					var kind: String = String(surface_grid[ci * (res - 1) + cj])
+					if kind == "":
+						continue
+					var tint: Color = SURFACE_TINTS.get(kind, Color(0, 0, 0))
+					tint_sum += Color(tint.r, tint.g, tint.b, 1.0)
+					tint_weight += 1.0
+			if tint_weight > 0.0:
+				var avg := Color(tint_sum.r / tint_weight, tint_sum.g / tint_weight, tint_sum.b / tint_weight, 1.0)
+				# Four of four cells painted → full tint; fewer corners
+				# lerp back toward the base so the boundary fades.
+				var tint_mix: float = DEFAULT_TINT_STRENGTH * (tint_weight / 4.0)
+				colors[idx] = base.lerp(avg, tint_mix)
+			else:
+				colors[idx] = base
 
 	var indices := PackedInt32Array()
 	for i in range(res - 1):
@@ -100,10 +148,6 @@ func _ready() -> void:
 	arrays[Mesh.ARRAY_COLOR] = colors
 	arrays[Mesh.ARRAY_INDEX] = indices
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-	# Material resolution: if the blueprint names a material, honour it
-	# (lets themed worlds override with a lava/ice shader). Otherwise
-	# fall back to a StandardMaterial3D that renders the per-vertex
-	# slope colours — no shader required.
 	if mat_path != "" and ResourceLoader.exists(mat_path):
 		var mat: Resource = load(mat_path)
 		if mat is Material:
@@ -119,22 +163,43 @@ func _ready() -> void:
 	mi.name = "Mesh"
 	add_child(mi)
 
-	# Trimesh collision: feed triangle vertices flat (3 verts per tri).
-	var tri_verts := PackedVector3Array()
-	tri_verts.resize(indices.size())
-	for k in range(indices.size()):
-		tri_verts[k] = verts[indices[k]]
-	var shape := ConcavePolygonShape3D.new()
-	shape.data = tri_verts
-	var cs := CollisionShape3D.new()
-	cs.shape = shape
-	cs.name = "Col"
-	add_child(cs)
-	# The converter may attach a surface_kind meta ("snow" / "ice" /
-	# "sand" etc.) so mario_state's floor_surface check picks up the
-	# right friction when Mario stands on a themed terrain. Mario reads
-	# set_meta("surface_kind") on the collider; we already have it on
-	# this node thanks to the converter, no-op if absent.
+	# Collision split by surface kind: one StaticBody3D per unique kind
+	# found in the grid, each with a trimesh of ITS cells only. Un-
+	# painted ("") cells go to a default body without a surface_kind
+	# meta so mario_state's floor_surface falls back to "default".
+	var kind_to_cells: Dictionary = {}
+	for ci in range(res - 1):
+		for cj in range(res - 1):
+			var kind: String = String(surface_grid[ci * (res - 1) + cj])
+			if not kind_to_cells.has(kind):
+				kind_to_cells[kind] = []
+			kind_to_cells[kind].append(Vector2i(ci, cj))
+	for kind in kind_to_cells.keys():
+		var cells: Array = kind_to_cells[kind]
+		var tri_verts := PackedVector3Array()
+		for cell in cells:
+			var ci2: int = (cell as Vector2i).x
+			var cj2: int = (cell as Vector2i).y
+			var a2: int = ci2 * res + cj2
+			var b2: int = (ci2 + 1) * res + cj2
+			var c2: int = (ci2 + 1) * res + (cj2 + 1)
+			var d2: int = ci2 * res + (cj2 + 1)
+			tri_verts.append_array([verts[a2], verts[b2], verts[c2]])
+			tri_verts.append_array([verts[a2], verts[c2], verts[d2]])
+		if tri_verts.is_empty():
+			continue
+		var body := StaticBody3D.new()
+		body.name = "Col_" + (str(kind) if kind != "" else "default")
+		body.collision_layer = 1
+		body.collision_mask = 1
+		if kind != "":
+			body.set_meta("surface_kind", kind)
+		var shape := ConcavePolygonShape3D.new()
+		shape.data = tri_verts
+		var cs := CollisionShape3D.new()
+		cs.shape = shape
+		body.add_child(cs)
+		add_child(body)
 
 
 func _color_meta(key: String, default_c: Color) -> Color:

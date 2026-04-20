@@ -7,6 +7,7 @@
   ],
   "blocks": [],
   "connectors": [],
+  "enemies": [],
   "extras": [
     {
       "direction": "+x",
@@ -51,6 +52,7 @@
     "red": "res://assets/materials/fabric_red.tres",
     "wood": "res://assets/materials/wood_dark.tres"
   },
+  "pickups": [],
   "rooms": [
     {
       "floor_material": "floor",
@@ -349,6 +351,9 @@
       }
     }
   ],
+  "sky": {
+
+  },
   "spawn_point": [
     4.0,
     1.0,
@@ -622,10 +627,12 @@
         0.0,
         -48.0
       ],
-      "resolution": 16,
+      "resolution": 16.0,
       "size_x": 158.0,
       "size_z": 139.0
     }
   ],
-  "wall_thickness": 0.4
+  "volumes": [],
+  "wall_thickness": 0.4,
+  "warps": []
 }
