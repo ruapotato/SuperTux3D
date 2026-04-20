@@ -1,17 +1,56 @@
-[gd_scene load_steps=40 format=3]
+[gd_scene load_steps=86 format=3]
 
-; GRASS HUB — Meadow Plaza
-; Landmarks: Central Fountain, Stone Archway, Four Doorways (warp pads),
-;   Ringed Plaza, Bell Tower Hill.
-; Tiers: plaza floor / archway & hill mid / bell-tower summit.
-; Seeded with 10 goombas, 1 bobomb buddy greeter, 1 koopa, 28 coins,
-;   1 star on the bell tower, 1 1-up behind the fountain, 1 wing cap.
+; GRASS HUB — Grand Castle of the Penguin Realm
+; Scale: player is ~1.5m tall. Castle footprint ~50x50m, ~25m tall,
+;   with twin 28m spires. Terrain pad ~160x160m.
+; Floors/rooms: front plaza, courtyard, entrance hall, east wing (mountain),
+;   west wing (water), north wing (snow, 3*), south wing (lava, 5*),
+;   upper landing, sand door (10*), sky door (15*), throne room,
+;   bowser gate (25*), crypt basement, rooftop, reflecting pool,
+;   dev-room attic, key rooms (3).
+; Secrets: hidden-brick passage, crypt trapdoor, rooftop long-jump route,
+;   reflecting-pool coins, three colored-key rooms, dev-room attic.
+; Content: 4 bhvBobombBuddy, 4 bhvGoomba (plaza), 2 bhvGoomba (crypt),
+;   3 bhvCuttlefish, 40+ coins_yellow, 8 coin_red, 3 stars (1 visible,
+;   2 hidden), 4 oneup, 1 cap_wing, 1 cap_metal.
+; Spawn: Vector3(0, 1.0, 16) facing -Z (castle lies northward).
 
+; =============================================================
+; Shared material library (ext_resource)
+; =============================================================
+[ext_resource type="Material" path="res://assets/materials/brick_red.tres" id="1_brick_red"]
+[ext_resource type="Material" path="res://assets/materials/brick_stone.tres" id="2_brick_stone"]
+[ext_resource type="Material" path="res://assets/materials/stone_grey.tres" id="3_stone_grey"]
+[ext_resource type="Material" path="res://assets/materials/stone_dark.tres" id="4_stone_dark"]
+[ext_resource type="Material" path="res://assets/materials/stone_mossy.tres" id="5_stone_mossy"]
+[ext_resource type="Material" path="res://assets/materials/grass_bright.tres" id="6_grass_bright"]
+[ext_resource type="Material" path="res://assets/materials/grass_path.tres" id="7_grass_path"]
+[ext_resource type="Material" path="res://assets/materials/gold.tres" id="8_gold"]
+[ext_resource type="Material" path="res://assets/materials/emissive_gold.tres" id="9_emissive_gold"]
+[ext_resource type="Material" path="res://assets/materials/fabric_red.tres" id="10_fabric_red"]
+[ext_resource type="Material" path="res://assets/materials/fabric_blue.tres" id="11_fabric_blue"]
+[ext_resource type="Material" path="res://assets/materials/fabric_gold.tres" id="12_fabric_gold"]
+[ext_resource type="Material" path="res://assets/materials/plain_white.tres" id="13_plain_white"]
+[ext_resource type="Material" path="res://assets/materials/torch_flame.tres" id="14_torch_flame"]
+[ext_resource type="Material" path="res://assets/materials/wood_planks.tres" id="15_wood_planks"]
+[ext_resource type="Material" path="res://assets/materials/wood_dark.tres" id="16_wood_dark"]
+[ext_resource type="Material" path="res://assets/materials/water_blue.tres" id="17_water_blue"]
+[ext_resource type="Material" path="res://assets/materials/leaves_green.tres" id="18_leaves_green"]
+[ext_resource type="Material" path="res://assets/materials/flower_yellow.tres" id="19_flower_yellow"]
+[ext_resource type="Material" path="res://assets/materials/petal_pink.tres" id="20_petal_pink"]
+[ext_resource type="Material" path="res://assets/materials/petal_purple.tres" id="21_petal_purple"]
+[ext_resource type="Material" path="res://assets/materials/warp_glow.tres" id="22_warp_glow"]
+[ext_resource type="Material" path="res://assets/materials/bark.tres" id="23_bark"]
+[ext_resource type="Material" path="res://assets/materials/emissive_cyan.tres" id="24_emissive_cyan"]
+
+; =============================================================
+; Environment + sky
+; =============================================================
 [sub_resource type="ProceduralSkyMaterial" id="Sky_1"]
-sky_top_color = Color(0.38, 0.62, 0.92, 1)
-sky_horizon_color = Color(0.78, 0.88, 0.98, 1)
-ground_bottom_color = Color(0.2, 0.35, 0.18, 1)
-ground_horizon_color = Color(0.55, 0.65, 0.45, 1)
+sky_top_color = Color(0.42, 0.66, 0.94, 1)
+sky_horizon_color = Color(0.82, 0.9, 0.98, 1)
+ground_bottom_color = Color(0.22, 0.36, 0.2, 1)
+ground_horizon_color = Color(0.58, 0.68, 0.5, 1)
 
 [sub_resource type="Sky" id="Sky_2"]
 sky_material = SubResource("Sky_1")
@@ -20,661 +59,1439 @@ sky_material = SubResource("Sky_1")
 background_mode = 2
 sky = SubResource("Sky_2")
 ambient_light_source = 2
-ambient_light_color = Color(0.65, 0.7, 0.62, 1)
-ambient_light_energy = 0.75
+ambient_light_color = Color(0.7, 0.72, 0.68, 1)
+ambient_light_energy = 0.8
 
-[sub_resource type="StandardMaterial3D" id="Mat_Grass"]
-shading_mode = 0
-albedo_color = Color(0.35, 0.65, 0.28, 1)
-
-[sub_resource type="StandardMaterial3D" id="Mat_Stone"]
-shading_mode = 0
-albedo_color = Color(0.72, 0.7, 0.66, 1)
-
-[sub_resource type="StandardMaterial3D" id="Mat_StoneDark"]
-shading_mode = 0
-albedo_color = Color(0.45, 0.44, 0.42, 1)
-
-[sub_resource type="StandardMaterial3D" id="Mat_Path"]
-shading_mode = 0
-albedo_color = Color(0.83, 0.76, 0.55, 1)
-
-[sub_resource type="StandardMaterial3D" id="Mat_Roof"]
-shading_mode = 0
-albedo_color = Color(0.55, 0.22, 0.18, 1)
-
-[sub_resource type="StandardMaterial3D" id="Mat_Wood"]
-shading_mode = 0
-albedo_color = Color(0.45, 0.28, 0.15, 1)
-
-[sub_resource type="StandardMaterial3D" id="Mat_Leaves"]
-shading_mode = 0
-albedo_color = Color(0.22, 0.55, 0.22, 1)
-
-[sub_resource type="StandardMaterial3D" id="Mat_Water"]
-shading_mode = 0
-albedo_color = Color(0.35, 0.65, 0.9, 1)
-emission_enabled = true
-emission = Color(0.25, 0.5, 0.8, 1)
-emission_energy_multiplier = 0.4
-
-[sub_resource type="StandardMaterial3D" id="Mat_Gold"]
-shading_mode = 0
-albedo_color = Color(1.0, 0.85, 0.2, 1)
-emission_enabled = true
-emission = Color(1.0, 0.8, 0.2, 1)
-emission_energy_multiplier = 0.3
-
-[sub_resource type="StandardMaterial3D" id="Mat_DoorBlue"]
-shading_mode = 0
-albedo_color = Color(0.2, 0.4, 0.9, 1)
-
-[sub_resource type="StandardMaterial3D" id="Mat_DoorRed"]
-shading_mode = 0
-albedo_color = Color(0.85, 0.25, 0.2, 1)
-
-[sub_resource type="StandardMaterial3D" id="Mat_DoorWhite"]
-shading_mode = 0
-albedo_color = Color(0.95, 0.95, 0.88, 1)
-
-[sub_resource type="StandardMaterial3D" id="Mat_DoorGreen"]
-shading_mode = 0
-albedo_color = Color(0.3, 0.75, 0.35, 1)
-
+; =============================================================
+; Meshes (referenced by many nodes)
+; =============================================================
 [sub_resource type="BoxMesh" id="Mesh_Ground"]
-material = SubResource("Mat_Grass")
-size = Vector3(80, 1, 80)
-
+size = Vector3(160, 2, 160)
 [sub_resource type="BoxShape3D" id="Shape_Ground"]
-size = Vector3(80, 1, 80)
+size = Vector3(160, 2, 160)
 
 [sub_resource type="CylinderMesh" id="Mesh_PlazaDisc"]
-material = SubResource("Mat_Path")
-top_radius = 14
-bottom_radius = 14
-height = 0.3
-
+top_radius = 22
+bottom_radius = 22
+height = 0.4
 [sub_resource type="CylinderShape3D" id="Shape_PlazaDisc"]
-radius = 14
-height = 0.3
+radius = 22
+height = 0.4
 
+; Paths
+[sub_resource type="BoxMesh" id="Mesh_PathLong"]
+size = Vector3(5.0, 0.3, 22)
+[sub_resource type="BoxShape3D" id="Shape_PathLong"]
+size = Vector3(5.0, 0.3, 22)
+
+; Fountain rings
 [sub_resource type="CylinderMesh" id="Mesh_FountainBase"]
-material = SubResource("Mat_Stone")
-top_radius = 3.2
-bottom_radius = 3.6
+top_radius = 4.5
+bottom_radius = 5.0
 height = 1.2
-
 [sub_resource type="CylinderShape3D" id="Shape_FountainBase"]
-radius = 3.6
+radius = 5.0
 height = 1.2
 
 [sub_resource type="CylinderMesh" id="Mesh_FountainMid"]
-material = SubResource("Mat_Stone")
-top_radius = 2.0
-bottom_radius = 2.4
-height = 1.0
-
+top_radius = 2.6
+bottom_radius = 3.0
+height = 1.4
 [sub_resource type="CylinderShape3D" id="Shape_FountainMid"]
-radius = 2.4
-height = 1.0
+radius = 3.0
+height = 1.4
 
 [sub_resource type="CylinderMesh" id="Mesh_FountainTop"]
-material = SubResource("Mat_Stone")
-top_radius = 0.6
-bottom_radius = 1.0
-height = 1.2
-
-[sub_resource type="CylinderMesh" id="Mesh_FountainWater"]
-material = SubResource("Mat_Water")
-top_radius = 2.8
-bottom_radius = 2.8
-height = 0.1
-
-[sub_resource type="BoxMesh" id="Mesh_ArchPillar"]
-material = SubResource("Mat_Stone")
-size = Vector3(1.4, 7.0, 1.4)
-
-[sub_resource type="BoxShape3D" id="Shape_ArchPillar"]
-size = Vector3(1.4, 7.0, 1.4)
-
-[sub_resource type="BoxMesh" id="Mesh_ArchTop"]
-material = SubResource("Mat_StoneDark")
-size = Vector3(8.5, 1.0, 1.4)
-
-[sub_resource type="BoxShape3D" id="Shape_ArchTop"]
-size = Vector3(8.5, 1.0, 1.4)
-
-[sub_resource type="BoxMesh" id="Mesh_DoorFrame"]
-material = SubResource("Mat_Stone")
-size = Vector3(4.5, 5.0, 0.6)
-
-[sub_resource type="BoxShape3D" id="Shape_DoorFrame"]
-size = Vector3(4.5, 5.0, 0.6)
-
-[sub_resource type="BoxMesh" id="Mesh_DoorBlue"]
-material = SubResource("Mat_DoorBlue")
-size = Vector3(2.6, 3.8, 0.25)
-
-[sub_resource type="BoxMesh" id="Mesh_DoorRed"]
-material = SubResource("Mat_DoorRed")
-size = Vector3(2.6, 3.8, 0.25)
-
-[sub_resource type="BoxMesh" id="Mesh_DoorWhite"]
-material = SubResource("Mat_DoorWhite")
-size = Vector3(2.6, 3.8, 0.25)
-
-[sub_resource type="BoxMesh" id="Mesh_DoorGreen"]
-material = SubResource("Mat_DoorGreen")
-size = Vector3(2.6, 3.8, 0.25)
-
-[sub_resource type="BoxMesh" id="Mesh_Hill"]
-material = SubResource("Mat_Grass")
-size = Vector3(16, 2, 16)
-
-[sub_resource type="BoxShape3D" id="Shape_Hill"]
-size = Vector3(16, 2, 16)
-
-[sub_resource type="BoxMesh" id="Mesh_Ramp"]
-material = SubResource("Mat_Path")
-size = Vector3(3.5, 0.3, 9)
-
-[sub_resource type="BoxShape3D" id="Shape_Ramp"]
-size = Vector3(3.5, 0.3, 9)
-
-[sub_resource type="CylinderMesh" id="Mesh_BellTower"]
-material = SubResource("Mat_Stone")
-top_radius = 2.0
-bottom_radius = 2.4
-height = 6.0
-
-[sub_resource type="CylinderShape3D" id="Shape_BellTower"]
-radius = 2.4
-height = 6.0
-
-[sub_resource type="PrismMesh" id="Mesh_BellRoof"]
-material = SubResource("Mat_Roof")
-size = Vector3(5.0, 2.6, 5.0)
-
-[sub_resource type="SphereMesh" id="Mesh_Bell"]
-material = SubResource("Mat_Gold")
-radius = 0.9
+top_radius = 0.8
+bottom_radius = 1.4
 height = 1.6
 
+[sub_resource type="CylinderMesh" id="Mesh_FountainWater"]
+top_radius = 4.0
+bottom_radius = 4.0
+height = 0.15
+
+; Flower bed & flowers
+[sub_resource type="BoxMesh" id="Mesh_FlowerBed"]
+size = Vector3(3.0, 0.4, 3.0)
+[sub_resource type="SphereMesh" id="Mesh_FlowerPink"]
+radius = 0.35
+height = 0.7
+[sub_resource type="SphereMesh" id="Mesh_FlowerPurple"]
+radius = 0.35
+height = 0.7
+[sub_resource type="SphereMesh" id="Mesh_FlowerYellow"]
+radius = 0.35
+height = 0.7
+
+; Trees
 [sub_resource type="CylinderMesh" id="Mesh_Trunk"]
-material = SubResource("Mat_Wood")
 top_radius = 0.4
 bottom_radius = 0.55
-height = 3.0
-
+height = 3.2
 [sub_resource type="SphereMesh" id="Mesh_Leaves"]
-material = SubResource("Mat_Leaves")
-radius = 2.0
-height = 4.0
+radius = 2.2
+height = 4.2
 
+; Castle walls (red brick): 4 outer walls, 50x50 footprint, 14m tall
+[sub_resource type="BoxMesh" id="Mesh_WallFrontLeft"]
+size = Vector3(18, 14, 2)
+[sub_resource type="BoxShape3D" id="Shape_WallFrontLeft"]
+size = Vector3(18, 14, 2)
+[sub_resource type="BoxMesh" id="Mesh_WallFrontRight"]
+size = Vector3(18, 14, 2)
+[sub_resource type="BoxShape3D" id="Shape_WallFrontRight"]
+size = Vector3(18, 14, 2)
+[sub_resource type="BoxMesh" id="Mesh_WallFrontTop"]
+size = Vector3(14, 4, 2)
+[sub_resource type="BoxShape3D" id="Shape_WallFrontTop"]
+size = Vector3(14, 4, 2)
+[sub_resource type="BoxMesh" id="Mesh_WallSide"]
+size = Vector3(2, 14, 50)
+[sub_resource type="BoxShape3D" id="Shape_WallSide"]
+size = Vector3(2, 14, 50)
+[sub_resource type="BoxMesh" id="Mesh_WallBack"]
+size = Vector3(50, 14, 2)
+[sub_resource type="BoxShape3D" id="Shape_WallBack"]
+size = Vector3(50, 14, 2)
+
+; Castle floor (entrance hall) and upper floor
+[sub_resource type="BoxMesh" id="Mesh_CastleFloor"]
+size = Vector3(46, 0.6, 46)
+[sub_resource type="BoxShape3D" id="Shape_CastleFloor"]
+size = Vector3(46, 0.6, 46)
+[sub_resource type="BoxMesh" id="Mesh_UpperFloor"]
+size = Vector3(44, 0.6, 20)
+[sub_resource type="BoxShape3D" id="Shape_UpperFloor"]
+size = Vector3(44, 0.6, 20)
+
+; Castle roof slab
+[sub_resource type="BoxMesh" id="Mesh_CastleRoof"]
+size = Vector3(52, 0.8, 52)
+[sub_resource type="BoxShape3D" id="Shape_CastleRoof"]
+size = Vector3(52, 0.8, 52)
+
+; Spire towers
+[sub_resource type="CylinderMesh" id="Mesh_Spire"]
+top_radius = 3.0
+bottom_radius = 3.6
+height = 28.0
+[sub_resource type="CylinderShape3D" id="Shape_Spire"]
+radius = 3.6
+height = 28.0
+[sub_resource type="PrismMesh" id="Mesh_SpireRoof"]
+size = Vector3(7.5, 6.0, 7.5)
+
+; Stained glass window (tall panels, emissive glow)
+[sub_resource type="BoxMesh" id="Mesh_Window"]
+size = Vector3(1.8, 5.5, 0.3)
+[sub_resource type="BoxMesh" id="Mesh_WindowFrame"]
+size = Vector3(2.3, 6.0, 0.4)
+
+; Gateway portcullis (gold bars)
+[sub_resource type="BoxMesh" id="Mesh_Portcullis"]
+size = Vector3(6.0, 6.0, 0.15)
+
+; Torch
+[sub_resource type="CylinderMesh" id="Mesh_TorchPost"]
+top_radius = 0.12
+bottom_radius = 0.16
+height = 2.0
+[sub_resource type="SphereMesh" id="Mesh_TorchFlame"]
+radius = 0.35
+height = 0.7
+
+; Red carpet (long hallway runner)
+[sub_resource type="BoxMesh" id="Mesh_Carpet"]
+size = Vector3(5.0, 0.06, 40)
+[sub_resource type="BoxMesh" id="Mesh_CarpetUpper"]
+size = Vector3(5.0, 0.06, 18)
+
+; Spiral staircase: stacked small steps
+[sub_resource type="BoxMesh" id="Mesh_Step"]
+size = Vector3(4.0, 0.3, 1.2)
+[sub_resource type="BoxShape3D" id="Shape_Step"]
+size = Vector3(4.0, 0.3, 1.2)
+
+; Interior door (frame + panel)
+[sub_resource type="BoxMesh" id="Mesh_IntDoorFrame"]
+size = Vector3(3.6, 4.8, 0.5)
+[sub_resource type="BoxShape3D" id="Shape_IntDoorFrame"]
+size = Vector3(3.6, 4.8, 0.5)
+[sub_resource type="BoxMesh" id="Mesh_IntDoorPanel"]
+size = Vector3(2.4, 3.8, 0.18)
+[sub_resource type="BoxShape3D" id="Shape_IntDoorPanel"]
+size = Vector3(2.4, 3.8, 0.18)
+
+; Throne
+[sub_resource type="BoxMesh" id="Mesh_ThroneSeat"]
+size = Vector3(2.4, 0.8, 2.2)
+[sub_resource type="BoxShape3D" id="Shape_ThroneSeat"]
+size = Vector3(2.4, 0.8, 2.2)
+[sub_resource type="BoxMesh" id="Mesh_ThroneBack"]
+size = Vector3(2.4, 5.5, 0.4)
+[sub_resource type="BoxShape3D" id="Shape_ThroneBack"]
+size = Vector3(2.4, 5.5, 0.4)
+[sub_resource type="CylinderMesh" id="Mesh_Plinth"]
+top_radius = 0.9
+bottom_radius = 1.1
+height = 1.2
+
+; Banners
+[sub_resource type="BoxMesh" id="Mesh_Banner"]
+size = Vector3(1.8, 6.0, 0.06)
+
+; Shelf (hides passage)
+[sub_resource type="BoxMesh" id="Mesh_Shelf"]
+size = Vector3(3.0, 2.6, 0.5)
+[sub_resource type="BoxShape3D" id="Shape_Shelf"]
+size = Vector3(3.0, 2.6, 0.5)
+
+; Hidden-brick marker (same material family but different tone)
+[sub_resource type="BoxMesh" id="Mesh_SecretBrick"]
+size = Vector3(2.0, 2.6, 0.4)
+
+; Trapdoor
+[sub_resource type="BoxMesh" id="Mesh_Trapdoor"]
+size = Vector3(2.0, 0.1, 2.0)
+
+; Crypt shell (basement room floor + walls)
+[sub_resource type="BoxMesh" id="Mesh_CryptFloor"]
+size = Vector3(16, 0.5, 16)
+[sub_resource type="BoxShape3D" id="Shape_CryptFloor"]
+size = Vector3(16, 0.5, 16)
+[sub_resource type="BoxMesh" id="Mesh_CryptWallN"]
+size = Vector3(16, 4.5, 0.5)
+[sub_resource type="BoxShape3D" id="Shape_CryptWallN"]
+size = Vector3(16, 4.5, 0.5)
+[sub_resource type="BoxMesh" id="Mesh_CryptWallE"]
+size = Vector3(0.5, 4.5, 16)
+[sub_resource type="BoxShape3D" id="Shape_CryptWallE"]
+size = Vector3(0.5, 4.5, 16)
+
+; Reflecting pool
+[sub_resource type="BoxMesh" id="Mesh_Pool"]
+size = Vector3(8, 0.15, 14)
+
+; Attic room (dev room)
+[sub_resource type="BoxMesh" id="Mesh_AtticFloor"]
+size = Vector3(8, 0.4, 8)
+[sub_resource type="BoxShape3D" id="Shape_AtticFloor"]
+size = Vector3(8, 0.4, 8)
+[sub_resource type="BoxMesh" id="Mesh_AtticWall"]
+size = Vector3(8, 3, 0.3)
+[sub_resource type="BoxShape3D" id="Shape_AtticWall"]
+size = Vector3(8, 3, 0.3)
+
+; Key-room floor slab
+[sub_resource type="BoxMesh" id="Mesh_KeyRoomFloor"]
+size = Vector3(8, 0.5, 8)
+[sub_resource type="BoxShape3D" id="Shape_KeyRoomFloor"]
+size = Vector3(8, 0.5, 8)
+
+; =============================================================
+; Scene graph
+; =============================================================
 [node name="LevelRoot" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Env_1")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 30, 0)
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 40, 0)
+shadow_enabled = true
 
-; --- Ground ---
+; --- Ground pad ---
 [node name="GroundMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
 mesh = SubResource("Mesh_Ground")
+surface_material_override/0 = ExtResource("6_grass_bright")
 
 [node name="GroundBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
-
 [node name="Col" type="CollisionShape3D" parent="GroundBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
 shape = SubResource("Shape_Ground")
 
-; --- Plaza disc (tier 1) ---
+; --- Front plaza disc (z=+18, in front of castle gates) ---
 [node name="PlazaMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 18)
 mesh = SubResource("Mesh_PlazaDisc")
-
+surface_material_override/0 = ExtResource("7_grass_path")
 [node name="PlazaBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
-
 [node name="Col" type="CollisionShape3D" parent="PlazaBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 18)
 shape = SubResource("Shape_PlazaDisc")
 
-; --- Central Fountain (landmark) ---
-[node name="FountainBaseMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-mesh = SubResource("Mesh_FountainBase")
+; Approach path from plaza to castle gate
+[node name="ApproachPathMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, -2)
+mesh = SubResource("Mesh_PathLong")
+surface_material_override/0 = ExtResource("7_grass_path")
+[node name="ApproachPathBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="ApproachPathBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, -2)
+shape = SubResource("Shape_PathLong")
 
+; --- Central fountain ---
+[node name="FountainBaseMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 18)
+mesh = SubResource("Mesh_FountainBase")
+surface_material_override/0 = ExtResource("2_brick_stone")
 [node name="FountainBaseBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
-
 [node name="Col" type="CollisionShape3D" parent="FountainBaseBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 18)
 shape = SubResource("Shape_FountainBase")
 
 [node name="FountainMidMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 18)
 mesh = SubResource("Mesh_FountainMid")
-
+surface_material_override/0 = ExtResource("2_brick_stone")
 [node name="FountainMidBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
-
 [node name="Col" type="CollisionShape3D" parent="FountainMidBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 18)
 shape = SubResource("Shape_FountainMid")
 
 [node name="FountainTopMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.1, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.8, 18)
 mesh = SubResource("Mesh_FountainTop")
+surface_material_override/0 = ExtResource("8_gold")
 
-[node name="FountainWaterDisc" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.55, 0)
+[node name="FountainWater" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 18)
 mesh = SubResource("Mesh_FountainWater")
+surface_material_override/0 = ExtResource("17_water_blue")
 
-; --- Stone Archway (landmark) ---
-[node name="ArchLeftMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.5, 3.5, -20)
-mesh = SubResource("Mesh_ArchPillar")
+; --- Flower beds flanking the approach ---
+[node name="FlowerBed_L" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0.4, 10)
+mesh = SubResource("Mesh_FlowerBed")
+surface_material_override/0 = ExtResource("16_wood_dark")
+[node name="Flower_L1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0.9, 9)
+mesh = SubResource("Mesh_FlowerPink")
+surface_material_override/0 = ExtResource("20_petal_pink")
+[node name="Flower_L2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.9, 11)
+mesh = SubResource("Mesh_FlowerPurple")
+surface_material_override/0 = ExtResource("21_petal_purple")
+[node name="Flower_L3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0.9, 10)
+mesh = SubResource("Mesh_FlowerYellow")
+surface_material_override/0 = ExtResource("19_flower_yellow")
 
-[node name="ArchLeftBody" type="StaticBody3D" parent="."]
+[node name="FlowerBed_R" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.4, 10)
+mesh = SubResource("Mesh_FlowerBed")
+surface_material_override/0 = ExtResource("16_wood_dark")
+[node name="Flower_R1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0.9, 9)
+mesh = SubResource("Mesh_FlowerPink")
+surface_material_override/0 = ExtResource("20_petal_pink")
+[node name="Flower_R2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.9, 11)
+mesh = SubResource("Mesh_FlowerYellow")
+surface_material_override/0 = ExtResource("19_flower_yellow")
+[node name="Flower_R3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.9, 10)
+mesh = SubResource("Mesh_FlowerPurple")
+surface_material_override/0 = ExtResource("21_petal_purple")
+
+; --- Trees flanking plaza ---
+[node name="Tree1Trunk" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28, 1.6, 20)
+mesh = SubResource("Mesh_Trunk")
+surface_material_override/0 = ExtResource("23_bark")
+[node name="Tree1Leaves" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28, 4.4, 20)
+mesh = SubResource("Mesh_Leaves")
+surface_material_override/0 = ExtResource("18_leaves_green")
+[node name="Tree2Trunk" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 1.6, 20)
+mesh = SubResource("Mesh_Trunk")
+surface_material_override/0 = ExtResource("23_bark")
+[node name="Tree2Leaves" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 4.4, 20)
+mesh = SubResource("Mesh_Leaves")
+surface_material_override/0 = ExtResource("18_leaves_green")
+[node name="Tree3Trunk" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34, 1.6, 6)
+mesh = SubResource("Mesh_Trunk")
+surface_material_override/0 = ExtResource("23_bark")
+[node name="Tree3Leaves" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34, 4.4, 6)
+mesh = SubResource("Mesh_Leaves")
+surface_material_override/0 = ExtResource("18_leaves_green")
+[node name="Tree4Trunk" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 1.6, 6)
+mesh = SubResource("Mesh_Trunk")
+surface_material_override/0 = ExtResource("23_bark")
+[node name="Tree4Leaves" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 4.4, 6)
+mesh = SubResource("Mesh_Leaves")
+surface_material_override/0 = ExtResource("18_leaves_green")
+
+; =============================================================
+; CASTLE EXTERIOR — 50x50 footprint, walls at x=+/-25, z=-5 to z=-55
+; Front face at z=-5 (facing plaza). Back wall at z=-55.
+; =============================================================
+
+; Front wall: left half x=-9 .. -25, right half x=+9 .. +25, z=-5
+[node name="WallFrontLeftMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 7, -5)
+mesh = SubResource("Mesh_WallFrontLeft")
+surface_material_override/0 = ExtResource("1_brick_red")
+[node name="WallFrontLeftBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="WallFrontLeftBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 7, -5)
+shape = SubResource("Shape_WallFrontLeft")
 
-[node name="Col" type="CollisionShape3D" parent="ArchLeftBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.5, 3.5, -20)
-shape = SubResource("Shape_ArchPillar")
-
-[node name="ArchRightMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, 3.5, -20)
-mesh = SubResource("Mesh_ArchPillar")
-
-[node name="ArchRightBody" type="StaticBody3D" parent="."]
+[node name="WallFrontRightMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 7, -5)
+mesh = SubResource("Mesh_WallFrontRight")
+surface_material_override/0 = ExtResource("1_brick_red")
+[node name="WallFrontRightBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="WallFrontRightBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 7, -5)
+shape = SubResource("Shape_WallFrontRight")
 
-[node name="Col" type="CollisionShape3D" parent="ArchRightBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, 3.5, -20)
-shape = SubResource("Shape_ArchPillar")
-
-[node name="ArchTopMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.5, -20)
-mesh = SubResource("Mesh_ArchTop")
-
-[node name="ArchTopBody" type="StaticBody3D" parent="."]
+; Lintel above gateway (gap is 14m wide, 10m tall, plenty for the 1.5m penguin)
+[node name="WallFrontTopMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12, -5)
+mesh = SubResource("Mesh_WallFrontTop")
+surface_material_override/0 = ExtResource("1_brick_red")
+[node name="WallFrontTopBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="WallFrontTopBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12, -5)
+shape = SubResource("Shape_WallFrontTop")
 
-[node name="Col" type="CollisionShape3D" parent="ArchTopBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.5, -20)
-shape = SubResource("Shape_ArchTop")
-
-; --- Four Warp Doorways ---
-[node name="DoorNorthFrame" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, -30)
-mesh = SubResource("Mesh_DoorFrame")
-
-[node name="DoorNorthFrameBody" type="StaticBody3D" parent="."]
+; Left and right side walls
+[node name="WallWestMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25, 7, -30)
+mesh = SubResource("Mesh_WallSide")
+surface_material_override/0 = ExtResource("1_brick_red")
+[node name="WallWestBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="WallWestBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25, 7, -30)
+shape = SubResource("Shape_WallSide")
 
-[node name="Col" type="CollisionShape3D" parent="DoorNorthFrameBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, -30)
-shape = SubResource("Shape_DoorFrame")
+[node name="WallEastMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 7, -30)
+mesh = SubResource("Mesh_WallSide")
+surface_material_override/0 = ExtResource("1_brick_red")
+[node name="WallEastBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="WallEastBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 7, -30)
+shape = SubResource("Shape_WallSide")
 
-[node name="DoorNorthPanel" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, -29.7)
-mesh = SubResource("Mesh_DoorBlue")
+[node name="WallBackMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7, -55)
+mesh = SubResource("Mesh_WallBack")
+surface_material_override/0 = ExtResource("1_brick_red")
+[node name="WallBackBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="WallBackBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7, -55)
+shape = SubResource("Shape_WallBack")
 
-[node name="WarpDoor_Mountain" type="Area3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, -29.7)
-collision_layer = 0
-collision_mask = 2
-metadata/warp_to = "mountain"
+; Castle floor (ground floor)
+[node name="CastleFloorMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, -30)
+mesh = SubResource("Mesh_CastleFloor")
+surface_material_override/0 = ExtResource("3_stone_grey")
+[node name="CastleFloorBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="CastleFloorBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, -30)
+shape = SubResource("Shape_CastleFloor")
 
-[node name="Col" type="CollisionShape3D" parent="WarpDoor_Mountain"]
-shape = SubResource("Shape_DoorFrame")
+; Upper floor slab at y=8 covering back half (z -55..-35)
+[node name="UpperFloorMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.0, -45)
+mesh = SubResource("Mesh_UpperFloor")
+surface_material_override/0 = ExtResource("3_stone_grey")
+[node name="UpperFloorBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="UpperFloorBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.0, -45)
+shape = SubResource("Shape_UpperFloor")
 
+; Roof slab at y=16 (player can reach via the spires' external long-jump route)
+[node name="CastleRoofMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 16, -30)
+mesh = SubResource("Mesh_CastleRoof")
+surface_material_override/0 = ExtResource("4_stone_dark")
+[node name="CastleRoofBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="CastleRoofBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 16, -30)
+shape = SubResource("Shape_CastleRoof")
+
+; Spires (twin towers) at front corners x=+/-22, z=-5, rising to y=+22
+[node name="SpireLMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 14, -5)
+mesh = SubResource("Mesh_Spire")
+surface_material_override/0 = ExtResource("2_brick_stone")
+[node name="SpireLBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="SpireLBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 14, -5)
+shape = SubResource("Shape_Spire")
+[node name="SpireLRoof" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 31, -5)
+mesh = SubResource("Mesh_SpireRoof")
+surface_material_override/0 = ExtResource("10_fabric_red")
+
+[node name="SpireRMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 14, -5)
+mesh = SubResource("Mesh_Spire")
+surface_material_override/0 = ExtResource("2_brick_stone")
+[node name="SpireRBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="SpireRBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 14, -5)
+shape = SubResource("Shape_Spire")
+[node name="SpireRRoof" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 31, -5)
+mesh = SubResource("Mesh_SpireRoof")
+surface_material_override/0 = ExtResource("10_fabric_red")
+
+; Stained-glass windows on front wall (visual only)
+[node name="Window_FrontL_Frame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 8, -3.95)
+mesh = SubResource("Mesh_WindowFrame")
+surface_material_override/0 = ExtResource("9_emissive_gold")
+[node name="Window_FrontL_Panel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 8, -3.85)
+mesh = SubResource("Mesh_Window")
+surface_material_override/0 = ExtResource("11_fabric_blue")
+[node name="Window_FrontR_Frame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 8, -3.95)
+mesh = SubResource("Mesh_WindowFrame")
+surface_material_override/0 = ExtResource("9_emissive_gold")
+[node name="Window_FrontR_Panel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 8, -3.85)
+mesh = SubResource("Mesh_Window")
+surface_material_override/0 = ExtResource("13_plain_white")
+[node name="Window_FrontL2_Frame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 8, -3.95)
+mesh = SubResource("Mesh_WindowFrame")
+surface_material_override/0 = ExtResource("9_emissive_gold")
+[node name="Window_FrontL2_Panel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 8, -3.85)
+mesh = SubResource("Mesh_Window")
+surface_material_override/0 = ExtResource("11_fabric_blue")
+[node name="Window_FrontR2_Frame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 8, -3.95)
+mesh = SubResource("Mesh_WindowFrame")
+surface_material_override/0 = ExtResource("9_emissive_gold")
+[node name="Window_FrontR2_Panel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 8, -3.85)
+mesh = SubResource("Mesh_Window")
+surface_material_override/0 = ExtResource("13_plain_white")
+
+; Portcullis (decorative gold bars at entrance)
+[node name="Portcullis" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9, -4.8)
+mesh = SubResource("Mesh_Portcullis")
+surface_material_override/0 = ExtResource("9_emissive_gold")
+
+; Torches flanking the gate (emissive flame heads)
+[node name="TorchL_Post" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 3, -4)
+mesh = SubResource("Mesh_TorchPost")
+surface_material_override/0 = ExtResource("16_wood_dark")
+[node name="TorchL_Flame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 4.2, -4)
+mesh = SubResource("Mesh_TorchFlame")
+surface_material_override/0 = ExtResource("14_torch_flame")
+[node name="TorchR_Post" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 3, -4)
+mesh = SubResource("Mesh_TorchPost")
+surface_material_override/0 = ExtResource("16_wood_dark")
+[node name="TorchR_Flame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 4.2, -4)
+mesh = SubResource("Mesh_TorchFlame")
+surface_material_override/0 = ExtResource("14_torch_flame")
+
+; =============================================================
+; CASTLE INTERIOR
+; =============================================================
+
+; Red carpet ground floor (runs from gateway to back)
+[node name="CarpetGround" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.63, -28)
+mesh = SubResource("Mesh_Carpet")
+surface_material_override/0 = ExtResource("10_fabric_red")
+
+; --- Spiral staircase (12 steps climbing x=8..14 z=-42..-32, rising to y=8) ---
+[node name="Step01Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0.9, -34)
+mesh = SubResource("Mesh_Step")
+surface_material_override/0 = ExtResource("15_wood_planks")
+[node name="Step01Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="Step01Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0.9, -34)
+shape = SubResource("Shape_Step")
+
+[node name="Step02Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1.5, -35.2)
+mesh = SubResource("Mesh_Step")
+surface_material_override/0 = ExtResource("15_wood_planks")
+[node name="Step02Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="Step02Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1.5, -35.2)
+shape = SubResource("Shape_Step")
+
+[node name="Step03Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2.1, -36.4)
+mesh = SubResource("Mesh_Step")
+surface_material_override/0 = ExtResource("15_wood_planks")
+[node name="Step03Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="Step03Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2.1, -36.4)
+shape = SubResource("Shape_Step")
+
+[node name="Step04Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2.7, -37.6)
+mesh = SubResource("Mesh_Step")
+surface_material_override/0 = ExtResource("15_wood_planks")
+[node name="Step04Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="Step04Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2.7, -37.6)
+shape = SubResource("Shape_Step")
+
+[node name="Step05Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 3.3, -38.8)
+mesh = SubResource("Mesh_Step")
+surface_material_override/0 = ExtResource("15_wood_planks")
+[node name="Step05Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="Step05Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 3.3, -38.8)
+shape = SubResource("Shape_Step")
+
+[node name="Step06Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 3.9, -40)
+mesh = SubResource("Mesh_Step")
+surface_material_override/0 = ExtResource("15_wood_planks")
+[node name="Step06Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="Step06Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 3.9, -40)
+shape = SubResource("Shape_Step")
+
+[node name="Step07Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 8.8, 4.5, -41.2)
+mesh = SubResource("Mesh_Step")
+surface_material_override/0 = ExtResource("15_wood_planks")
+[node name="Step07Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="Step07Body"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 8.8, 4.5, -41.2)
+shape = SubResource("Shape_Step")
+
+[node name="Step08Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 7.6, 5.1, -41.2)
+mesh = SubResource("Mesh_Step")
+surface_material_override/0 = ExtResource("15_wood_planks")
+[node name="Step08Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="Step08Body"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 7.6, 5.1, -41.2)
+shape = SubResource("Shape_Step")
+
+[node name="Step09Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 6.4, 5.7, -41.2)
+mesh = SubResource("Mesh_Step")
+surface_material_override/0 = ExtResource("15_wood_planks")
+[node name="Step09Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="Step09Body"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 6.4, 5.7, -41.2)
+shape = SubResource("Shape_Step")
+
+[node name="Step10Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 5.2, 6.3, -41.2)
+mesh = SubResource("Mesh_Step")
+surface_material_override/0 = ExtResource("15_wood_planks")
+[node name="Step10Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="Step10Body"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 5.2, 6.3, -41.2)
+shape = SubResource("Shape_Step")
+
+[node name="Step11Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 4.0, 6.9, -41.2)
+mesh = SubResource("Mesh_Step")
+surface_material_override/0 = ExtResource("15_wood_planks")
+[node name="Step11Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="Step11Body"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 4.0, 6.9, -41.2)
+shape = SubResource("Shape_Step")
+
+[node name="Step12Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 2.8, 7.5, -41.2)
+mesh = SubResource("Mesh_Step")
+surface_material_override/0 = ExtResource("15_wood_planks")
+[node name="Step12Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="Step12Body"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 2.8, 7.5, -41.2)
+shape = SubResource("Shape_Step")
+
+; Upper carpet runs back from staircase to throne
+[node name="CarpetUpper" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.35, -47)
+mesh = SubResource("Mesh_CarpetUpper")
+surface_material_override/0 = ExtResource("10_fabric_red")
+
+; =============================================================
+; SIDE DOORS (warps) — ground floor cardinal wings
+; East door -> mountain (x=+22 z=-22, 0*), West door -> water (x=-22 z=-22, 0*),
+; North door -> snow (x=-12 z=-54, 3*), South door -> lava (x=+12 z=-54, 5*)
+; =============================================================
+
+; East wing door (mountain)
 [node name="DoorEastFrame" type="MeshInstance3D" parent="."]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 30, 2.5, 0)
-mesh = SubResource("Mesh_DoorFrame")
-
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 22, 3.1, -22)
+mesh = SubResource("Mesh_IntDoorFrame")
+surface_material_override/0 = ExtResource("4_stone_dark")
 [node name="DoorEastFrameBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
-
 [node name="Col" type="CollisionShape3D" parent="DoorEastFrameBody"]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 30, 2.5, 0)
-shape = SubResource("Shape_DoorFrame")
-
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 22, 3.1, -22)
+shape = SubResource("Shape_IntDoorFrame")
 [node name="DoorEastPanel" type="MeshInstance3D" parent="."]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 29.7, 2.0, 0)
-mesh = SubResource("Mesh_DoorRed")
-
-[node name="WarpDoor_Lava" type="Area3D" parent="."]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 29.7, 2.0, 0)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 22.25, 2.7, -22)
+mesh = SubResource("Mesh_IntDoorPanel")
+surface_material_override/0 = ExtResource("5_stone_mossy")
+[node name="WarpDoor_Mountain" type="Area3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 21.8, 2.7, -22)
 collision_layer = 0
 collision_mask = 2
-metadata/warp_to = "lava"
+metadata/warp_to = "mountain"
+metadata/requires_stars = 0
+metadata/requires_stars_label = 0
+[node name="Col" type="CollisionShape3D" parent="WarpDoor_Mountain"]
+shape = SubResource("Shape_IntDoorPanel")
 
-[node name="Col" type="CollisionShape3D" parent="WarpDoor_Lava"]
-shape = SubResource("Shape_DoorFrame")
-
+; West wing door (water)
 [node name="DoorWestFrame" type="MeshInstance3D" parent="."]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -30, 2.5, 0)
-mesh = SubResource("Mesh_DoorFrame")
-
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -22, 3.1, -22)
+mesh = SubResource("Mesh_IntDoorFrame")
+surface_material_override/0 = ExtResource("4_stone_dark")
 [node name="DoorWestFrameBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
-
 [node name="Col" type="CollisionShape3D" parent="DoorWestFrameBody"]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -30, 2.5, 0)
-shape = SubResource("Shape_DoorFrame")
-
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -22, 3.1, -22)
+shape = SubResource("Shape_IntDoorFrame")
 [node name="DoorWestPanel" type="MeshInstance3D" parent="."]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -29.7, 2.0, 0)
-mesh = SubResource("Mesh_DoorWhite")
-
-[node name="WarpDoor_Snow" type="Area3D" parent="."]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -29.7, 2.0, 0)
-collision_layer = 0
-collision_mask = 2
-metadata/warp_to = "snow"
-
-[node name="Col" type="CollisionShape3D" parent="WarpDoor_Snow"]
-shape = SubResource("Shape_DoorFrame")
-
-[node name="DoorSouthFrame" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 30)
-mesh = SubResource("Mesh_DoorFrame")
-
-[node name="DoorSouthFrameBody" type="StaticBody3D" parent="."]
-collision_layer = 1
-collision_mask = 1
-
-[node name="Col" type="CollisionShape3D" parent="DoorSouthFrameBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 30)
-shape = SubResource("Shape_DoorFrame")
-
-[node name="DoorSouthPanel" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, 29.7)
-mesh = SubResource("Mesh_DoorGreen")
-
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -22.25, 2.7, -22)
+mesh = SubResource("Mesh_IntDoorPanel")
+surface_material_override/0 = ExtResource("11_fabric_blue")
 [node name="WarpDoor_Water" type="Area3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, 29.7)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -21.8, 2.7, -22)
 collision_layer = 0
 collision_mask = 2
 metadata/warp_to = "water"
-
+metadata/requires_stars = 0
+metadata/requires_stars_label = 0
 [node name="Col" type="CollisionShape3D" parent="WarpDoor_Water"]
-shape = SubResource("Shape_DoorFrame")
+shape = SubResource("Shape_IntDoorPanel")
 
-; --- Bell Tower Hill (tier 2 & 3) ---
-[node name="HillMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 1.0, -14)
-mesh = SubResource("Mesh_Hill")
-
-[node name="HillBody" type="StaticBody3D" parent="."]
+; North wing door (snow, 3*)
+[node name="DoorNorthFrame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 3.1, -44)
+mesh = SubResource("Mesh_IntDoorFrame")
+surface_material_override/0 = ExtResource("4_stone_dark")
+[node name="DoorNorthFrameBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="DoorNorthFrameBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 3.1, -44)
+shape = SubResource("Shape_IntDoorFrame")
+[node name="DoorNorthPanel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 2.7, -43.75)
+mesh = SubResource("Mesh_IntDoorPanel")
+surface_material_override/0 = ExtResource("13_plain_white")
+[node name="WarpDoor_Snow" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 2.7, -43.4)
+collision_layer = 0
+collision_mask = 2
+metadata/warp_to = "snow"
+metadata/requires_stars = 3
+metadata/requires_stars_label = 3
+[node name="Col" type="CollisionShape3D" parent="WarpDoor_Snow"]
+shape = SubResource("Shape_IntDoorPanel")
 
-[node name="Col" type="CollisionShape3D" parent="HillBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 1.0, -14)
-shape = SubResource("Shape_Hill")
-
-[node name="RampHill" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.95, -0.22, 0, 0.22, 0.95, 0, 0, 0, 1, 14, 1.0, -14)
-mesh = SubResource("Mesh_Ramp")
-
-[node name="RampHillBody" type="StaticBody3D" parent="."]
+; South wing door (lava, 5*)
+[node name="DoorSouthFrame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 3.1, -44)
+mesh = SubResource("Mesh_IntDoorFrame")
+surface_material_override/0 = ExtResource("4_stone_dark")
+[node name="DoorSouthFrameBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="DoorSouthFrameBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 3.1, -44)
+shape = SubResource("Shape_IntDoorFrame")
+[node name="DoorSouthPanel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 2.7, -43.75)
+mesh = SubResource("Mesh_IntDoorPanel")
+surface_material_override/0 = ExtResource("10_fabric_red")
+[node name="WarpDoor_Lava" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 2.7, -43.4)
+collision_layer = 0
+collision_mask = 2
+metadata/warp_to = "lava"
+metadata/requires_stars = 5
+metadata/requires_stars_label = 5
+[node name="Col" type="CollisionShape3D" parent="WarpDoor_Lava"]
+shape = SubResource("Shape_IntDoorPanel")
 
-[node name="Col" type="CollisionShape3D" parent="RampHillBody"]
-transform = Transform3D(0.95, -0.22, 0, 0.22, 0.95, 0, 0, 0, 1, 14, 1.0, -14)
-shape = SubResource("Shape_Ramp")
+; =============================================================
+; UPPER FLOOR DOORS (sand 10*, sky 15*), BOWSER back door 25*
+; =============================================================
 
-[node name="BellTowerMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 5.0, -14)
-mesh = SubResource("Mesh_BellTower")
-
-[node name="BellTowerBody" type="StaticBody3D" parent="."]
+; Sand door (upper, west side)
+[node name="DoorSandFrame" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -20, 11, -45)
+mesh = SubResource("Mesh_IntDoorFrame")
+surface_material_override/0 = ExtResource("4_stone_dark")
+[node name="DoorSandFrameBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="DoorSandFrameBody"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -20, 11, -45)
+shape = SubResource("Shape_IntDoorFrame")
+[node name="DoorSandPanel" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -20.25, 10.6, -45)
+mesh = SubResource("Mesh_IntDoorPanel")
+surface_material_override/0 = ExtResource("12_fabric_gold")
+[node name="WarpDoor_Sand" type="Area3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -19.8, 10.6, -45)
+collision_layer = 0
+collision_mask = 2
+metadata/warp_to = "sand"
+metadata/requires_stars = 10
+metadata/requires_stars_label = 10
+[node name="Col" type="CollisionShape3D" parent="WarpDoor_Sand"]
+shape = SubResource("Shape_IntDoorPanel")
 
-[node name="Col" type="CollisionShape3D" parent="BellTowerBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 5.0, -14)
-shape = SubResource("Shape_BellTower")
+; Sky door (upper, east side)
+[node name="DoorSkyFrame" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 20, 11, -45)
+mesh = SubResource("Mesh_IntDoorFrame")
+surface_material_override/0 = ExtResource("4_stone_dark")
+[node name="DoorSkyFrameBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="DoorSkyFrameBody"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 20, 11, -45)
+shape = SubResource("Shape_IntDoorFrame")
+[node name="DoorSkyPanel" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 20.25, 10.6, -45)
+mesh = SubResource("Mesh_IntDoorPanel")
+surface_material_override/0 = ExtResource("24_emissive_cyan")
+[node name="WarpDoor_Sky" type="Area3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 19.8, 10.6, -45)
+collision_layer = 0
+collision_mask = 2
+metadata/warp_to = "sky"
+metadata/requires_stars = 15
+metadata/requires_stars_label = 15
+[node name="Col" type="CollisionShape3D" parent="WarpDoor_Sky"]
+shape = SubResource("Shape_IntDoorPanel")
 
-[node name="BellTowerRoof" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 9.3, -14)
-mesh = SubResource("Mesh_BellRoof")
+; Bowser gate (back of upper floor, sealed, 25*)
+[node name="DoorBowserFrame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11, -53.5)
+mesh = SubResource("Mesh_IntDoorFrame")
+surface_material_override/0 = ExtResource("4_stone_dark")
+[node name="DoorBowserFrameBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="DoorBowserFrameBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11, -53.5)
+shape = SubResource("Shape_IntDoorFrame")
+[node name="DoorBowserPanel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10.6, -53.3)
+mesh = SubResource("Mesh_IntDoorPanel")
+surface_material_override/0 = ExtResource("22_warp_glow")
+[node name="WarpDoor_Bowser" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10.6, -53.0)
+collision_layer = 0
+collision_mask = 2
+metadata/warp_to = "bowser"
+metadata/requires_stars = 25
+metadata/requires_stars_label = 25
+[node name="Col" type="CollisionShape3D" parent="WarpDoor_Bowser"]
+shape = SubResource("Shape_IntDoorPanel")
 
-[node name="BellMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 8.3, -14)
-mesh = SubResource("Mesh_Bell")
+; =============================================================
+; THRONE ROOM (upper back)
+; =============================================================
+[node name="ThroneSeatMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.7, -50)
+mesh = SubResource("Mesh_ThroneSeat")
+surface_material_override/0 = ExtResource("8_gold")
+[node name="ThroneSeatBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="ThroneSeatBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.7, -50)
+shape = SubResource("Shape_ThroneSeat")
 
-; --- Trees ---
-[node name="Tree1Trunk" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18, 1.5, 12)
-mesh = SubResource("Mesh_Trunk")
+[node name="ThroneBackMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11.9, -51)
+mesh = SubResource("Mesh_ThroneBack")
+surface_material_override/0 = ExtResource("10_fabric_red")
+[node name="ThroneBackBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="ThroneBackBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11.9, -51)
+shape = SubResource("Shape_ThroneBack")
 
-[node name="Tree1Leaves" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18, 4.0, 12)
-mesh = SubResource("Mesh_Leaves")
+; Ceremonial star plinth
+[node name="PlinthMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 8.9, -50)
+mesh = SubResource("Mesh_Plinth")
+surface_material_override/0 = ExtResource("2_brick_stone")
 
-[node name="Tree2Trunk" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 1.5, 14)
-mesh = SubResource("Mesh_Trunk")
+; Banners on back wall
+[node name="Banner_L" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 13, -54.8)
+mesh = SubResource("Mesh_Banner")
+surface_material_override/0 = ExtResource("10_fabric_red")
+[node name="Banner_R" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 13, -54.8)
+mesh = SubResource("Mesh_Banner")
+surface_material_override/0 = ExtResource("10_fabric_red")
+[node name="Banner_Center" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 13, -54.8)
+mesh = SubResource("Mesh_Banner")
+surface_material_override/0 = ExtResource("12_fabric_gold")
 
-[node name="Tree2Leaves" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 4.0, 14)
-mesh = SubResource("Mesh_Leaves")
+; =============================================================
+; SECRET #1 — Shelf + hidden passage (entrance hall east wall)
+; Shelf at x=+24, z=-16 partially covers a brick section with a slightly
+; different tone. Player can walk behind it (it's offset from the wall).
+; =============================================================
+[node name="SecretShelfMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 1.9, -16)
+mesh = SubResource("Mesh_Shelf")
+surface_material_override/0 = ExtResource("15_wood_planks")
+[node name="SecretShelfBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="SecretShelfBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 1.9, -16)
+shape = SubResource("Shape_Shelf")
+; Secret brick — visually distinct (uses stone_mossy vs brick_red)
+[node name="SecretBrick" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24.2, 1.9, -18)
+mesh = SubResource("Mesh_SecretBrick")
+surface_material_override/0 = ExtResource("5_stone_mossy")
 
-[node name="Tree3Trunk" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 1.5, -8)
-mesh = SubResource("Mesh_Trunk")
+; =============================================================
+; SECRET #2 — Trapdoor into crypt basement
+; Trapdoor under the west side of carpet (x=-5, z=-20). Area3D warp
+; into a compact crypt cavity at y=-10 below the castle.
+; =============================================================
+[node name="TrapdoorMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.7, -20)
+mesh = SubResource("Mesh_Trapdoor")
+surface_material_override/0 = ExtResource("16_wood_dark")
+[node name="Trapdoor_Area" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.8, -20)
+collision_layer = 0
+collision_mask = 2
+metadata/warp_to = "grass_hub_crypt"
+metadata/requires_stars = 0
+metadata/requires_stars_label = 0
+[node name="Col" type="CollisionShape3D" parent="Trapdoor_Area"]
+shape = SubResource("Shape_IntDoorPanel")
 
-[node name="Tree3Leaves" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 4.0, -8)
-mesh = SubResource("Mesh_Leaves")
+; Crypt basement chamber (the player literally walks here after the trapdoor
+; teleport lands them at y=-9, x=-22, z=-20) — it exists inline for discovery.
+[node name="CryptFloorMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, -9.5, -20)
+mesh = SubResource("Mesh_CryptFloor")
+surface_material_override/0 = ExtResource("4_stone_dark")
+[node name="CryptFloorBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="CryptFloorBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, -9.5, -20)
+shape = SubResource("Shape_CryptFloor")
+[node name="CryptWallN" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, -7, -28)
+mesh = SubResource("Mesh_CryptWallN")
+surface_material_override/0 = ExtResource("5_stone_mossy")
+[node name="CryptWallNBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="CryptWallNBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, -7, -28)
+shape = SubResource("Shape_CryptWallN")
+[node name="CryptWallS" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, -7, -12)
+mesh = SubResource("Mesh_CryptWallN")
+surface_material_override/0 = ExtResource("5_stone_mossy")
+[node name="CryptWallSBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="CryptWallSBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, -7, -12)
+shape = SubResource("Shape_CryptWallN")
+[node name="CryptWallE" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, -7, -20)
+mesh = SubResource("Mesh_CryptWallE")
+surface_material_override/0 = ExtResource("5_stone_mossy")
+[node name="CryptWallEBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="CryptWallEBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, -7, -20)
+shape = SubResource("Shape_CryptWallE")
+[node name="CryptWallW" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, -7, -20)
+mesh = SubResource("Mesh_CryptWallE")
+surface_material_override/0 = ExtResource("5_stone_mossy")
+[node name="CryptWallWBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="CryptWallWBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, -7, -20)
+shape = SubResource("Shape_CryptWallE")
 
-[node name="Tree4Trunk" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 1.5, -20)
-mesh = SubResource("Mesh_Trunk")
+; Crypt torches
+[node name="CryptTorchL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28, -7.5, -20)
+mesh = SubResource("Mesh_TorchFlame")
+surface_material_override/0 = ExtResource("14_torch_flame")
+[node name="CryptTorchR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, -7.5, -20)
+mesh = SubResource("Mesh_TorchFlame")
+surface_material_override/0 = ExtResource("14_torch_flame")
 
-[node name="Tree4Leaves" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 4.0, -20)
-mesh = SubResource("Mesh_Leaves")
+; =============================================================
+; SECRET #3 — Reflecting pool with submerged coins (front plaza, east side)
+; =============================================================
+[node name="PoolMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0.3, 24)
+mesh = SubResource("Mesh_Pool")
+surface_material_override/0 = ExtResource("17_water_blue")
 
-; --- Spawn ---
+; =============================================================
+; SECRET #4 — Attic / Dev Room (hidden above throne room, reach via spires)
+; =============================================================
+[node name="AtticFloorMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 17.2, -54)
+mesh = SubResource("Mesh_AtticFloor")
+surface_material_override/0 = ExtResource("15_wood_planks")
+[node name="AtticFloorBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="AtticFloorBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 17.2, -54)
+shape = SubResource("Shape_AtticFloor")
+[node name="AtticWallN" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 19, -57.8)
+mesh = SubResource("Mesh_AtticWall")
+surface_material_override/0 = ExtResource("16_wood_dark")
+[node name="AtticWallNBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="AtticWallNBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 19, -57.8)
+shape = SubResource("Shape_AtticWall")
+
+; Dev-room breakable-looking wall (visually distinct brick on east side of attic)
+[node name="DevWallBrick" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 19, -54)
+mesh = SubResource("Mesh_SecretBrick")
+surface_material_override/0 = ExtResource("9_emissive_gold")
+
+; =============================================================
+; KEY ROOMS x3 — unlocked by star count. Placed as small floating
+; platforms behind the castle, each containing a red coin.
+; =============================================================
+; Key room 1 (3* — green tint)
+[node name="KeyRoom1Floor" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 4, -30)
+mesh = SubResource("Mesh_KeyRoomFloor")
+surface_material_override/0 = ExtResource("18_leaves_green")
+[node name="KeyRoom1Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="KeyRoom1Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 4, -30)
+shape = SubResource("Shape_KeyRoomFloor")
+[node name="KeyRoom1_Area" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 5, -30)
+collision_layer = 0
+collision_mask = 2
+metadata/requires_stars = 3
+metadata/requires_stars_label = 3
+metadata/warp_to = "grass_hub_key_green"
+[node name="Col" type="CollisionShape3D" parent="KeyRoom1_Area"]
+shape = SubResource("Shape_IntDoorPanel")
+
+; Key room 2 (8* — blue tint)
+[node name="KeyRoom2Floor" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 4, -30)
+mesh = SubResource("Mesh_KeyRoomFloor")
+surface_material_override/0 = ExtResource("11_fabric_blue")
+[node name="KeyRoom2Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="KeyRoom2Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 4, -30)
+shape = SubResource("Shape_KeyRoomFloor")
+[node name="KeyRoom2_Area" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 5, -30)
+collision_layer = 0
+collision_mask = 2
+metadata/requires_stars = 8
+metadata/requires_stars_label = 8
+metadata/warp_to = "grass_hub_key_blue"
+[node name="Col" type="CollisionShape3D" parent="KeyRoom2_Area"]
+shape = SubResource("Shape_IntDoorPanel")
+
+; Key room 3 (20* — red tint)
+[node name="KeyRoom3Floor" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -70)
+mesh = SubResource("Mesh_KeyRoomFloor")
+surface_material_override/0 = ExtResource("10_fabric_red")
+[node name="KeyRoom3Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Col" type="CollisionShape3D" parent="KeyRoom3Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -70)
+shape = SubResource("Shape_KeyRoomFloor")
+[node name="KeyRoom3_Area" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, -70)
+collision_layer = 0
+collision_mask = 2
+metadata/requires_stars = 20
+metadata/requires_stars_label = 20
+metadata/warp_to = "grass_hub_key_red"
+[node name="Col" type="CollisionShape3D" parent="KeyRoom3_Area"]
+shape = SubResource("Shape_IntDoorPanel")
+
+; =============================================================
+; SPAWN
+; =============================================================
 [node name="SpawnArea" type="Area3D" parent="."]
 collision_layer = 0
 collision_mask = 0
-metadata/spawn_point = Vector3(0, 1, 10)
+metadata/spawn_point = Vector3(0, 1.0, 16)
 
-; --- Enemies ---
-[node name="BuddyGreeter" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1, 8)
+; =============================================================
+; NPCS — 4 bobomb buddy greeters
+; =============================================================
+[node name="Buddy_PlazaFront" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1, 14)
 metadata/enemy_bhv = "bhvBobombBuddy"
 
-[node name="Goomba_PlazaN" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1, -8)
+[node name="Buddy_PlazaWest" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 1, 22)
+metadata/enemy_bhv = "bhvBobombBuddy"
+
+[node name="Buddy_HallInner" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 1, -12)
+metadata/enemy_bhv = "bhvBobombBuddy"
+
+[node name="Buddy_UpperLanding" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9, -40)
+metadata/enemy_bhv = "bhvBobombBuddy"
+
+; --- Hostile goombas (plaza approach only) ---
+[node name="Goomba_PlazaL" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 1, 14)
+metadata/enemy_bhv = "bhvGoomba"
+[node name="Goomba_PlazaR" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 1, 14)
+metadata/enemy_bhv = "bhvGoomba"
+[node name="Goomba_PlazaFar" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 1, 30)
+metadata/enemy_bhv = "bhvGoomba"
+[node name="Goomba_PlazaPath" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1, 30)
+metadata/enemy_bhv = "bhvGoomba"
+[node name="Goomba_CryptA" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, -8.8, -18)
+metadata/enemy_bhv = "bhvGoomba"
+[node name="Goomba_CryptB" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24, -8.8, -22)
 metadata/enemy_bhv = "bhvGoomba"
 
-[node name="Goomba_PlazaS" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 1, 6)
-metadata/enemy_bhv = "bhvGoomba"
+; --- Cuttlefish drifting above plaza/courtyard ---
+[node name="Cuttlefish_Plaza" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7, 18)
+metadata/enemy_bhv = "bhvCuttlefish"
+[node name="Cuttlefish_West" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 8, 8)
+metadata/enemy_bhv = "bhvCuttlefish"
+[node name="Cuttlefish_East" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 8, 8)
+metadata/enemy_bhv = "bhvCuttlefish"
 
-[node name="Goomba_PlazaE" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1, 3)
-metadata/enemy_bhv = "bhvGoomba"
-
-[node name="Goomba_PlazaW" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 1, -4)
-metadata/enemy_bhv = "bhvGoomba"
-
-[node name="Goomba_ArchL" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 1, -24)
-metadata/enemy_bhv = "bhvGoomba"
-
-[node name="Goomba_ArchR" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1, -24)
-metadata/enemy_bhv = "bhvGoomba"
-
-[node name="Goomba_Tree" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 1, 10)
-metadata/enemy_bhv = "bhvGoomba"
-
-[node name="Goomba_Tree2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1, 10)
-metadata/enemy_bhv = "bhvGoomba"
-
-[node name="Goomba_Hill" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 3, -14)
-metadata/enemy_bhv = "bhvGoomba"
-
-[node name="Koopa_Path" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18, 1, -20)
-metadata/enemy_bhv = "bhvKoopa"
-
-[node name="Koopa_Path2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 1, 20)
-metadata/enemy_bhv = "bhvKoopa"
-
-; --- Coins (yellow ring around plaza) ---
+; =============================================================
+; COINS (yellow, 40+)
+; =============================================================
 [node name="Coin01" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 30)
 metadata/pickup_kind = "coin_yellow"
-
 [node name="Coin02" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.5, 6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 26)
 metadata/pickup_kind = "coin_yellow"
-
 [node name="Coin03" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 9)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 22)
 metadata/pickup_kind = "coin_yellow"
-
 [node name="Coin04" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 1.5, 6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.5, 14)
 metadata/pickup_kind = "coin_yellow"
-
 [node name="Coin05" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1.5, 14)
 metadata/pickup_kind = "coin_yellow"
-
 [node name="Coin06" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 1.5, -6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.5, 22)
 metadata/pickup_kind = "coin_yellow"
-
 [node name="Coin07" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -9)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1.5, 22)
 metadata/pickup_kind = "coin_yellow"
-
 [node name="Coin08" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.5, -6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1.5, 18)
 metadata/pickup_kind = "coin_yellow"
-
-; Path to arch
 [node name="Coin09" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1.5, 18)
 metadata/pickup_kind = "coin_yellow"
-
 [node name="Coin10" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 10)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin11" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 4)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin12" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -2)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin13" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -12)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin14" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -18)
 metadata/pickup_kind = "coin_yellow"
-
-[node name="Coin11" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -24)
-metadata/pickup_kind = "coin_yellow"
-
-; Path east
-[node name="Coin12" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 1.5, 0)
-metadata/pickup_kind = "coin_yellow"
-
-[node name="Coin13" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 1.5, 0)
-metadata/pickup_kind = "coin_yellow"
-
-; Path west
-[node name="Coin14" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 1.5, 0)
-metadata/pickup_kind = "coin_yellow"
-
 [node name="Coin15" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 1.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -26)
 metadata/pickup_kind = "coin_yellow"
-
-; Ramp up to bell tower
 [node name="Coin16" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 1.5, -14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1.5, -24)
 metadata/pickup_kind = "coin_yellow"
-
 [node name="Coin17" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 2.0, -14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1.5, -24)
 metadata/pickup_kind = "coin_yellow"
-
 [node name="Coin18" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 2.5, -14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 1.5, -24)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin19" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 1.5, -24)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin20" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 1.5, -18)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin21" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.5, -18)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin22" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1.5, -34)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin23" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2.5, -36)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin24" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 3.5, -38)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin25" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 4.5, -40)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin26" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 5.5, -41)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin27" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 6.5, -41)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin28" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, -44)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin29" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, -48)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin30" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28, 1.5, 20)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin31" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 1.5, 20)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin32" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 1.5, 16)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin33" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1.5, 16)
+metadata/pickup_kind = "coin_yellow"
+; Reflecting-pool submerged coins
+[node name="Coin34" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0.2, 22)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin35" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0.2, 24)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin36" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0.2, 26)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin37" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0.2, 28)
+metadata/pickup_kind = "coin_yellow"
+; Rooftop trail
+[node name="Coin38" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 17, -30)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin39" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 17, -30)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin40" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 17, -30)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin41" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 17, -40)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin42" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 17, -20)
+metadata/pickup_kind = "coin_yellow"
+; Crypt coins
+[node name="Coin43" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, -8.5, -20)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin44" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18, -8.5, -16)
+metadata/pickup_kind = "coin_yellow"
+[node name="Coin45" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26, -8.5, -24)
 metadata/pickup_kind = "coin_yellow"
 
-; Red coins on the hill rim (challenge set)
+; =============================================================
+; RED COINS (8) — spread throughout the castle for a challenge set
+; =============================================================
 [node name="RedCoin1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 3.0, -8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.0, 18)
 metadata/pickup_kind = "coin_red"
-
 [node name="RedCoin2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27, 3.0, -8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 2.5, -16)
 metadata/pickup_kind = "coin_red"
-
 [node name="RedCoin3" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27, 3.0, -20)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 1.5, -40)
 metadata/pickup_kind = "coin_red"
-
 [node name="RedCoin4" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 3.0, -20)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 1.5, -40)
 metadata/pickup_kind = "coin_red"
-
 [node name="RedCoin5" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 3.0, -6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 17, -50)
 metadata/pickup_kind = "coin_red"
-
 [node name="RedCoin6" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 3.0, -22)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 29, -5)
 metadata/pickup_kind = "coin_red"
-
 [node name="RedCoin7" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 3.0, -14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 29, -5)
 metadata/pickup_kind = "coin_red"
-
 [node name="RedCoin8" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 3.0, -14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26, -8.5, -20)
 metadata/pickup_kind = "coin_red"
 
-; Blue coin above the fountain (ground pound top ring)
-[node name="BlueCoin1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.2, 0)
-metadata/pickup_kind = "coin_blue"
-
-; --- Star on bell tower summit ---
-[node name="Star_BellTower" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 9.2, -14)
+; =============================================================
+; STARS — 1 visible (throne plinth), 2 hidden
+; =============================================================
+[node name="Star_ThronePlinth" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 10.2, -50)
 metadata/pickup_kind = "star"
 
-; --- 1-Up hidden behind fountain ---
-[node name="OneUp_Secret" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, -3.0)
+[node name="Star_Hidden_Attic" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 18.5, -54)
+metadata/pickup_kind = "star"
+
+[node name="Star_Hidden_PoolBottom" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0.4, 24)
+metadata/pickup_kind = "star"
+
+; =============================================================
+; ONE-UPS (4)
+; =============================================================
+[node name="OneUp_BehindFountain" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 24)
+metadata/pickup_kind = "oneup"
+[node name="OneUp_Crypt" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, -8.5, -24)
+metadata/pickup_kind = "oneup"
+[node name="OneUp_SecretShelf" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24.5, 1.5, -18)
+metadata/pickup_kind = "oneup"
+[node name="OneUp_SpireTop" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 29, -5)
 metadata/pickup_kind = "oneup"
 
-; --- Wing cap on archway top (skill-gated) ---
-[node name="WingCap_Arch" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.4, -20)
+; =============================================================
+; CAPS
+; =============================================================
+[node name="WingCap_Rooftop" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 29, -5)
 metadata/pickup_kind = "cap_wing"
+
+[node name="MetalCap_DevRoom" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 18, -54)
+metadata/pickup_kind = "cap_metal"

@@ -147,17 +147,61 @@ func _spawn_markers(level_root: Node) -> void:
             if n.has_meta("warp_to") and n is Area3D:
                 var target_level: String = str(n.get_meta("warp_to"))
                 var area: Area3D = n as Area3D
+                var required_stars: int = 0
+                if n.has_meta("requires_stars"):
+                    required_stars = int(n.get_meta("requires_stars"))
                 # Force mask=1 so Mario's layer-1 body triggers the warp —
-                # the scene authoring set mask=2 which misses everything.
+                # the scene authoring sometimes uses mask=2 which misses.
                 area.collision_mask = 1
+                # Visually dim a locked door so the player reads it as
+                # unreachable. When the count's high enough on re-entry
+                # to the hub, the dim comes off because the scene is
+                # re-instantiated fresh.
+                if required_stars > 0 and mario.star_count < required_stars:
+                    _apply_locked_tint(area)
                 area.body_entered.connect(
                     func(body: Node) -> void:
-                        if body == mario:
-                            call_deferred("load_level", target_level, 1))
+                        if body != mario:
+                            return
+                        if mario.star_count < required_stars:
+                            _show_gate_message(target_level, required_stars)
+                            return
+                        call_deferred("load_level", target_level, 1))
                 spawn_count.warp += 1
     if spawn_count.enemy > 0 or spawn_count.pickup > 0 or spawn_count.warp > 0:
         print("[level_manager] seeded %d enemies, %d pickups, %d warps from scene markers"
               % [spawn_count.enemy, spawn_count.pickup, spawn_count.warp])
+
+
+func _apply_locked_tint(area: Area3D) -> void:
+    # Darken every MeshInstance3D underneath the warp Area3D so the
+    # player visually reads it as a locked door. Applies a one-shot
+    # override material so the underlying scene meshes aren't mutated.
+    for c in _collect_mesh_instances(area):
+        var mat := StandardMaterial3D.new()
+        mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+        mat.albedo_color = Color(0.18, 0.18, 0.22, 1.0)
+        c.material_override = mat
+
+
+func _collect_mesh_instances(root: Node) -> Array:
+    var out: Array = []
+    var queue: Array = [root]
+    while not queue.is_empty():
+        var n: Node = queue.pop_front()
+        if n is MeshInstance3D:
+            out.append(n)
+        for child in n.get_children():
+            queue.append(child)
+    return out
+
+
+func _show_gate_message(level: String, need: int) -> void:
+    print("[gate] %s needs %d stars (you have %d)" % [
+        level, need, mario.star_count,
+    ])
+    if mario != null and mario.has_method("_play_sfx"):
+        mario._play_sfx("hurt")
 
 
 func _find_spawn(level_root: Node) -> Vector3:

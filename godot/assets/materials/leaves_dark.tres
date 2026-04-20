@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://ccc6c6ec9bc8a58c4"]
+
+[resource]
+resource_name = "leaves_dark"
+shading_mode = 0
+albedo_color = Color(0.18, 0.4, 0.15, 1.0)
+

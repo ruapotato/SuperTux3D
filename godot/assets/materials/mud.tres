@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://c589539e9dc2b6aaf"]
+
+[resource]
+resource_name = "mud"
+shading_mode = 0
+albedo_color = Color(0.32, 0.24, 0.15, 1.0)
+

@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://cc8eb017aa4c7be8c"]
+
+[resource]
+resource_name = "leaves_green"
+shading_mode = 0
+albedo_color = Color(0.28, 0.62, 0.22, 1.0)
+

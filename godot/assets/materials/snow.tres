@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://cb94e9f3d7e001981"]
+
+[resource]
+resource_name = "snow"
+shading_mode = 0
+albedo_color = Color(0.97, 0.98, 1.0, 1.0)
+

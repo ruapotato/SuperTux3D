@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://c8c559cd9c5d9d228"]
+
+[resource]
+resource_name = "metal_grey"
+shading_mode = 0
+albedo_color = Color(0.55, 0.58, 0.62, 1.0)
+

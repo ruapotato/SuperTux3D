@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://caaa2bfc38f0c9498"]
+
+[resource]
+resource_name = "brick_red"
+shading_mode = 0
+albedo_color = Color(0.68, 0.28, 0.22, 1.0)
+

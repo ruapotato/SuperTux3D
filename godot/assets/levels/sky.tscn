@@ -1,15 +1,31 @@
-[gd_scene load_steps=34 format=3]
+[gd_scene load_steps=56 format=3]
 
-; SKY — Floating archipelago.
-; Landmarks: Starting Dock Island, Cloud Bank (white emissive discs),
-;   Wind-blown Flag Row, Boss Pillar with star, Triangle Island trio.
-; Tiers: dock / mid island hops / boss pillar top.
-; 9 enemies (piranhas on islands, koopas, 1 chain chomp guard), 30 coins,
-;   pillar-top star, wing cap on island cluster, hidden 1-up under dock.
+; SKY — Sky-islands archipelago above the clouds.
+; Landmarks: Dock Island (spawn, pier + 3 flags + signpost), Stepping
+;   Island Chain (9 islands ascending in a spiral), Cloud Bank (walkable
+;   cloud platforms), Windmill (tower + 4 blades), Spin Platform (mid-
+;   level disc), Boss Pillar (hex pillar with star at summit).
+; Secrets: Under-dock alcove (1up + 2 coins), Cloud tunnel with wing cap,
+;   Skylight (translucent cloud floor with star below), Red coin trail
+;   (8 hardest-reach corners), Pennant chain between islands.
+; Tiers: dock (y≈0) / mid-spiral + windmill + clouds (y≈8-18) /
+;   summit boss pillar (y≈28-34).
+
+[ext_resource type="Material" uid="uid://c5a367661bbff41d7" path="res://assets/materials/stone_mossy.tres" id="1_mossy"]
+[ext_resource type="Material" path="res://assets/materials/stone_grey.tres" id="2_stone"]
+[ext_resource type="Material" path="res://assets/materials/cloud.tres" id="3_cloud"]
+[ext_resource type="Material" path="res://assets/materials/grass_bright.tres" id="4_grass"]
+[ext_resource type="Material" path="res://assets/materials/bark.tres" id="5_bark"]
+[ext_resource type="Material" path="res://assets/materials/wood_planks.tres" id="6_planks"]
+[ext_resource type="Material" path="res://assets/materials/fabric_red.tres" id="7_red"]
+[ext_resource type="Material" path="res://assets/materials/fabric_blue.tres" id="8_blue"]
+[ext_resource type="Material" path="res://assets/materials/fabric_gold.tres" id="9_gold"]
+[ext_resource type="Material" path="res://assets/materials/emissive_cyan.tres" id="10_cyan"]
+[ext_resource type="Material" path="res://assets/materials/sky_day.tres" id="11_sky"]
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_1"]
-sky_top_color = Color(0.45, 0.72, 0.95, 1)
-sky_horizon_color = Color(0.88, 0.92, 1.0, 1)
+sky_top_color = Color(0.38, 0.66, 0.95, 1)
+sky_horizon_color = Color(0.86, 0.94, 1.0, 1)
 ground_bottom_color = Color(0.55, 0.72, 0.88, 1)
 ground_horizon_color = Color(0.78, 0.88, 0.95, 1)
 
@@ -20,275 +36,690 @@ sky_material = SubResource("Sky_1")
 background_mode = 2
 sky = SubResource("Sky_2")
 ambient_light_source = 2
-ambient_light_color = Color(0.85, 0.9, 0.95, 1)
-ambient_light_energy = 1.0
+ambient_light_color = Color(0.88, 0.93, 1.0, 1)
+ambient_light_energy = 1.05
+fog_enabled = true
+fog_light_color = Color(0.9, 0.95, 1.0, 1)
+fog_density = 0.0025
+fog_sun_scatter = 0.2
 
-[sub_resource type="StandardMaterial3D" id="Mat_Grass"]
-shading_mode = 0
-albedo_color = Color(0.42, 0.7, 0.3, 1)
+; --- Island meshes/shapes ---
+[sub_resource type="CylinderMesh" id="Mesh_Dock"]
+material = ExtResource("1_mossy")
+top_radius = 9
+bottom_radius = 11
+height = 2.2
 
-[sub_resource type="StandardMaterial3D" id="Mat_Soil"]
-shading_mode = 0
-albedo_color = Color(0.55, 0.42, 0.28, 1)
-
-[sub_resource type="StandardMaterial3D" id="Mat_Stone"]
-shading_mode = 0
-albedo_color = Color(0.78, 0.75, 0.7, 1)
-
-[sub_resource type="StandardMaterial3D" id="Mat_Cloud"]
-shading_mode = 0
-albedo_color = Color(1.0, 1.0, 1.0, 1)
-emission_enabled = true
-emission = Color(0.95, 0.97, 1.0, 1)
-emission_energy_multiplier = 0.55
-
-[sub_resource type="StandardMaterial3D" id="Mat_FlagPole"]
-shading_mode = 0
-albedo_color = Color(0.45, 0.32, 0.2, 1)
-
-[sub_resource type="StandardMaterial3D" id="Mat_FlagRed"]
-shading_mode = 0
-albedo_color = Color(0.9, 0.25, 0.25, 1)
-
-[sub_resource type="StandardMaterial3D" id="Mat_FlagBlue"]
-shading_mode = 0
-albedo_color = Color(0.25, 0.45, 0.9, 1)
-
-[sub_resource type="StandardMaterial3D" id="Mat_FlagYellow"]
-shading_mode = 0
-albedo_color = Color(0.95, 0.82, 0.2, 1)
-
-[sub_resource type="CylinderMesh" id="Mesh_IslandLarge"]
-material = SubResource("Mat_Grass")
-top_radius = 8
-bottom_radius = 10
-height = 2
-
-[sub_resource type="CylinderShape3D" id="Shape_IslandLarge"]
+[sub_resource type="CylinderShape3D" id="Shape_Dock"]
 radius = 10
-height = 2
+height = 2.2
 
-[sub_resource type="CylinderMesh" id="Mesh_IslandMid"]
-material = SubResource("Mat_Grass")
-top_radius = 5
-bottom_radius = 6
-height = 1.5
+[sub_resource type="CylinderMesh" id="Mesh_IslandWide"]
+material = ExtResource("1_mossy")
+top_radius = 4.0
+bottom_radius = 4.8
+height = 1.6
 
-[sub_resource type="CylinderShape3D" id="Shape_IslandMid"]
-radius = 6
-height = 1.5
+[sub_resource type="CylinderShape3D" id="Shape_IslandWide"]
+radius = 4.4
+height = 1.6
 
-[sub_resource type="CylinderMesh" id="Mesh_IslandSmall"]
-material = SubResource("Mat_Grass")
-top_radius = 3
-bottom_radius = 3.5
-height = 1.2
+[sub_resource type="CylinderMesh" id="Mesh_IslandNarrow"]
+material = ExtResource("1_mossy")
+top_radius = 2.2
+bottom_radius = 2.6
+height = 1.4
 
-[sub_resource type="CylinderShape3D" id="Shape_IslandSmall"]
-radius = 3.5
-height = 1.2
+[sub_resource type="CylinderShape3D" id="Shape_IslandNarrow"]
+radius = 2.4
+height = 1.4
 
-[sub_resource type="PrismMesh" id="Mesh_Triangle"]
-material = SubResource("Mat_Soil")
-size = Vector3(6, 3, 6)
+[sub_resource type="CylinderMesh" id="Mesh_GrassCap"]
+material = ExtResource("4_grass")
+top_radius = 4.0
+bottom_radius = 4.0
+height = 0.12
 
-[sub_resource type="BoxShape3D" id="Shape_Triangle"]
-size = Vector3(6, 3, 6)
+[sub_resource type="CylinderMesh" id="Mesh_GrassCapNarrow"]
+material = ExtResource("4_grass")
+top_radius = 2.2
+bottom_radius = 2.2
+height = 0.12
 
-[sub_resource type="CylinderMesh" id="Mesh_BossPillar"]
-material = SubResource("Mat_Stone")
-top_radius = 5
-bottom_radius = 7
-height = 14
+[sub_resource type="CylinderMesh" id="Mesh_GrassCapDock"]
+material = ExtResource("4_grass")
+top_radius = 9
+bottom_radius = 9
+height = 0.15
 
-[sub_resource type="CylinderShape3D" id="Shape_BossPillar"]
-radius = 7
-height = 14
+; --- Pier (wooden planks extending off dock) ---
+[sub_resource type="BoxMesh" id="Mesh_Pier"]
+material = ExtResource("6_planks")
+size = Vector3(2.4, 0.3, 8.0)
 
-[sub_resource type="CylinderMesh" id="Mesh_BossPlat"]
-material = SubResource("Mat_Stone")
-top_radius = 6.5
-bottom_radius = 6.5
-height = 1.0
+[sub_resource type="BoxShape3D" id="Shape_Pier"]
+size = Vector3(2.4, 0.3, 8.0)
 
-[sub_resource type="CylinderShape3D" id="Shape_BossPlat"]
-radius = 6.5
-height = 1.0
+[sub_resource type="CylinderMesh" id="Mesh_PierPost"]
+material = ExtResource("5_bark")
+top_radius = 0.18
+bottom_radius = 0.22
+height = 2.0
 
-[sub_resource type="SphereMesh" id="Mesh_Cloud"]
-material = SubResource("Mat_Cloud")
-radius = 3.5
-height = 2.5
-
+; --- Flag poles and fabric ---
 [sub_resource type="CylinderMesh" id="Mesh_FlagPole"]
-material = SubResource("Mat_FlagPole")
-top_radius = 0.1
-bottom_radius = 0.12
-height = 3.5
+material = ExtResource("5_bark")
+top_radius = 0.08
+bottom_radius = 0.1
+height = 4.0
 
 [sub_resource type="CylinderShape3D" id="Shape_FlagPole"]
 radius = 0.12
-height = 3.5
+height = 4.0
 
 [sub_resource type="BoxMesh" id="Mesh_FlagR"]
-material = SubResource("Mat_FlagRed")
-size = Vector3(1.6, 1.0, 0.05)
+material = ExtResource("7_red")
+size = Vector3(1.8, 1.1, 0.05)
 
 [sub_resource type="BoxMesh" id="Mesh_FlagB"]
-material = SubResource("Mat_FlagBlue")
-size = Vector3(1.6, 1.0, 0.05)
+material = ExtResource("8_blue")
+size = Vector3(1.8, 1.1, 0.05)
 
-[sub_resource type="BoxMesh" id="Mesh_FlagY"]
-material = SubResource("Mat_FlagYellow")
-size = Vector3(1.6, 1.0, 0.05)
+[sub_resource type="BoxMesh" id="Mesh_FlagG"]
+material = ExtResource("9_gold")
+size = Vector3(1.8, 1.1, 0.05)
 
+; --- Signpost ---
+[sub_resource type="BoxMesh" id="Mesh_SignPost"]
+material = ExtResource("5_bark")
+size = Vector3(0.18, 1.4, 0.18)
+
+[sub_resource type="BoxMesh" id="Mesh_SignBoard"]
+material = ExtResource("6_planks")
+size = Vector3(1.2, 0.7, 0.08)
+
+; --- Cloud discs (walkable) ---
+[sub_resource type="CylinderMesh" id="Mesh_CloudDisc"]
+material = ExtResource("3_cloud")
+top_radius = 3.5
+bottom_radius = 3.5
+height = 0.8
+
+[sub_resource type="CylinderShape3D" id="Shape_CloudDisc"]
+radius = 3.5
+height = 0.8
+
+[sub_resource type="CylinderMesh" id="Mesh_CloudBig"]
+material = ExtResource("3_cloud")
+top_radius = 5.5
+bottom_radius = 5.5
+height = 1.0
+
+[sub_resource type="CylinderShape3D" id="Shape_CloudBig"]
+radius = 5.5
+height = 1.0
+
+[sub_resource type="SphereMesh" id="Mesh_CloudPuff"]
+material = ExtResource("3_cloud")
+radius = 2.4
+height = 3.0
+
+; --- Windmill ---
+[sub_resource type="CylinderMesh" id="Mesh_WindmillTower"]
+material = ExtResource("5_bark")
+top_radius = 0.7
+bottom_radius = 1.1
+height = 9.0
+
+[sub_resource type="CylinderShape3D" id="Shape_WindmillTower"]
+radius = 1.1
+height = 9.0
+
+[sub_resource type="CylinderMesh" id="Mesh_WindmillCap"]
+material = ExtResource("6_planks")
+top_radius = 0.2
+bottom_radius = 1.3
+height = 1.2
+
+[sub_resource type="CylinderShape3D" id="Shape_WindmillCap"]
+radius = 1.3
+height = 1.2
+
+[sub_resource type="PrismMesh" id="Mesh_Blade"]
+material = ExtResource("6_planks")
+size = Vector3(0.6, 4.2, 0.15)
+
+; --- Spin platform (mid-way disc) ---
+[sub_resource type="CylinderMesh" id="Mesh_SpinDisc"]
+material = ExtResource("2_stone")
+top_radius = 4.5
+bottom_radius = 4.5
+height = 0.6
+
+[sub_resource type="CylinderShape3D" id="Shape_SpinDisc"]
+radius = 4.5
+height = 0.6
+
+[sub_resource type="CylinderMesh" id="Mesh_SpinHub"]
+material = ExtResource("10_cyan")
+top_radius = 0.8
+bottom_radius = 0.8
+height = 0.9
+
+[sub_resource type="BoxMesh" id="Mesh_SpinSpoke"]
+material = ExtResource("10_cyan")
+size = Vector3(4.0, 0.15, 0.25)
+
+; --- Boss pillar (hex via prism) ---
+[sub_resource type="PrismMesh" id="Mesh_BossPillar"]
+material = ExtResource("2_stone")
+size = Vector3(7, 16, 7)
+
+[sub_resource type="BoxShape3D" id="Shape_BossPillar"]
+size = Vector3(7, 16, 7)
+
+[sub_resource type="CylinderMesh" id="Mesh_BossCap"]
+material = ExtResource("1_mossy")
+top_radius = 4.5
+bottom_radius = 5.0
+height = 0.8
+
+[sub_resource type="CylinderShape3D" id="Shape_BossCap"]
+radius = 5.0
+height = 0.8
+
+; --- Pennant (small triangular flag) ---
+[sub_resource type="PrismMesh" id="Mesh_Pennant"]
+material = ExtResource("9_gold")
+size = Vector3(0.6, 0.4, 0.04)
+
+; --- Wind visual (emissive cyan ring) ---
+[sub_resource type="TorusMesh" id="Mesh_WindRing"]
+material = ExtResource("10_cyan")
+inner_radius = 1.4
+outer_radius = 1.8
+
+; --- Skylight translucent floor ---
+[sub_resource type="CylinderMesh" id="Mesh_Skylight"]
+material = ExtResource("3_cloud")
+top_radius = 4.0
+bottom_radius = 4.0
+height = 0.3
+
+[sub_resource type="CylinderShape3D" id="Shape_Skylight"]
+radius = 4.0
+height = 0.3
+
+; =====================================================================
 [node name="LevelRoot" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Env_1")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 60, 0)
-light_energy = 1.15
+transform = Transform3D(0.866, -0.3, 0.4, 0, 0.8, 0.6, -0.5, -0.52, 0.69, 0, 60, 0)
+light_energy = 1.2
+shadow_enabled = true
 
-; --- Starting Dock Island (landmark) ---
+; ---------------------------------------------------------------------
+; DOCK ISLAND (spawn) — biggest, safest, at south of map
+; ---------------------------------------------------------------------
 [node name="DockMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20, 30)
-mesh = SubResource("Mesh_IslandLarge")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 16)
+mesh = SubResource("Mesh_Dock")
+
+[node name="DockGrass" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 16)
+mesh = SubResource("Mesh_GrassCapDock")
 
 [node name="DockBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
 [node name="Col" type="CollisionShape3D" parent="DockBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20, 30)
-shape = SubResource("Shape_IslandLarge")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 16)
+shape = SubResource("Shape_Dock")
 
-; Mid islands (hops)
+; Wooden pier extending from dock toward the spire
+[node name="PierMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 8.0)
+mesh = SubResource("Mesh_Pier")
+
+[node name="PierBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="PierBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 8.0)
+shape = SubResource("Shape_Pier")
+
+[node name="PierPost1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1, 0.1, 5.2)
+mesh = SubResource("Mesh_PierPost")
+
+[node name="PierPost2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1, 0.1, 5.2)
+mesh = SubResource("Mesh_PierPost")
+
+[node name="PierPost3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1, 0.1, 10.8)
+mesh = SubResource("Mesh_PierPost")
+
+[node name="PierPost4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1, 0.1, 10.8)
+mesh = SubResource("Mesh_PierPost")
+
+; Three colored flags on dock (red, blue, gold)
+[node name="FlagPoleR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 3.1, 18)
+mesh = SubResource("Mesh_FlagPole")
+
+[node name="FlagPoleRBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="FlagPoleRBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 3.1, 18)
+shape = SubResource("Shape_FlagPole")
+
+[node name="FlagR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 4.2, 18)
+mesh = SubResource("Mesh_FlagR")
+
+[node name="FlagPoleB" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.1, 21)
+mesh = SubResource("Mesh_FlagPole")
+
+[node name="FlagPoleBBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="FlagPoleBBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.1, 21)
+shape = SubResource("Shape_FlagPole")
+
+[node name="FlagB" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0, 4.2, 21)
+mesh = SubResource("Mesh_FlagB")
+
+[node name="FlagPoleG" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 3.1, 18)
+mesh = SubResource("Mesh_FlagPole")
+
+[node name="FlagPoleGBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="FlagPoleGBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 3.1, 18)
+shape = SubResource("Shape_FlagPole")
+
+[node name="FlagG" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 4.2, 18)
+mesh = SubResource("Mesh_FlagG")
+
+; Signpost at dock entry (faces pier)
+[node name="SignPost" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.0, 1.9, 12.5)
+mesh = SubResource("Mesh_SignPost")
+
+[node name="SignBoard" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.0, 2.7, 12.5)
+mesh = SubResource("Mesh_SignBoard")
+
+; ---------------------------------------------------------------------
+; STEPPING ISLAND CHAIN — 9 islands spiraling upward and around
+; ---------------------------------------------------------------------
+; Isle1: wide, y=4, east-ish. Single-jump reach from pier tip.
 [node name="Isle1Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 21, 20)
-mesh = SubResource("Mesh_IslandMid")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 4, 2)
+mesh = SubResource("Mesh_IslandWide")
+
+[node name="Isle1Grass" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 4.86, 2)
+mesh = SubResource("Mesh_GrassCap")
 
 [node name="Isle1Body" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
 [node name="Col" type="CollisionShape3D" parent="Isle1Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 21, 20)
-shape = SubResource("Shape_IslandMid")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 4, 2)
+shape = SubResource("Shape_IslandWide")
 
+; Isle2: narrow, y=8, south-west of Isle1
 [node name="Isle2Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 22, 20)
-mesh = SubResource("Mesh_IslandMid")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 8, -5)
+mesh = SubResource("Mesh_IslandNarrow")
+
+[node name="Isle2Grass" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 8.76, -5)
+mesh = SubResource("Mesh_GrassCapNarrow")
 
 [node name="Isle2Body" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
 [node name="Col" type="CollisionShape3D" parent="Isle2Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 22, 20)
-shape = SubResource("Shape_IslandMid")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 8, -5)
+shape = SubResource("Shape_IslandNarrow")
 
+; Isle3: wide, y=12, north-east of Isle2 (long-jump spacing — 9m)
 [node name="Isle3Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 22, 10)
-mesh = SubResource("Mesh_IslandMid")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 12, -12)
+mesh = SubResource("Mesh_IslandWide")
+
+[node name="Isle3Grass" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 12.86, -12)
+mesh = SubResource("Mesh_GrassCap")
 
 [node name="Isle3Body" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
 [node name="Col" type="CollisionShape3D" parent="Isle3Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 22, 10)
-shape = SubResource("Shape_IslandMid")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 12, -12)
+shape = SubResource("Shape_IslandWide")
 
+; Isle4: narrow, y=14, ring-inside (spiral turns west)
 [node name="Isle4Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 23, 5)
-mesh = SubResource("Mesh_IslandSmall")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 14, -18)
+mesh = SubResource("Mesh_IslandNarrow")
+
+[node name="Isle4Grass" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 14.76, -18)
+mesh = SubResource("Mesh_GrassCapNarrow")
 
 [node name="Isle4Body" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
 [node name="Col" type="CollisionShape3D" parent="Isle4Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 23, 5)
-shape = SubResource("Shape_IslandSmall")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 14, -18)
+shape = SubResource("Shape_IslandNarrow")
 
+; Isle5: wide, y=17, WEST — this is the SPIN PLATFORM location (mid arena)
+; See SpinDisc further down; Isle5 proper is placed at y=17 further west.
 [node name="Isle5Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 23, 5)
-mesh = SubResource("Mesh_IslandSmall")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 17, -16)
+mesh = SubResource("Mesh_IslandWide")
+
+[node name="Isle5Grass" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 17.86, -16)
+mesh = SubResource("Mesh_GrassCap")
 
 [node name="Isle5Body" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
 [node name="Col" type="CollisionShape3D" parent="Isle5Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 23, 5)
-shape = SubResource("Shape_IslandSmall")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 17, -16)
+shape = SubResource("Shape_IslandWide")
 
+; Isle6: narrow, y=21, further west (long-jump — 8m gap)
 [node name="Isle6Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 24, -8)
-mesh = SubResource("Mesh_IslandSmall")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 21, -10)
+mesh = SubResource("Mesh_IslandNarrow")
+
+[node name="Isle6Grass" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 21.76, -10)
+mesh = SubResource("Mesh_GrassCapNarrow")
 
 [node name="Isle6Body" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
 [node name="Col" type="CollisionShape3D" parent="Isle6Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 24, -8)
-shape = SubResource("Shape_IslandSmall")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 21, -10)
+shape = SubResource("Shape_IslandNarrow")
 
+; Isle7: narrow, y=24
 [node name="Isle7Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 24, -8)
-mesh = SubResource("Mesh_IslandSmall")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 24, -20)
+mesh = SubResource("Mesh_IslandNarrow")
+
+[node name="Isle7Grass" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 24.76, -20)
+mesh = SubResource("Mesh_GrassCapNarrow")
 
 [node name="Isle7Body" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
 [node name="Col" type="CollisionShape3D" parent="Isle7Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 24, -8)
-shape = SubResource("Shape_IslandSmall")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 24, -20)
+shape = SubResource("Shape_IslandNarrow")
 
-; Triangle islands trio (skill-gated - need long jump between)
-[node name="TriA" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 24, 12)
-mesh = SubResource("Mesh_Triangle")
+; Isle8: wide, y=27
+[node name="Isle8Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 27, -28)
+mesh = SubResource("Mesh_IslandWide")
 
-[node name="TriABody" type="StaticBody3D" parent="."]
+[node name="Isle8Grass" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 27.86, -28)
+mesh = SubResource("Mesh_GrassCap")
+
+[node name="Isle8Body" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
-[node name="Col" type="CollisionShape3D" parent="TriABody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 24, 12)
-shape = SubResource("Shape_Triangle")
+[node name="Col" type="CollisionShape3D" parent="Isle8Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 27.86, -28)
+shape = SubResource("Shape_IslandWide")
 
-[node name="TriB" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28, 26, 2)
-mesh = SubResource("Mesh_Triangle")
+; Isle9: narrow final stepping stone, y=30 — last hop before pillar-top
+[node name="Isle9Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 30, -32)
+mesh = SubResource("Mesh_IslandNarrow")
 
-[node name="TriBBody" type="StaticBody3D" parent="."]
+[node name="Isle9Body" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
-[node name="Col" type="CollisionShape3D" parent="TriBBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28, 26, 2)
-shape = SubResource("Shape_Triangle")
+[node name="Col" type="CollisionShape3D" parent="Isle9Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 30, -32)
+shape = SubResource("Shape_IslandNarrow")
 
-[node name="TriC" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 26, 12)
-mesh = SubResource("Mesh_Triangle")
+; ---------------------------------------------------------------------
+; CLOUD BANK — cluster of walkable cloud discs, "default" surface
+; ---------------------------------------------------------------------
+[node name="CloudDisc1Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 10, 4)
+mesh = SubResource("Mesh_CloudDisc")
 
-[node name="TriCBody" type="StaticBody3D" parent="."]
+[node name="CloudDisc1Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+metadata/surface_kind = "default"
+
+[node name="Col" type="CollisionShape3D" parent="CloudDisc1Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 10, 4)
+shape = SubResource("Shape_CloudDisc")
+
+[node name="CloudDisc2Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 12, -2)
+mesh = SubResource("Mesh_CloudBig")
+
+[node name="CloudDisc2Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+metadata/surface_kind = "default"
+
+[node name="Col" type="CollisionShape3D" parent="CloudDisc2Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 12, -2)
+shape = SubResource("Shape_CloudBig")
+
+[node name="CloudDisc3Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 13, 6)
+mesh = SubResource("Mesh_CloudDisc")
+
+[node name="CloudDisc3Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+metadata/surface_kind = "default"
+
+[node name="Col" type="CollisionShape3D" parent="CloudDisc3Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 13, 6)
+shape = SubResource("Shape_CloudDisc")
+
+; Decorative cloud puffs (non-solid, drift visuals)
+[node name="CloudPuff1" type="MeshInstance3D" parent="."]
+transform = Transform3D(2.5, 0, 0, 0, 0.8, 0, 0, 0, 2, 22, 14, 6)
+mesh = SubResource("Mesh_CloudPuff")
+
+[node name="CloudPuff2" type="MeshInstance3D" parent="."]
+transform = Transform3D(3, 0, 0, 0, 0.9, 0, 0, 0, 2.4, 18, 20, -24)
+mesh = SubResource("Mesh_CloudPuff")
+
+[node name="CloudPuff3" type="MeshInstance3D" parent="."]
+transform = Transform3D(2.2, 0, 0, 0, 0.7, 0, 0, 0, 1.8, -28, 22, -12)
+mesh = SubResource("Mesh_CloudPuff")
+
+[node name="CloudPuff4" type="MeshInstance3D" parent="."]
+transform = Transform3D(2.6, 0, 0, 0, 0.8, 0, 0, 0, 2, 14, 28, -36)
+mesh = SubResource("Mesh_CloudPuff")
+
+; ---------------------------------------------------------------------
+; CLOUD TUNNEL (secret) — cluster of cloud puffs hiding a wing cap
+; Concealed passage at +x, y~15, between CloudDisc3 and the spiral
+; ---------------------------------------------------------------------
+[node name="TunnelPuff1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.6, 0, 0, 0, 1.0, 0, 0, 0, 1.6, 2, 15, -6)
+mesh = SubResource("Mesh_CloudPuff")
+
+[node name="TunnelPuff2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.6, 0, 0, 0, 1.0, 0, 0, 0, 1.6, 6, 15, -6)
+mesh = SubResource("Mesh_CloudPuff")
+
+[node name="TunnelPuff3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.6, 0, 0, 0, 1.0, 0, 0, 0, 1.6, 4, 17, -6)
+mesh = SubResource("Mesh_CloudPuff")
+
+; Tiny solid cloud floor inside the tunnel — you stand on it to grab the wing cap
+[node name="TunnelFloorMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 14.5, -6)
+mesh = SubResource("Mesh_CloudDisc")
+
+[node name="TunnelFloorBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+metadata/surface_kind = "default"
+
+[node name="Col" type="CollisionShape3D" parent="TunnelFloorBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 14.5, -6)
+shape = SubResource("Shape_CloudDisc")
+
+; ---------------------------------------------------------------------
+; SKYLIGHT SECRET — translucent cloud floor; star visible below
+; ---------------------------------------------------------------------
+[node name="SkylightMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 18, -14)
+mesh = SubResource("Mesh_Skylight")
+
+[node name="SkylightBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+metadata/surface_kind = "default"
+
+[node name="Col" type="CollisionShape3D" parent="SkylightBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 18, -14)
+shape = SubResource("Shape_Skylight")
+
+; The hidden star sits below the skylight on a tiny cloud shelf
+[node name="SkylightShelfMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.7, 0, 0, 0, 1, 0, 0, 0, 0.7, -22, 12, -14)
+mesh = SubResource("Mesh_CloudDisc")
+
+[node name="SkylightShelfBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+metadata/surface_kind = "default"
+
+[node name="Col" type="CollisionShape3D" parent="SkylightShelfBody"]
+transform = Transform3D(0.7, 0, 0, 0, 1, 0, 0, 0, 0.7, -22, 12, -14)
+shape = SubResource("Shape_CloudDisc")
+
+; ---------------------------------------------------------------------
+; WINDMILL — tall wooden tower with 4 prism blades. 1up on top.
+; ---------------------------------------------------------------------
+[node name="WindmillTowerMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 9.5, 2)
+mesh = SubResource("Mesh_WindmillTower")
+
+[node name="WindmillTowerBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
-[node name="Col" type="CollisionShape3D" parent="TriCBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 26, 12)
-shape = SubResource("Shape_Triangle")
+[node name="Col" type="CollisionShape3D" parent="WindmillTowerBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 9.5, 2)
+shape = SubResource("Shape_WindmillTower")
 
-; Boss Pillar (with star on top)
+[node name="WindmillCapMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 14.6, 2)
+mesh = SubResource("Mesh_WindmillCap")
+
+[node name="WindmillCapBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="WindmillCapBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 14.6, 2)
+shape = SubResource("Shape_WindmillCap")
+
+; 4 blades radiating from the cap (90° apart)
+[node name="Blade1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 16.9, 2)
+mesh = SubResource("Mesh_Blade")
+
+[node name="Blade2" type="MeshInstance3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, -1, 0, 0, 0, 1, -22, 12.3, 2)
+mesh = SubResource("Mesh_Blade")
+
+[node name="Blade3" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -19.7, 14.6, 2)
+mesh = SubResource("Mesh_Blade")
+
+[node name="Blade4" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -24.3, 14.6, 2)
+mesh = SubResource("Mesh_Blade")
+
+; Wind visual ring around the cap
+[node name="WindRing" type="MeshInstance3D" parent="."]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, -22, 14.6, 2)
+mesh = SubResource("Mesh_WindRing")
+
+; ---------------------------------------------------------------------
+; SPIN PLATFORM — big circular disc mid-way up (between isle4 & isle5)
+; ---------------------------------------------------------------------
+[node name="SpinDiscMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 15, -22)
+mesh = SubResource("Mesh_SpinDisc")
+
+[node name="SpinDiscBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Col" type="CollisionShape3D" parent="SpinDiscBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 15, -22)
+shape = SubResource("Shape_SpinDisc")
+
+[node name="SpinHubMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 15.6, -22)
+mesh = SubResource("Mesh_SpinHub")
+
+[node name="SpinSpoke1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 15.55, -22)
+mesh = SubResource("Mesh_SpinSpoke")
+
+[node name="SpinSpoke2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 2, 15.55, -22)
+mesh = SubResource("Mesh_SpinSpoke")
+
+; ---------------------------------------------------------------------
+; BOSS PILLAR — hex pillar at the summit, with star on top
+; ---------------------------------------------------------------------
 [node name="BossPillarMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 25, -30)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 20, -40)
 mesh = SubResource("Mesh_BossPillar")
 
 [node name="BossPillarBody" type="StaticBody3D" parent="."]
@@ -296,274 +727,375 @@ collision_layer = 1
 collision_mask = 1
 
 [node name="Col" type="CollisionShape3D" parent="BossPillarBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 25, -30)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 20, -40)
 shape = SubResource("Shape_BossPillar")
 
-[node name="BossPlatMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 32.5, -30)
-mesh = SubResource("Mesh_BossPlat")
+[node name="BossCapMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 28.4, -40)
+mesh = SubResource("Mesh_BossCap")
 
-[node name="BossPlatBody" type="StaticBody3D" parent="."]
+[node name="BossCapBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 
-[node name="Col" type="CollisionShape3D" parent="BossPlatBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 32.5, -30)
-shape = SubResource("Shape_BossPlat")
+[node name="Col" type="CollisionShape3D" parent="BossCapBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 28.4, -40)
+shape = SubResource("Shape_BossCap")
 
-; Cloud Bank (non-solid decor)
-[node name="Cloud1" type="MeshInstance3D" parent="."]
-transform = Transform3D(2, 0, 0, 0, 0.5, 0, 0, 0, 1.5, -25, 28, -20)
-mesh = SubResource("Mesh_Cloud")
+; Gold fabric banner at pillar top (flavor beacon)
+[node name="SummitBanner" type="MeshInstance3D" parent="."]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 1, 14, 30.6, -40)
+mesh = SubResource("Mesh_FlagG")
 
-[node name="Cloud2" type="MeshInstance3D" parent="."]
-transform = Transform3D(2.5, 0, 0, 0, 0.6, 0, 0, 0, 2, 22, 30, -15)
-mesh = SubResource("Mesh_Cloud")
+; ---------------------------------------------------------------------
+; PENNANT CHAIN (decorative gold triangles between islands)
+; ---------------------------------------------------------------------
+[node name="Pennant1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 3.2, 9)
+mesh = SubResource("Mesh_Pennant")
 
-[node name="Cloud3" type="MeshInstance3D" parent="."]
-transform = Transform3D(3, 0, 0, 0, 0.6, 0, 0, 0, 2.5, 0, 38, 30)
-mesh = SubResource("Mesh_Cloud")
+[node name="Pennant2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 6, -1)
+mesh = SubResource("Mesh_Pennant")
 
-[node name="Cloud4" type="MeshInstance3D" parent="."]
-transform = Transform3D(2, 0, 0, 0, 0.5, 0, 0, 0, 1.6, -35, 32, 0)
-mesh = SubResource("Mesh_Cloud")
+[node name="Pennant3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 10, -8)
+mesh = SubResource("Mesh_Pennant")
 
-[node name="Cloud5" type="MeshInstance3D" parent="."]
-transform = Transform3D(1.8, 0, 0, 0, 0.5, 0, 0, 0, 1.4, 35, 30, 30)
-mesh = SubResource("Mesh_Cloud")
+[node name="Pennant4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 13, -15)
+mesh = SubResource("Mesh_Pennant")
 
-; Wind-blown Flag Row on dock
-[node name="FlagPole1" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 22.75, 30)
-mesh = SubResource("Mesh_FlagPole")
+[node name="Pennant5" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 15.5, -19)
+mesh = SubResource("Mesh_Pennant")
 
-[node name="FlagPole1Body" type="StaticBody3D" parent="."]
-collision_layer = 1
-collision_mask = 1
+[node name="Pennant6" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 19, -18)
+mesh = SubResource("Mesh_Pennant")
 
-[node name="Col" type="CollisionShape3D" parent="FlagPole1Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 22.75, 30)
-shape = SubResource("Shape_FlagPole")
+[node name="Pennant7" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 23, -22)
+mesh = SubResource("Mesh_Pennant")
 
-[node name="Flag1" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 24, 30)
-mesh = SubResource("Mesh_FlagR")
+[node name="Pennant8" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 26, -30)
+mesh = SubResource("Mesh_Pennant")
 
-[node name="FlagPole2" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 22.75, 30)
-mesh = SubResource("Mesh_FlagPole")
+[node name="Pennant9" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 29, -34)
+mesh = SubResource("Mesh_Pennant")
 
-[node name="FlagPole2Body" type="StaticBody3D" parent="."]
-collision_layer = 1
-collision_mask = 1
+[node name="Pennant10" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 30.5, -37)
+mesh = SubResource("Mesh_Pennant")
 
-[node name="Col" type="CollisionShape3D" parent="FlagPole2Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 22.75, 30)
-shape = SubResource("Shape_FlagPole")
-
-[node name="Flag2" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 24, 30)
-mesh = SubResource("Mesh_FlagB")
-
-[node name="FlagPole3" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 22.75, 30)
-mesh = SubResource("Mesh_FlagPole")
-
-[node name="FlagPole3Body" type="StaticBody3D" parent="."]
-collision_layer = 1
-collision_mask = 1
-
-[node name="Col" type="CollisionShape3D" parent="FlagPole3Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 22.75, 30)
-shape = SubResource("Shape_FlagPole")
-
-[node name="Flag3" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 24, 30)
-mesh = SubResource("Mesh_FlagY")
-
-; Spawn on dock
+; ---------------------------------------------------------------------
+; SPAWN POINT — on the dock
+; ---------------------------------------------------------------------
 [node name="SpawnArea" type="Area3D" parent="."]
 collision_layer = 0
 collision_mask = 0
-metadata/spawn_point = Vector3(0, 22, 32)
+metadata/spawn_point = Vector3(0, 2.0, 16.0)
 
-; Enemies
-[node name="Piranha_Isle1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 22, 20)
-metadata/enemy_bhv = "bhvPiranhaPlant"
+; ---------------------------------------------------------------------
+; ENEMIES
+; ---------------------------------------------------------------------
+; 2 goombas on the dock (easy intro)
+[node name="Goomba_Dock1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 2.2, 14)
+metadata/enemy_bhv = "bhvGoomba"
 
-[node name="Piranha_Isle2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 23, 20)
-metadata/enemy_bhv = "bhvPiranhaPlant"
+[node name="Goomba_Dock2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 2.2, 20)
+metadata/enemy_bhv = "bhvGoomba"
 
-[node name="Piranha_Isle3" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 23, 10)
-metadata/enemy_bhv = "bhvPiranhaPlant"
+; BobombBuddy on the dock (tips)
+[node name="Buddy_Dock" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 14)
+metadata/enemy_bhv = "bhvBobombBuddy"
 
-[node name="Piranha_TriA" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 26, 12)
-metadata/enemy_bhv = "bhvPiranhaPlant"
-
-[node name="Koopa_Dock1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 21.5, 30)
+; 3 koopas on wide islands
+[node name="Koopa_Isle1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 5, 2)
 metadata/enemy_bhv = "bhvKoopa"
 
-[node name="Koopa_Dock2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 21.5, 32)
+[node name="Koopa_Isle3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 13, -12)
 metadata/enemy_bhv = "bhvKoopa"
 
-[node name="Koopa_Isle5" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 24, 5)
+[node name="Koopa_Isle8" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 28, -28)
 metadata/enemy_bhv = "bhvKoopa"
 
-[node name="Koopa_Isle6" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 25, -8)
-metadata/enemy_bhv = "bhvKoopa"
+; 3 piranha plants (sky-flowers rooted in cloud-tops)
+[node name="Piranha_CloudBig" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 12.6, -2)
+metadata/enemy_bhv = "bhvPiranhaPlant"
 
-[node name="ChainChomp_BossGuard" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 33.5, -30)
+[node name="Piranha_Cloud1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 10.5, 4)
+metadata/enemy_bhv = "bhvPiranhaPlant"
+
+[node name="Piranha_SpinDisc" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 15.4, -22)
+metadata/enemy_bhv = "bhvPiranhaPlant"
+
+; 6 cuttlefish (thematic aerial predators — scattered through the void)
+[node name="Cuttle1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 7, 0)
+metadata/enemy_bhv = "bhvCuttlefish"
+
+[node name="Cuttle2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 11, -10)
+metadata/enemy_bhv = "bhvCuttlefish"
+
+[node name="Cuttle3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 14, -6)
+metadata/enemy_bhv = "bhvCuttlefish"
+
+[node name="Cuttle4" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 19, -22)
+metadata/enemy_bhv = "bhvCuttlefish"
+
+[node name="Cuttle5" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 22, -16)
+metadata/enemy_bhv = "bhvCuttlefish"
+
+[node name="Cuttle6" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 26, -34)
+metadata/enemy_bhv = "bhvCuttlefish"
+
+; Chain chomp guarding the boss pillar top
+[node name="ChainChomp_Boss" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 29.2, -40)
 metadata/enemy_bhv = "bhvChainChomp"
 
-; Yellow coins on dock
+; ---------------------------------------------------------------------
+; COINS — yellow (lighting jump arcs)
+; ---------------------------------------------------------------------
+; Dock area starter coins
 [node name="CoinD1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 22, 34)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 2.5, 14)
 metadata/pickup_kind = "coin_yellow"
 
 [node name="CoinD2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 22, 34)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.5, 14)
 metadata/pickup_kind = "coin_yellow"
 
 [node name="CoinD3" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 22, 26)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7, 10)
 metadata/pickup_kind = "coin_yellow"
 
 [node name="CoinD4" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 22, 26)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7, 6)
 metadata/pickup_kind = "coin_yellow"
 
-; Long-jump trail across isles
-[node name="CoinI1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 22, 25)
+; Arc from dock to Isle1
+[node name="CoinArc1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 3.5, 4)
 metadata/pickup_kind = "coin_yellow"
 
-[node name="CoinI2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 22, 20)
+[node name="CoinArc2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 4.5, 3)
 metadata/pickup_kind = "coin_yellow"
 
-[node name="CoinI3" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 22.5, 15)
+; Isle1 coins
+[node name="CoinIsle1a" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 5.3, 2)
 metadata/pickup_kind = "coin_yellow"
 
-[node name="CoinI4" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 23, 10)
+; Arc to Isle2 (long-jump arc)
+[node name="CoinArc3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 6.5, -1)
 metadata/pickup_kind = "coin_yellow"
 
-[node name="CoinI5" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 23, 8)
+[node name="CoinArc4" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 7.5, -3)
 metadata/pickup_kind = "coin_yellow"
 
-[node name="CoinI6" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 23, 20)
+[node name="CoinIsle2a" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 9, -5)
 metadata/pickup_kind = "coin_yellow"
 
-[node name="CoinI7" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 24, 5)
+; Arc Isle2 → Isle3
+[node name="CoinArc5" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 10, -8)
 metadata/pickup_kind = "coin_yellow"
 
-[node name="CoinI8" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 24, 5)
+[node name="CoinArc6" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 11, -10)
 metadata/pickup_kind = "coin_yellow"
 
-[node name="CoinI9" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 25, -8)
+[node name="CoinIsle3a" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 13, -12)
 metadata/pickup_kind = "coin_yellow"
 
-[node name="CoinI10" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 25, -8)
+[node name="CoinIsle3b" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 13, -14)
 metadata/pickup_kind = "coin_yellow"
 
-; Boss pillar approach
-[node name="CoinB1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 26, -18)
+; Arc Isle3 → Isle4
+[node name="CoinArc7" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 13.5, -15)
 metadata/pickup_kind = "coin_yellow"
 
-[node name="CoinB2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 28, -24)
+[node name="CoinArc8" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 14, -17)
 metadata/pickup_kind = "coin_yellow"
 
-[node name="CoinB3" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 33.5, -30)
+; Cloud bank coins (welcome players who fell short of Isle2)
+[node name="CoinCloud1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 11, 4)
 metadata/pickup_kind = "coin_yellow"
 
-[node name="CoinB4" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 33.5, -30)
+[node name="CoinCloud2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 13, -2)
 metadata/pickup_kind = "coin_yellow"
 
-[node name="CoinB5" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 33.5, -34)
+[node name="CoinCloud3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 14, 6)
 metadata/pickup_kind = "coin_yellow"
 
-; Triangle island trio
-[node name="CoinT1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 26.5, 12)
+; Spin disc coins
+[node name="CoinSpin1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 16, -22)
 metadata/pickup_kind = "coin_yellow"
 
-[node name="CoinT2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28, 28.5, 2)
+[node name="CoinSpin2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 16, -22)
 metadata/pickup_kind = "coin_yellow"
 
-[node name="CoinT3" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 28.5, 12)
+; Isle5/6/7 arc (long jump zone)
+[node name="CoinArc9" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 18, -16)
 metadata/pickup_kind = "coin_yellow"
 
-; Red coin challenge — ring around the boss pillar
+[node name="CoinArc10" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 20, -13)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinArc11" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 22, -10)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinArc12" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 25, -20)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinArc13" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 26, -24)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinArc14" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 28, -28)
+metadata/pickup_kind = "coin_yellow"
+
+; Approach to boss pillar
+[node name="CoinBoss1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 30, -32)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinBoss2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 31, -32)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinBoss3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 29, -38)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinBoss4" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 29.2, -40)
+metadata/pickup_kind = "coin_yellow"
+
+; Pennant-chain coin hint (follow the flags)
+[node name="CoinPenn1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 3.8, 9)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinPenn2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 29.6, -34)
+metadata/pickup_kind = "coin_yellow"
+
+; ---------------------------------------------------------------------
+; RED COINS — 8 at the outer edges of the hardest jumps
+; ---------------------------------------------------------------------
+; Red1: under-dock drift recovery zone (edge of pier — risky)
 [node name="RedCoin1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 33.5, -30)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 4.5)
 metadata/pickup_kind = "coin_red"
 
+; Red2: Isle3 far edge (long-jump reward)
 [node name="RedCoin2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 33.5, -30)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 13, -14)
 metadata/pickup_kind = "coin_red"
 
+; Red3: Windmill top (skill-gated climb)
 [node name="RedCoin3" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 33.5, -24)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 15.8, 2)
 metadata/pickup_kind = "coin_red"
 
+; Red4: Cloud tunnel entrance (secret route)
 [node name="RedCoin4" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 33.5, -36)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 15.2, -6)
 metadata/pickup_kind = "coin_red"
 
+; Red5: Spin disc center
 [node name="RedCoin5" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 26.5, 12)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 16.2, -22)
 metadata/pickup_kind = "coin_red"
 
+; Red6: Isle6 far side (exposed)
 [node name="RedCoin6" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28, 28.5, 2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 22, -9)
 metadata/pickup_kind = "coin_red"
 
+; Red7: Isle9 final stepping stone
 [node name="RedCoin7" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 28.5, 12)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 30.8, -32)
 metadata/pickup_kind = "coin_red"
 
+; Red8: behind boss pillar (requires going around)
 [node name="RedCoin8" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 22, 10)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 29.2, -43)
 metadata/pickup_kind = "coin_red"
 
-[node name="BlueCoin_Cloud" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 38, 30)
-metadata/pickup_kind = "coin_blue"
-
-; Star on boss pillar top
+; ---------------------------------------------------------------------
+; STARS
+; ---------------------------------------------------------------------
+; Main star — on top of boss pillar
 [node name="Star_BossPillar" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 35, -30)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 30, -40)
 metadata/pickup_kind = "star"
 
-; 1-up hidden under dock (jumpable gap)
+; Secret star — below skylight on cloud shelf
+[node name="Star_Skylight" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 13, -14)
+metadata/pickup_kind = "star"
+
+; ---------------------------------------------------------------------
+; 1-UPS — under dock + windmill top
+; ---------------------------------------------------------------------
 [node name="OneUp_UnderDock" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 18.5, 30)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, 16)
 metadata/pickup_kind = "oneup"
 
-; Wing cap on triangle island
-[node name="WingCap_TriB" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28, 29, 2)
+[node name="OneUp_WindmillTop" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 15.8, 2)
+metadata/pickup_kind = "oneup"
+
+; 2 extra coins under the dock (with the hidden 1up)
+[node name="CoinUnderDock1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, -4, 16)
+metadata/pickup_kind = "coin_yellow"
+
+[node name="CoinUnderDock2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, -4, 16)
+metadata/pickup_kind = "coin_yellow"
+
+; ---------------------------------------------------------------------
+; WING CAP — inside the cloud tunnel (sky-thematic power-up)
+; ---------------------------------------------------------------------
+[node name="WingCap_CloudTunnel" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 15.3, -6)
 metadata/pickup_kind = "cap_wing"

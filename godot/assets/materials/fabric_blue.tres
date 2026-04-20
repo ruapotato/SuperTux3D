@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://cf4a6d30f0bc14d57"]
+
+[resource]
+resource_name = "fabric_blue"
+shading_mode = 0
+albedo_color = Color(0.22, 0.32, 0.72, 1.0)
+

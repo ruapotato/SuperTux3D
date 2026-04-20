@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://c56ac4326a6579f59"]
+
+[resource]
+resource_name = "grass_bright"
+shading_mode = 0
+albedo_color = Color(0.42, 0.72, 0.25, 1.0)
+

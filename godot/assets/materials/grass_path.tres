@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://cbd8ae4887d86b7cd"]
+
+[resource]
+resource_name = "grass_path"
+shading_mode = 0
+albedo_color = Color(0.68, 0.6, 0.35, 1.0)
+

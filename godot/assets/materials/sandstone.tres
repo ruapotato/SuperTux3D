@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://c01127f554bee1be9"]
+
+[resource]
+resource_name = "sandstone"
+shading_mode = 0
+albedo_color = Color(0.82, 0.68, 0.45, 1.0)
+

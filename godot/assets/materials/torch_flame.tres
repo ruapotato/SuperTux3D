@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://c1cff60d0504b1049"]
+
+[resource]
+resource_name = "torch_flame"
+shading_mode = 0
+albedo_color = Color(1.0, 0.78, 0.25, 1.0)
+emission_enabled = true
+emission = Color(1.0, 0.72, 0.22, 1)
+emission_energy_multiplier = 2.0

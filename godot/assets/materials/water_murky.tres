@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://cd80e54c47683c069"]
+
+[resource]
+resource_name = "water_murky"
+shading_mode = 0
+albedo_color = Color(0.35, 0.48, 0.32, 0.8)
+transparency = 1

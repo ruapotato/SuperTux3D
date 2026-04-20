@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://c521e10521d19af4f"]
+
+[resource]
+resource_name = "sky_underground"
+shading_mode = 0
+albedo_color = Color(0.1, 0.08, 0.15, 1.0)
+

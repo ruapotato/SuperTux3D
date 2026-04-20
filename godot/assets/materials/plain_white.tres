@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://c7216936abaf736c9"]
+
+[resource]
+resource_name = "plain_white"
+shading_mode = 0
+albedo_color = Color(1.0, 1.0, 1.0, 1.0)
+

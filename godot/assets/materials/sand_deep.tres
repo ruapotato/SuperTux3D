@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://cb49989bd18217a11"]
+
+[resource]
+resource_name = "sand_deep"
+shading_mode = 0
+albedo_color = Color(0.68, 0.55, 0.32, 1.0)
+

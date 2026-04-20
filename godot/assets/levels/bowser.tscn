@@ -1,141 +1,161 @@
-[gd_scene load_steps=32 format=3]
+[gd_scene load_steps=43 format=3]
 
-; BOWSER — Boss arena.
-; Landmarks: Central Raised Platform, Ring of Lava, Spike Pillars x4,
-;   Jumping Stepping Platforms (approach), Throne Backdrop.
-; Tiers: approach floor / lava ring / central platform / throne mesa.
-; 14 enemies (many bobombs, 2 chain chomps including boss marker,
-;   2 piranha, some goombas & koopas), 28 coins, star behind throne,
-;   pre-fight 1-up, metal cap before ring.
+; BOWSER — Final boss arena. Dark volcanic keep in a dimensional void.
+; Palette: basalt + stone_dark + lava + fabric_red + gold + ember.
+; Layout: approach causeway (stepping stones over lava pit) → octagonal
+;   arena with 1m lava moat → central dais + throne backdrop.
+; 13 enemies (2 chain-chomp stand-in bosses, 6 bobomb army, 2 piranha
+;   elite guards, 2 goomba intro, 1 koopa), ~29 coins (20 yellow, 8 red,
+;   1 blue), 1 star behind throne, 2 one-ups (pre-approach + chandelier),
+;   metal cap in moat. Secrets: throne alcove, dungeon grate, chandelier.
 
-[sub_resource type="ProceduralSkyMaterial" id="Sky_1"]
-sky_top_color = Color(0.08, 0.04, 0.12, 1)
-sky_horizon_color = Color(0.55, 0.15, 0.05, 1)
-ground_bottom_color = Color(0.15, 0.05, 0.05, 1)
-ground_horizon_color = Color(0.5, 0.12, 0.05, 1)
-
-[sub_resource type="Sky" id="Sky_2"]
-sky_material = SubResource("Sky_1")
+[ext_resource type="Material" path="res://assets/materials/basalt.tres" id="1_basalt"]
+[ext_resource type="Material" path="res://assets/materials/stone_dark.tres" id="2_stonedark"]
+[ext_resource type="Material" path="res://assets/materials/lava.tres" id="3_lava"]
+[ext_resource type="Material" path="res://assets/materials/lava_crust.tres" id="4_lavacrust"]
+[ext_resource type="Material" path="res://assets/materials/fabric_red.tres" id="5_fabricred"]
+[ext_resource type="Material" path="res://assets/materials/gold.tres" id="6_gold"]
+[ext_resource type="Material" path="res://assets/materials/plain_black.tres" id="7_black"]
+[ext_resource type="Material" path="res://assets/materials/ember.tres" id="8_ember"]
+[ext_resource type="Material" path="res://assets/materials/emissive_gold.tres" id="9_emissgold"]
+[ext_resource type="Material" path="res://assets/materials/metal_grey.tres" id="10_metal"]
+[ext_resource type="Material" path="res://assets/materials/torch_flame.tres" id="11_flame"]
 
 [sub_resource type="Environment" id="Env_1"]
-background_mode = 2
-sky = SubResource("Sky_2")
+background_mode = 1
+background_color = Color(0.05, 0.03, 0.06, 1)
 ambient_light_source = 2
-ambient_light_color = Color(0.8, 0.4, 0.3, 1)
-ambient_light_energy = 0.75
+ambient_light_color = Color(0.55, 0.25, 0.22, 1)
+ambient_light_energy = 0.7
 fog_enabled = true
-fog_light_color = Color(0.45, 0.15, 0.12, 1)
-fog_density = 0.012
+fog_light_color = Color(0.2, 0.05, 0.06, 1)
+fog_density = 0.018
 
-[sub_resource type="StandardMaterial3D" id="Mat_Floor"]
-shading_mode = 0
-albedo_color = Color(0.22, 0.18, 0.18, 1)
+; ---- Meshes + shapes (shared; materials from ext_resource) ----
 
-[sub_resource type="StandardMaterial3D" id="Mat_Ring"]
-shading_mode = 0
-albedo_color = Color(0.32, 0.22, 0.22, 1)
-
-[sub_resource type="StandardMaterial3D" id="Mat_Platform"]
-shading_mode = 0
-albedo_color = Color(0.45, 0.35, 0.3, 1)
-
-[sub_resource type="StandardMaterial3D" id="Mat_Lava"]
-shading_mode = 0
-albedo_color = Color(0.98, 0.35, 0.08, 1)
-emission_enabled = true
-emission = Color(1.0, 0.5, 0.1, 1)
-emission_energy_multiplier = 1.8
-
-[sub_resource type="StandardMaterial3D" id="Mat_Spike"]
-shading_mode = 0
-albedo_color = Color(0.18, 0.15, 0.14, 1)
-
-[sub_resource type="StandardMaterial3D" id="Mat_ThroneStone"]
-shading_mode = 0
-albedo_color = Color(0.3, 0.26, 0.25, 1)
-
-[sub_resource type="StandardMaterial3D" id="Mat_ThroneAccent"]
-shading_mode = 0
-albedo_color = Color(0.6, 0.18, 0.15, 1)
-
-[sub_resource type="BoxMesh" id="Mesh_Approach"]
-material = SubResource("Mat_Floor")
-size = Vector3(30, 1, 20)
-
-[sub_resource type="BoxShape3D" id="Shape_Approach"]
-size = Vector3(30, 1, 20)
-
-[sub_resource type="CylinderMesh" id="Mesh_LavaRing"]
-material = SubResource("Mat_Lava")
-top_radius = 20
-bottom_radius = 20
-height = 0.3
-
-[sub_resource type="CylinderShape3D" id="Shape_LavaRing"]
-radius = 20
-height = 0.3
-
-[sub_resource type="CylinderMesh" id="Mesh_Center"]
-material = SubResource("Mat_Platform")
-top_radius = 11
-bottom_radius = 12
-height = 2.5
-
-[sub_resource type="CylinderShape3D" id="Shape_Center"]
-radius = 12
-height = 2.5
-
-[sub_resource type="CylinderMesh" id="Mesh_InnerRing"]
-material = SubResource("Mat_Ring")
-top_radius = 14
-bottom_radius = 15
-height = 0.8
-
-[sub_resource type="CylinderShape3D" id="Shape_InnerRing"]
-radius = 15
-height = 0.8
+[sub_resource type="BoxMesh" id="Mesh_Spawn"]
+material = ExtResource("2_stonedark")
+size = Vector3(6, 1, 4)
+[sub_resource type="BoxShape3D" id="Shape_Spawn"]
+size = Vector3(6, 1, 4)
 
 [sub_resource type="BoxMesh" id="Mesh_Step"]
-material = SubResource("Mat_Platform")
-size = Vector3(4, 1.2, 4)
-
+material = ExtResource("1_basalt")
+size = Vector3(2.5, 0.8, 2.5)
 [sub_resource type="BoxShape3D" id="Shape_Step"]
-size = Vector3(4, 1.2, 4)
+size = Vector3(2.5, 0.8, 2.5)
 
-[sub_resource type="PrismMesh" id="Mesh_Spike"]
-material = SubResource("Mat_Spike")
-size = Vector3(2, 7, 2)
+[sub_resource type="BoxMesh" id="Mesh_LavaPit"]
+material = ExtResource("3_lava")
+size = Vector3(14, 0.4, 14)
+[sub_resource type="BoxShape3D" id="Shape_LavaPit"]
+size = Vector3(14, 0.4, 14)
 
-[sub_resource type="BoxShape3D" id="Shape_Spike"]
-size = Vector3(2, 7, 2)
+[sub_resource type="CylinderMesh" id="Mesh_Arena"]
+material = ExtResource("1_basalt")
+top_radius = 10
+bottom_radius = 10
+height = 1.0
+radial_segments = 8
+[sub_resource type="CylinderShape3D" id="Shape_Arena"]
+radius = 10
+height = 1.0
 
-[sub_resource type="BoxMesh" id="Mesh_ThroneBase"]
-material = SubResource("Mat_ThroneStone")
-size = Vector3(14, 4, 10)
+[sub_resource type="CylinderMesh" id="Mesh_Moat"]
+material = ExtResource("3_lava")
+top_radius = 11
+bottom_radius = 11
+height = 0.5
+radial_segments = 8
+[sub_resource type="CylinderShape3D" id="Shape_Moat"]
+radius = 11
+height = 0.5
 
-[sub_resource type="BoxShape3D" id="Shape_ThroneBase"]
-size = Vector3(14, 4, 10)
+[sub_resource type="CylinderMesh" id="Mesh_Dais"]
+material = ExtResource("2_stonedark")
+top_radius = 5
+bottom_radius = 5
+height = 1.0
+[sub_resource type="CylinderShape3D" id="Shape_Dais"]
+radius = 5
+height = 1.0
+
+[sub_resource type="CylinderMesh" id="Mesh_DaisRing"]
+material = ExtResource("9_emissgold")
+top_radius = 5.25
+bottom_radius = 5.25
+height = 0.15
+
+[sub_resource type="BoxMesh" id="Mesh_Pillar"]
+material = ExtResource("2_stonedark")
+size = Vector3(1.5, 6, 1.5)
+[sub_resource type="BoxShape3D" id="Shape_Pillar"]
+size = Vector3(1.5, 6, 1.5)
+
+[sub_resource type="PrismMesh" id="Mesh_PillarTip"]
+material = ExtResource("7_black")
+size = Vector3(1.5, 1.5, 1.5)
 
 [sub_resource type="BoxMesh" id="Mesh_ThroneSeat"]
-material = SubResource("Mat_ThroneAccent")
-size = Vector3(6, 2.5, 4)
-
+material = ExtResource("2_stonedark")
+size = Vector3(6, 3, 4)
 [sub_resource type="BoxShape3D" id="Shape_ThroneSeat"]
-size = Vector3(6, 2.5, 4)
+size = Vector3(6, 3, 4)
 
-[sub_resource type="BoxMesh" id="Mesh_ThroneBack"]
-material = SubResource("Mat_ThroneAccent")
-size = Vector3(6, 6, 0.8)
-
+[sub_resource type="PrismMesh" id="Mesh_ThroneBack"]
+material = ExtResource("1_basalt")
+size = Vector3(6, 10, 1.2)
 [sub_resource type="BoxShape3D" id="Shape_ThroneBack"]
-size = Vector3(6, 6, 0.8)
+size = Vector3(6, 10, 1.2)
 
-[sub_resource type="BoxMesh" id="Mesh_ThronePillar"]
-material = SubResource("Mat_ThroneStone")
-size = Vector3(1.5, 9, 1.5)
+[sub_resource type="BoxMesh" id="Mesh_Banner"]
+material = ExtResource("5_fabricred")
+size = Vector3(0.1, 7, 2)
 
-[sub_resource type="BoxShape3D" id="Shape_ThronePillar"]
-size = Vector3(1.5, 9, 1.5)
+[sub_resource type="CylinderMesh" id="Mesh_BrazierBowl"]
+material = ExtResource("4_lavacrust")
+top_radius = 0.8
+bottom_radius = 0.5
+height = 0.6
+[sub_resource type="CylinderShape3D" id="Shape_BrazierBowl"]
+radius = 0.8
+height = 0.6
+
+[sub_resource type="BoxMesh" id="Mesh_BrazierPost"]
+material = ExtResource("7_black")
+size = Vector3(0.3, 2, 0.3)
+
+[sub_resource type="SphereMesh" id="Mesh_Flame"]
+material = ExtResource("11_flame")
+radius = 0.6
+height = 1.2
+
+[sub_resource type="SphereMesh" id="Mesh_EmberDisc"]
+material = ExtResource("8_ember")
+radius = 0.4
+height = 0.2
+
+[sub_resource type="TorusMesh" id="Mesh_Chandelier"]
+material = ExtResource("9_emissgold")
+inner_radius = 3.0
+outer_radius = 3.6
+
+[sub_resource type="TorusMesh" id="Mesh_ChandelierInner"]
+material = ExtResource("6_gold")
+inner_radius = 1.4
+outer_radius = 1.8
+
+[sub_resource type="BoxMesh" id="Mesh_Grate"]
+material = ExtResource("10_metal")
+size = Vector3(2, 0.05, 2)
+
+[sub_resource type="BoxMesh" id="Mesh_Alcove"]
+material = ExtResource("2_stonedark")
+size = Vector3(6, 0.4, 4)
+[sub_resource type="BoxShape3D" id="Shape_Alcove"]
+size = Vector3(6, 0.4, 4)
+
+; =====================================================================
 
 [node name="LevelRoot" type="Node3D"]
 
@@ -144,404 +164,428 @@ environment = SubResource("Env_1")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.5, -0.5, 0.71, 0, 0.82, 0.58, -0.87, -0.29, 0.41, 0, 30, 0)
-light_color = Color(1.0, 0.55, 0.4, 1)
-light_energy = 0.65
+light_color = Color(1.0, 0.5, 0.4, 1)
+light_energy = 0.55
 
-; Approach floor (safe)
-[node name="ApproachMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 32)
-mesh = SubResource("Mesh_Approach")
+; ---- Spawn platform (start of approach) ----
+[node name="SpawnPadMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 25)
+mesh = SubResource("Mesh_Spawn")
+[node name="SpawnPadBody" type="StaticBody3D" parent="."]
+[node name="Col" type="CollisionShape3D" parent="SpawnPadBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 25)
+shape = SubResource("Shape_Spawn")
 
-[node name="ApproachBody" type="StaticBody3D" parent="."]
-collision_layer = 1
-collision_mask = 1
+; ---- Causeway lava pit (under approach) ----
+[node name="ApproachLavaMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 17)
+mesh = SubResource("Mesh_LavaPit")
+[node name="ApproachLavaBody" type="StaticBody3D" parent="."]
+metadata/surface_kind = "burning"
+[node name="Col" type="CollisionShape3D" parent="ApproachLavaBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 17)
+shape = SubResource("Shape_LavaPit")
 
-[node name="Col" type="CollisionShape3D" parent="ApproachBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 32)
-shape = SubResource("Shape_Approach")
-
-; Stepping platforms on approach
+; ---- Stepping stones (causeway) z=22 → z=13, ~1.5m gaps ----
 [node name="Step1Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0.6, 14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 22)
 mesh = SubResource("Mesh_Step")
-
 [node name="Step1Body" type="StaticBody3D" parent="."]
-collision_layer = 1
-collision_mask = 1
-
 [node name="Col" type="CollisionShape3D" parent="Step1Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0.6, 14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 22)
 shape = SubResource("Shape_Step")
 
 [node name="Step2Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.6, 14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 19)
 mesh = SubResource("Mesh_Step")
-
 [node name="Step2Body" type="StaticBody3D" parent="."]
-collision_layer = 1
-collision_mask = 1
-
 [node name="Col" type="CollisionShape3D" parent="Step2Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.6, 14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 19)
 shape = SubResource("Shape_Step")
 
 [node name="Step3Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 16)
 mesh = SubResource("Mesh_Step")
-
 [node name="Step3Body" type="StaticBody3D" parent="."]
-collision_layer = 1
-collision_mask = 1
-
 [node name="Col" type="CollisionShape3D" parent="Step3Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 16)
 shape = SubResource("Shape_Step")
 
-; Lava Ring (burning)
-[node name="LavaRingMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, -5)
-mesh = SubResource("Mesh_LavaRing")
+[node name="Step4Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 13)
+mesh = SubResource("Mesh_Step")
+[node name="Step4Body" type="StaticBody3D" parent="."]
+[node name="Col" type="CollisionShape3D" parent="Step4Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 13)
+shape = SubResource("Shape_Step")
 
-[node name="LavaRingBody" type="StaticBody3D" parent="."]
-collision_layer = 1
-collision_mask = 1
+; ---- Lava moat (1m wide ring around arena, burning) ----
+[node name="MoatMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+mesh = SubResource("Mesh_Moat")
+[node name="MoatBody" type="StaticBody3D" parent="."]
 metadata/surface_kind = "burning"
+[node name="Col" type="CollisionShape3D" parent="MoatBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+shape = SubResource("Shape_Moat")
 
-[node name="Col" type="CollisionShape3D" parent="LavaRingBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, -5)
-shape = SubResource("Shape_LavaRing")
+; ---- Main arena (octagonal raised platform, 20m diam) ----
+[node name="ArenaMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("Mesh_Arena")
+[node name="ArenaBody" type="StaticBody3D" parent="."]
+[node name="Col" type="CollisionShape3D" parent="ArenaBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("Shape_Arena")
 
-; Inner safe walkway ring (sits just above lava)
-[node name="InnerRingMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, -5)
-mesh = SubResource("Mesh_InnerRing")
+; Dungeon grate easter egg (visual only, embedded in arena floor)
+[node name="DungeonGrate" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 1.03, 5)
+mesh = SubResource("Mesh_Grate")
 
-[node name="InnerRingBody" type="StaticBody3D" parent="."]
-collision_layer = 1
-collision_mask = 1
+; ---- Central dais (10m diam, 1m tall) ----
+[node name="DaisMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+mesh = SubResource("Mesh_Dais")
+[node name="DaisBody" type="StaticBody3D" parent="."]
+[node name="Col" type="CollisionShape3D" parent="DaisBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+shape = SubResource("Shape_Dais")
 
-[node name="Col" type="CollisionShape3D" parent="InnerRingBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, -5)
-shape = SubResource("Shape_InnerRing")
+; Emissive gold ring around dais
+[node name="DaisRing" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.05, 0)
+mesh = SubResource("Mesh_DaisRing")
 
-; Central Raised Platform (fight arena)
-[node name="CenterMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, -5)
-mesh = SubResource("Mesh_Center")
+; ---- Spike pillars (4, at outer ring of arena) ----
+[node name="Pillar1Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 4, 8)
+mesh = SubResource("Mesh_Pillar")
+[node name="Pillar1Body" type="StaticBody3D" parent="."]
+[node name="Col" type="CollisionShape3D" parent="Pillar1Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 4, 8)
+shape = SubResource("Shape_Pillar")
+[node name="Pillar1Tip" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 7.75, 8)
+mesh = SubResource("Mesh_PillarTip")
 
-[node name="CenterBody" type="StaticBody3D" parent="."]
-collision_layer = 1
-collision_mask = 1
+[node name="Pillar2Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 4, 8)
+mesh = SubResource("Mesh_Pillar")
+[node name="Pillar2Body" type="StaticBody3D" parent="."]
+[node name="Col" type="CollisionShape3D" parent="Pillar2Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 4, 8)
+shape = SubResource("Shape_Pillar")
+[node name="Pillar2Tip" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 7.75, 8)
+mesh = SubResource("Mesh_PillarTip")
 
-[node name="Col" type="CollisionShape3D" parent="CenterBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, -5)
-shape = SubResource("Shape_Center")
+[node name="Pillar3Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 4, -8)
+mesh = SubResource("Mesh_Pillar")
+[node name="Pillar3Body" type="StaticBody3D" parent="."]
+[node name="Col" type="CollisionShape3D" parent="Pillar3Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 4, -8)
+shape = SubResource("Shape_Pillar")
+[node name="Pillar3Tip" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 7.75, -8)
+mesh = SubResource("Mesh_PillarTip")
 
-; Spike pillars around the arena
-[node name="Spike1Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 5, -10)
-mesh = SubResource("Mesh_Spike")
+[node name="Pillar4Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 4, -8)
+mesh = SubResource("Mesh_Pillar")
+[node name="Pillar4Body" type="StaticBody3D" parent="."]
+[node name="Col" type="CollisionShape3D" parent="Pillar4Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 4, -8)
+shape = SubResource("Shape_Pillar")
+[node name="Pillar4Tip" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 7.75, -8)
+mesh = SubResource("Mesh_PillarTip")
 
-[node name="Spike1Body" type="StaticBody3D" parent="."]
-collision_layer = 1
-collision_mask = 1
-
-[node name="Col" type="CollisionShape3D" parent="Spike1Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 5, -10)
-shape = SubResource("Shape_Spike")
-
-[node name="Spike2Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 5, -10)
-mesh = SubResource("Mesh_Spike")
-
-[node name="Spike2Body" type="StaticBody3D" parent="."]
-collision_layer = 1
-collision_mask = 1
-
-[node name="Col" type="CollisionShape3D" parent="Spike2Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 5, -10)
-shape = SubResource("Shape_Spike")
-
-[node name="Spike3Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 5, 0)
-mesh = SubResource("Mesh_Spike")
-
-[node name="Spike3Body" type="StaticBody3D" parent="."]
-collision_layer = 1
-collision_mask = 1
-
-[node name="Col" type="CollisionShape3D" parent="Spike3Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 5, 0)
-shape = SubResource("Shape_Spike")
-
-[node name="Spike4Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 5, 0)
-mesh = SubResource("Mesh_Spike")
-
-[node name="Spike4Body" type="StaticBody3D" parent="."]
-collision_layer = 1
-collision_mask = 1
-
-[node name="Col" type="CollisionShape3D" parent="Spike4Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 5, 0)
-shape = SubResource("Shape_Spike")
-
-; Throne Backdrop - behind boss fight
-[node name="ThroneBaseMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -28)
-mesh = SubResource("Mesh_ThroneBase")
-
-[node name="ThroneBaseBody" type="StaticBody3D" parent="."]
-collision_layer = 1
-collision_mask = 1
-
-[node name="Col" type="CollisionShape3D" parent="ThroneBaseBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -28)
-shape = SubResource("Shape_ThroneBase")
-
+; ---- Throne backdrop (far end, -Z) ----
 [node name="ThroneSeatMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.25, -26)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, -11)
 mesh = SubResource("Mesh_ThroneSeat")
-
 [node name="ThroneSeatBody" type="StaticBody3D" parent="."]
-collision_layer = 1
-collision_mask = 1
-
 [node name="Col" type="CollisionShape3D" parent="ThroneSeatBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.25, -26)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, -11)
 shape = SubResource("Shape_ThroneSeat")
 
 [node name="ThroneBackMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.5, -28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9, -12)
 mesh = SubResource("Mesh_ThroneBack")
-
 [node name="ThroneBackBody" type="StaticBody3D" parent="."]
-collision_layer = 1
-collision_mask = 1
-
 [node name="Col" type="CollisionShape3D" parent="ThroneBackBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.5, -28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9, -12)
 shape = SubResource("Shape_ThroneBack")
 
-[node name="ThronePillarL" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 8.5, -32)
-mesh = SubResource("Mesh_ThronePillar")
+; Flanking banners (fabric_red)
+[node name="BannerL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 7.5, -11.8)
+mesh = SubResource("Mesh_Banner")
+[node name="BannerR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 7.5, -11.8)
+mesh = SubResource("Mesh_Banner")
 
-[node name="ThronePillarLBody" type="StaticBody3D" parent="."]
-collision_layer = 1
-collision_mask = 1
+; Torch braziers (lava_crust bowl + post + torch_flame emissive)
+[node name="BrazierL_Post" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2, -8)
+mesh = SubResource("Mesh_BrazierPost")
+[node name="BrazierL_Bowl" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 3.3, -8)
+mesh = SubResource("Mesh_BrazierBowl")
+[node name="BrazierL_Flame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 4.1, -8)
+mesh = SubResource("Mesh_Flame")
+[node name="BrazierL_Light" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 4.3, -8)
+light_color = Color(1.0, 0.55, 0.2, 1)
+light_energy = 1.5
+omni_range = 10
 
-[node name="Col" type="CollisionShape3D" parent="ThronePillarLBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 8.5, -32)
-shape = SubResource("Shape_ThronePillar")
+[node name="BrazierR_Post" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2, -8)
+mesh = SubResource("Mesh_BrazierPost")
+[node name="BrazierR_Bowl" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 3.3, -8)
+mesh = SubResource("Mesh_BrazierBowl")
+[node name="BrazierR_Flame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 4.1, -8)
+mesh = SubResource("Mesh_Flame")
+[node name="BrazierR_Light" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 4.3, -8)
+light_color = Color(1.0, 0.55, 0.2, 1)
+light_energy = 1.5
+omni_range = 10
 
-[node name="ThronePillarR" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 8.5, -32)
-mesh = SubResource("Mesh_ThronePillar")
+; Crown of fire — ember discs floating above throne
+[node name="Crown1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 15, -12)
+mesh = SubResource("Mesh_EmberDisc")
+[node name="Crown2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 15.6, -12)
+mesh = SubResource("Mesh_EmberDisc")
+[node name="Crown3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 15.9, -12)
+mesh = SubResource("Mesh_EmberDisc")
+[node name="Crown4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 15.6, -12)
+mesh = SubResource("Mesh_EmberDisc")
+[node name="Crown5" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 15, -12)
+mesh = SubResource("Mesh_EmberDisc")
 
-[node name="ThronePillarRBody" type="StaticBody3D" parent="."]
-collision_layer = 1
-collision_mask = 1
+; ---- Throne alcove secret (behind throne) ----
+[node name="AlcoveMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, -15)
+mesh = SubResource("Mesh_Alcove")
+[node name="AlcoveBody" type="StaticBody3D" parent="."]
+[node name="Col" type="CollisionShape3D" parent="AlcoveBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, -15)
+shape = SubResource("Shape_Alcove")
 
-[node name="Col" type="CollisionShape3D" parent="ThronePillarRBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 8.5, -32)
-shape = SubResource("Shape_ThronePillar")
+; ---- Chandelier (floating, ~8m above dais) ----
+[node name="ChandelierOuter" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+mesh = SubResource("Mesh_Chandelier")
+[node name="ChandelierInner" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+mesh = SubResource("Mesh_ChandelierInner")
+[node name="ChandelierLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+light_color = Color(1.0, 0.85, 0.4, 1)
+light_energy = 2.2
+omni_range = 18
 
-; Spawn
+; ---- Spawn marker ----
 [node name="SpawnArea" type="Area3D" parent="."]
 collision_layer = 0
 collision_mask = 0
-metadata/spawn_point = Vector3(0, 1, 40)
+metadata/spawn_point = Vector3(0, 1.0, 25.0)
 
-; Enemies
-[node name="Bobomb_App1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1, 34)
-metadata/enemy_bhv = "bhvBobomb"
+; =====================================================================
+; ENEMIES
+; =====================================================================
 
-[node name="Bobomb_App2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1, 34)
-metadata/enemy_bhv = "bhvBobomb"
-
-[node name="Bobomb_App3" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 1.8, 14)
-metadata/enemy_bhv = "bhvBobomb"
-
-[node name="Bobomb_App4" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.8, 14)
-metadata/enemy_bhv = "bhvBobomb"
-
-[node name="Bobomb_Ring1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 1.5, -5)
-metadata/enemy_bhv = "bhvBobomb"
-
-[node name="Bobomb_Ring2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 1.5, -5)
-metadata/enemy_bhv = "bhvBobomb"
-
-[node name="Bobomb_Center1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 2.5, -5)
-metadata/enemy_bhv = "bhvBobomb"
-
-[node name="Bobomb_Center2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 2.5, -5)
-metadata/enemy_bhv = "bhvBobomb"
-
-[node name="ChainChomp_Boss" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, -5)
+; Boss stand-ins on central dais
+[node name="ChainChomp_Boss1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 2.5, 0)
 metadata/enemy_bhv = "bhvChainChomp"
 
-[node name="ChainChomp_Guard" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 22)
+[node name="ChainChomp_Boss2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.5, 0)
 metadata/enemy_bhv = "bhvChainChomp"
 
+; Bobomb army — arena floor, spread
+[node name="Bobomb1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 1.5, 6)
+metadata/enemy_bhv = "bhvBobomb"
+[node name="Bobomb2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 1.5, 6)
+metadata/enemy_bhv = "bhvBobomb"
+[node name="Bobomb3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 1.5, -6)
+metadata/enemy_bhv = "bhvBobomb"
+[node name="Bobomb4" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 1.5, -6)
+metadata/enemy_bhv = "bhvBobomb"
+[node name="Bobomb5" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 8)
+metadata/enemy_bhv = "bhvBobomb"
+[node name="Bobomb6" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -5)
+metadata/enemy_bhv = "bhvBobomb"
+
+; Piranha elite guards flanking throne
 [node name="Piranha_ThroneL" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 4.5, -28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 4, -11)
 metadata/enemy_bhv = "bhvPiranhaPlant"
-
 [node name="Piranha_ThroneR" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 4.5, -28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 4, -11)
 metadata/enemy_bhv = "bhvPiranhaPlant"
 
+; Goomba intro wave on approach
 [node name="Goomba_App1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 1, 28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 22)
+metadata/enemy_bhv = "bhvGoomba"
+[node name="Goomba_App2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 16)
 metadata/enemy_bhv = "bhvGoomba"
 
-[node name="Koopa_App" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1, 28)
+; Koopa shell soldier
+[node name="Koopa_Arena" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.5, 4)
 metadata/enemy_bhv = "bhvKoopa"
 
-; Yellow coins - approach trail
-[node name="CoinA1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1, 38)
+; =====================================================================
+; COINS
+; =====================================================================
+
+; Yellow coins — ring around the dais (8)
+[node name="CoinRing1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 2.5, 0)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinRing2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.2, 2.5, 4.2)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinRing3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 6)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinRing4" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.2, 2.5, 4.2)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinRing5" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 2.5, 0)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinRing6" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.2, 2.5, -4.2)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinRing7" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, -6)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinRing8" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.2, 2.5, -4.2)
 metadata/pickup_kind = "coin_yellow"
 
-[node name="CoinA2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1, 38)
+; Yellow coins — approach trail (8)
+[node name="CoinApp1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 22)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinApp2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 19)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinApp3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 16)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinApp4" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 13)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinApp5" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 1.5, 20.5)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinApp6" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 1.5, 20.5)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinApp7" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 1.5, 14.5)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinApp8" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 1.5, 14.5)
 metadata/pickup_kind = "coin_yellow"
 
-[node name="CoinA3" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 34)
+; Yellow coins — arena floor scatter (4)
+[node name="CoinArena1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1.5, 3)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinArena2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1.5, 3)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinArena3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1.5, -8)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinArena4" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1.5, -8)
 metadata/pickup_kind = "coin_yellow"
 
-[node name="CoinA4" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1, 30)
-metadata/pickup_kind = "coin_yellow"
-
-[node name="CoinA5" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1, 30)
-metadata/pickup_kind = "coin_yellow"
-
-[node name="CoinA6" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 1.8, 14)
-metadata/pickup_kind = "coin_yellow"
-
-[node name="CoinA7" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.8, 14)
-metadata/pickup_kind = "coin_yellow"
-
-[node name="CoinA8" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 8)
-metadata/pickup_kind = "coin_yellow"
-
-; Inner ring coins
-[node name="CoinI1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 1.5, -5)
-metadata/pickup_kind = "coin_yellow"
-
-[node name="CoinI2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 1.5, -5)
-metadata/pickup_kind = "coin_yellow"
-
-[node name="CoinI3" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 9)
-metadata/pickup_kind = "coin_yellow"
-
-[node name="CoinI4" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -19)
-metadata/pickup_kind = "coin_yellow"
-
-[node name="CoinI5" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1.5, 5)
-metadata/pickup_kind = "coin_yellow"
-
-[node name="CoinI6" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 1.5, 5)
-metadata/pickup_kind = "coin_yellow"
-
-; Central platform
-[node name="CoinC1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 3, -5)
-metadata/pickup_kind = "coin_yellow"
-
-[node name="CoinC2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 3, -5)
-metadata/pickup_kind = "coin_yellow"
-
-[node name="CoinC3" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
-metadata/pickup_kind = "coin_yellow"
-
-[node name="CoinC4" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -10)
-metadata/pickup_kind = "coin_yellow"
-
-; Throne top
-[node name="CoinT1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 4.5, -28)
-metadata/pickup_kind = "coin_yellow"
-
-[node name="CoinT2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 4.5, -28)
-metadata/pickup_kind = "coin_yellow"
-
-; Red coin challenge - the lava-ring ordeal
-[node name="RedCoin1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5, 1.2, 0)
+; Red coins (8) — tops of spike pillars + around lava ring edge (risky)
+[node name="RedCoin_Pillar1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 8.5, 8)
+metadata/pickup_kind = "coin_red"
+[node name="RedCoin_Pillar2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 8.5, 8)
+metadata/pickup_kind = "coin_red"
+[node name="RedCoin_Pillar3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 8.5, -8)
+metadata/pickup_kind = "coin_red"
+[node name="RedCoin_Pillar4" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 8.5, -8)
+metadata/pickup_kind = "coin_red"
+[node name="RedCoin_MoatN" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 11)
+metadata/pickup_kind = "coin_red"
+[node name="RedCoin_MoatS" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, -11)
+metadata/pickup_kind = "coin_red"
+[node name="RedCoin_MoatE" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 1.2, 0)
+metadata/pickup_kind = "coin_red"
+[node name="RedCoin_MoatW" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 1.2, 0)
 metadata/pickup_kind = "coin_red"
 
-[node name="RedCoin2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.5, 1.2, 0)
-metadata/pickup_kind = "coin_red"
-
-[node name="RedCoin3" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5, 1.2, -10)
-metadata/pickup_kind = "coin_red"
-
-[node name="RedCoin4" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.5, 1.2, -10)
-metadata/pickup_kind = "coin_red"
-
-[node name="RedCoin5" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 10)
-metadata/pickup_kind = "coin_red"
-
-[node name="RedCoin6" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, -20)
-metadata/pickup_kind = "coin_red"
-
-[node name="RedCoin7" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1.2, -14)
-metadata/pickup_kind = "coin_red"
-
-[node name="RedCoin8" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 1.2, -14)
-metadata/pickup_kind = "coin_red"
-
-[node name="BlueCoin_ThroneSeat" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7, -26)
+; Blue coin on throne seat
+[node name="BlueCoin_Throne" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.5, -11)
 metadata/pickup_kind = "coin_blue"
 
-; Star behind throne (skill-gated: need to climb/jump around throne)
+; =====================================================================
+; SPECIAL PICKUPS & SECRETS
+; =====================================================================
+
+; Star — behind throne, in alcove (final win)
 [node name="Star_BehindThrone" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, -34)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, -15)
 metadata/pickup_kind = "star"
 
-; 1-up before the ring (reward for approach)
-[node name="OneUp_PreFight" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 18)
+; Coin cache in the alcove with the star
+[node name="AlcoveCoin1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 1.8, -15)
+metadata/pickup_kind = "coin_yellow"
+[node name="AlcoveCoin2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 1.8, -15)
+metadata/pickup_kind = "coin_yellow"
+
+; 1-up before the approach (last-chance safety)
+[node name="OneUp_PreApproach" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 25)
 metadata/pickup_kind = "oneup"
 
-; Metal cap at approach edge - helps survive lava ring crossing
-[node name="MetalCap_Approach" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 24)
+; 1-up on the chandelier (long-jump off dais reward)
+[node name="OneUp_Chandelier" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10.5, 0)
+metadata/pickup_kind = "oneup"
+
+; Metal cap in the lava moat (metal-cap-walks-on-lava route)
+[node name="MetalCap_Moat" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 1.2, 5)
 metadata/pickup_kind = "cap_metal"

@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://c64a8bf8874e18584"]
+
+[resource]
+resource_name = "ember"
+shading_mode = 0
+albedo_color = Color(1.0, 0.6, 0.2, 1.0)
+emission_enabled = true
+emission = Color(1.0, 0.55, 0.18, 1)
+emission_energy_multiplier = 2.6

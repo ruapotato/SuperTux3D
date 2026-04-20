@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://ceb5ce6e844478884"]
+
+[resource]
+resource_name = "flower_yellow"
+shading_mode = 0
+albedo_color = Color(0.98, 0.82, 0.25, 1.0)
+

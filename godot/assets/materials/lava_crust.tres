@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://c5e5b3c866b2e7058"]
+
+[resource]
+resource_name = "lava_crust"
+shading_mode = 0
+albedo_color = Color(0.45, 0.1, 0.05, 1.0)
+emission_enabled = true
+emission = Color(0.95, 0.22, 0.06, 1)
+emission_energy_multiplier = 0.6

@@ -1,0 +1,10 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://cb6437fe0c2191879"]
+
+[resource]
+resource_name = "water_blue"
+shading_mode = 0
+albedo_color = Color(0.24, 0.54, 0.92, 0.75)
+transparency = 1
+emission_enabled = true
+emission = Color(0.18, 0.45, 0.78, 1)
+emission_energy_multiplier = 0.2

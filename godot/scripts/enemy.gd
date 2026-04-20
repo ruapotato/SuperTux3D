@@ -148,6 +148,14 @@ func _build_hurt_area() -> void:
             cap.height = 0.9
             cs.shape = cap
             cs.position.y = 0.5
+        "bhvCuttlefish":
+            # Elongated body hovering in the air — wider catch area so
+            # a well-timed jump can reach it from below.
+            var cap := CapsuleShape3D.new()
+            cap.radius = 0.55
+            cap.height = 1.3
+            cs.shape = cap
+            cs.position.y = 0.0  # centered on the enemy origin
         _:
             var sph := SphereShape3D.new()
             sph.radius = 0.55

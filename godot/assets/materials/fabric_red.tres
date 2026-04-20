@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://c73b5d6c30bd6d7a3"]
+
+[resource]
+resource_name = "fabric_red"
+shading_mode = 0
+albedo_color = Color(0.72, 0.18, 0.22, 1.0)
+

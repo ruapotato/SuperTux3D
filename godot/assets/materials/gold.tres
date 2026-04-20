@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://c09feb137fd5e58ac"]
+
+[resource]
+resource_name = "gold"
+shading_mode = 0
+albedo_color = Color(0.95, 0.78, 0.22, 1.0)
+

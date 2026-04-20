@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://cff1c13311b4173dd"]
+
+[resource]
+resource_name = "stone_grey"
+shading_mode = 0
+albedo_color = Color(0.58, 0.6, 0.62, 1.0)
+

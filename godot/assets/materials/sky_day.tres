@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://c502e27b472b0bb1c"]
+
+[resource]
+resource_name = "sky_day"
+shading_mode = 0
+albedo_color = Color(0.52, 0.75, 0.98, 1.0)
+

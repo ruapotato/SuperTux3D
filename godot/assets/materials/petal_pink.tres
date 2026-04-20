@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://c041525d192411363"]
+
+[resource]
+resource_name = "petal_pink"
+shading_mode = 0
+albedo_color = Color(0.95, 0.62, 0.75, 1.0)
+

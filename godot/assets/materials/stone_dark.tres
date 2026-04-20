@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://c45334448c6bc0f1a"]
+
+[resource]
+resource_name = "stone_dark"
+shading_mode = 0
+albedo_color = Color(0.32, 0.34, 0.38, 1.0)
+

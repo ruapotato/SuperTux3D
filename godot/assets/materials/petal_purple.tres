@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://c8381dcc3b01c4bf4"]
+
+[resource]
+resource_name = "petal_purple"
+shading_mode = 0
+albedo_color = Color(0.62, 0.35, 0.78, 1.0)
+
