@@ -958,7 +958,7 @@ size = Vector3(1.0, 5.0, 1.0)
 
 [node name="BuildingRoot" type="Node3D"]
 metadata/spawn_point = Vector3(4.0, 1.0, 4.0)
-metadata/water_level_y = 1.4572733963529276
+metadata/water_level_y = 0.0
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("s1")
 [node name="Sun" type="DirectionalLight3D" parent="."]
@@ -2399,3 +2399,4 @@ metadata/terrain_slope_color = [0.45, 0.32, 0.18]
 metadata/terrain_slope_threshold = 0.72
 metadata/terrain_slope_softness = 0.15
 metadata/terrain_surface_grid = ["snow", "snow", "snow", "snow", "snow", "", "", "", "", "snow", "snow", "snow", "snow", "snow", "snow", "snow", "snow", "snow", "snow", "", "", "", "", "", "", "snow", "snow", "snow", "snow", "snow", "snow", "snow", "", "", "", "", "", "", "", "", "", "snow", "snow", "snow", "snow", "snow", "", "", "", "", "", "", "", "", "water", "water", "", "snow", "snow", "snow", "", "", "", "", "", "", "", "", "water", "water", "water", "water", "", "snow", "snow", "", "", "", "", "", "", "", "", "water", "water", "water", "water", "", "", "snow", "", "", "", "", "", "", "", "", "", "water", "water", "water", "", "", "", "", "", "", "", "", "", "", "", "", "", "water", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "snow", "", "", "", "", "burning", "burning", "", "", "", "", "", "", "", "snow", "snow", "snow", "snow", "", "burning", "burning", "burning", "burning", "", "", "", "", "", "", "snow", "snow", "snow", "snow", "", "", "burning", "burning", "burning", "", "", "", "", "", "", "snow", "snow", "snow", "", "", "", "", "burning", "", "", "", "", "", "", "snow", "snow", "snow", "snow", "snow", "", "", "", "", "", "", "", "", "", "", "snow", "snow", "snow", "", "snow", "snow", "", "", "", "", "", "", "", "", "", "", "snow", "", ""]
+metadata/terrain_water_level_y = 0.0

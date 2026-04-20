@@ -286,14 +286,18 @@ func _pose_slide(t: float) -> void:
     _rot(bones.get("leg_r"), Vector3(0.1, 0, 0))
 
 
-# Frog-kick swim: arms sweep back in opposition to legs kicking.
+# Flutter-kick swim: body flattened forward, legs STREAM BACK from the
+# hips (not hang down as if walking), arms reach forward past the head,
+# alternating kick motion. The prior pose had legs at rot.x ≈ -0.3
+# which pointed them DOWN — reads as "standing in water" rather than
+# "swimming". rot.x ≈ +1.35 now swings them behind the body axis.
 func _pose_swim(t: float) -> void:
     var phase: float = sin(t * 4.0)
-    _rot(bones.get("torso"), Vector3(1.0, 0, phase * 0.15))
-    _rot(bones.get("arm_l"), Vector3(-1.9, 0, -0.6 + phase * 0.4))
-    _rot(bones.get("arm_r"), Vector3(-1.9, 0, 0.6 - phase * 0.4))
-    _rot(bones.get("leg_l"), Vector3(-0.3 - phase * 0.4, 0, 0))
-    _rot(bones.get("leg_r"), Vector3(-0.3 + phase * 0.4, 0, 0))
+    _rot(bones.get("torso"), Vector3(1.25, 0, phase * 0.08))
+    _rot(bones.get("arm_l"), Vector3(-2.85, 0, -0.35 + phase * 0.35))
+    _rot(bones.get("arm_r"), Vector3(-2.85, 0,  0.35 - phase * 0.35))
+    _rot(bones.get("leg_l"), Vector3(1.35 + phase * 0.25, 0, 0))
+    _rot(bones.get("leg_r"), Vector3(1.35 - phase * 0.25, 0, 0))
 
 
 func _pose_pole(t: float, climb: float) -> void:

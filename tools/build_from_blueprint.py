@@ -800,10 +800,13 @@ def build_scene(blueprint: dict, scene_name: str) -> Scene:
             top = oy + sy
             if effective_water_y is None or top > effective_water_y:
                 effective_water_y = top
-        # Terrain cells painted "water" are also water surfaces — the
-        # max cell-surface Y across all painted water cells becomes the
-        # global water_level_y, so swim-state fires when Mario's feet
-        # drop below the highest painted water in the level.
+        # Terrain cells painted "water" derive a single global water
+        # surface Y. We use the MIN of the painted cells' surface Ys —
+        # max would let an accidentally-sculpted-up cell flood the
+        # whole level ("all the land is swimmable"). Authors keep the
+        # water flat by sculpting the pool bottom first, then painting;
+        # the water mesh is ALSO forced flat to water_level_y at
+        # runtime so uneven sculpts don't look weird either.
         for patch in blueprint.get("terrain_patches", []):
             grid = patch.get("surface_grid") or []
             heights = patch.get("heights") or []
@@ -822,7 +825,7 @@ def build_scene(blueprint: dict, scene_name: str) -> Scene:
                         + float(heights[ci * r + (cj + 1)])
                     )
                     cell_top = origin_y + corner_avg
-                    if effective_water_y is None or cell_top > effective_water_y:
+                    if effective_water_y is None or cell_top < effective_water_y:
                         effective_water_y = cell_top
     if effective_water_y is not None:
         root_body += f'metadata/water_level_y = {float(effective_water_y)}\n'
@@ -1274,6 +1277,11 @@ def build_scene(blueprint: dict, scene_name: str) -> Scene:
         grid_literal = "[" + ", ".join(
             f'"{str(s)}"' for s in surface_grid) + "]"
         body += f'metadata/terrain_surface_grid = {grid_literal}\n'
+        # Pass the effective water level down so the runtime can render
+        # painted water cells as a single flat surface at that Y plus
+        # extrude downward pool walls from bordering land cells.
+        if effective_water_y is not None:
+            body += f'metadata/terrain_water_level_y = {float(effective_water_y)}\n'
         scene.node(pname, scene_name, "Node3D", body)
 
     # Enemies: level_manager._spawn_markers walks the scene for nodes
