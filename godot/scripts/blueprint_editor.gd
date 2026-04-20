@@ -67,6 +67,17 @@ var _drag_moving: bool = false  # true while user is moving a selected item
 var _sculpt_active: bool = false
 var _sculpt_radius: int = 1
 var _sculpt_strength: float = 0.4
+# Sculpt mode:
+#   "raise"   — click raises, shift-click lowers
+#   "flatten" — click sets each cell in the brush to _flatten_target;
+#               Ctrl-click eyedrops the clicked cell's height as target
+#   "average" — click averages heights under the brush
+var _sculpt_mode: String = "raise"
+var _flatten_target: float = 0.0
+# Hard brush = uniform effect across radius (no smooth falloff). The
+# user explicitly asked for "only selected quadrants and not its
+# neighbors", and hard feels right for almost every authoring case.
+var _hard_brush: bool = true
 
 # Paint state — same pattern but writes the selected terrain patch's
 # `surface_grid` cells instead of heights. Shift/right-click erases
@@ -579,6 +590,12 @@ func _on_canvas_click(world: Vector2, button: int, shift: bool, ctrl: bool) -> v
 		_canvas.queue_redraw()
 		return
 	if _sculpt_active and selected_kind == "terrain_patches":
+		# Ctrl-click in flatten mode is an eyedropper: don't push undo,
+		# just copy the clicked cell's height into _flatten_target.
+		if _sculpt_mode == "flatten" and ctrl:
+			_eyedrop_height(world)
+			_rebuild_inspector()
+			return
 		_begin_action()
 		var lower: bool = shift or button == MOUSE_BUTTON_RIGHT
 		_sculpt_at(world, lower)
@@ -919,7 +936,10 @@ func _finalize_terrain_drag(end_world: Vector2) -> void:
 	var size := b - a
 	if size.x < 4.0 or size.y < 4.0:
 		return  # too small to bother — terrain needs room to sculpt
-	var res: int = 16
+	# Twice the previous density so painting + sculpting have enough
+	# resolution for Mario-scale features (shorelines, dirt paths, lava
+	# cracks). 32×32 vertices = ~1k polys per patch, still cheap.
+	var res: int = 32
 	var heights: Array = []
 	heights.resize(res * res)
 	for i in range(res * res):
@@ -1415,7 +1435,6 @@ func _sculpt_at(world: Vector2, lower: bool) -> void:
 	var heights: Array = patch.get("heights", [])
 	if heights.size() != res * res:
 		return
-	# World → patch-local, then local → grid index (i along +x, j along +z).
 	var lx: float = world.x - float(origin[0])
 	var lz: float = world.y - float(origin[2])
 	if lx < 0 or lz < 0 or lx > sx or lz > sz:
@@ -1424,20 +1443,69 @@ func _sculpt_at(world: Vector2, lower: bool) -> void:
 	var fj: float = (lz / sz) * float(res - 1)
 	var ci: int = int(round(fi))
 	var cj: int = int(round(fj))
-	var strength: float = -_sculpt_strength if lower else _sculpt_strength
 	var r: int = max(_sculpt_radius, 0)
-	# Circular falloff brush: strength at centre, fades to zero at the
-	# edge of the radius. Keeps sculpts feeling soft instead of blocky.
+	var affected: Array = []
 	for i in range(max(ci - r, 0), min(ci + r + 1, res)):
 		for j in range(max(cj - r, 0), min(cj + r + 1, res)):
 			var d: float = Vector2(float(i) - fi, float(j) - fj).length()
 			if d > float(r) + 0.5:
 				continue
-			var falloff: float = 1.0 - clamp(d / (float(r) + 0.5), 0.0, 1.0)
-			var idx: int = i * res + j
-			heights[idx] = float(heights[idx]) + strength * falloff
+			var weight: float = 1.0
+			if not _hard_brush:
+				weight = 1.0 - clamp(d / (float(r) + 0.5), 0.0, 1.0)
+			affected.append([i * res + j, weight])
+	match _sculpt_mode:
+		"raise":
+			var strength: float = -_sculpt_strength if lower else _sculpt_strength
+			for entry in affected:
+				heights[entry[0]] = float(heights[entry[0]]) + strength * float(entry[1])
+		"flatten":
+			# Soft brush lerps toward target; hard brush snaps exactly.
+			for entry in affected:
+				var idx: int = entry[0]
+				var w: float = float(entry[1])
+				if _hard_brush:
+					heights[idx] = _flatten_target
+				else:
+					heights[idx] = lerp(float(heights[idx]), _flatten_target, w)
+		"average":
+			var total: float = 0.0
+			for entry in affected:
+				total += float(heights[entry[0]])
+			var avg: float = total / float(max(affected.size(), 1))
+			for entry in affected:
+				var idx2: int = entry[0]
+				var w2: float = float(entry[1])
+				if _hard_brush:
+					heights[idx2] = avg
+				else:
+					heights[idx2] = lerp(float(heights[idx2]), avg, w2)
 	patch["heights"] = heights
 	_mark_dirty()
+
+
+func _eyedrop_height(world: Vector2) -> void:
+	# Ctrl-click on a terrain cell in flatten mode captures that cell's
+	# height into _flatten_target so subsequent clicks flatten the
+	# brush to match. No undo push; eyedrop is a state-only action.
+	if selected_kind != "terrain_patches" or selected_index < 0:
+		return
+	var patch: Dictionary = blueprint["terrain_patches"][selected_index]
+	var origin: Array = patch["origin"]
+	var sx: float = float(patch.get("size_x", 10))
+	var sz: float = float(patch.get("size_z", 10))
+	var res: int = int(patch.get("resolution", 8))
+	var heights: Array = patch.get("heights", [])
+	if res < 2 or heights.size() != res * res:
+		return
+	var lx: float = world.x - float(origin[0])
+	var lz: float = world.y - float(origin[2])
+	if lx < 0 or lz < 0 or lx > sx or lz > sz:
+		return
+	var ci: int = clamp(int(round((lx / sx) * float(res - 1))), 0, res - 1)
+	var cj: int = clamp(int(round((lz / sz) * float(res - 1))), 0, res - 1)
+	_flatten_target = float(heights[ci * res + cj])
+	_status("Flatten target = %.2fm (picked from grid cell)" % _flatten_target)
 
 
 # ------------------------------------------------------------ Inspector
@@ -1783,14 +1851,30 @@ func _inspector_terrain() -> void:
 	hdr.text = "Sculpt"
 	hdr.add_theme_color_override("font_color", Color(0.7, 1.0, 0.8))
 	_inspector.add_child(hdr)
-	var sculpt_row := _mkrow("Sculpt mode")
+	var sculpt_row := _mkrow("Sculpt active")
 	_mkcheck(sculpt_row, _sculpt_active, func(v: bool) -> void:
 		_sculpt_active = v
-		_status("Sculpt %s — click raises, shift-click lowers" % ("ON" if v else "OFF")))
-	_mkspin(_mkrow("Brush radius"), _sculpt_radius, 0, 8, 1, func(v: float) -> void:
+		if v:
+			_paint_active = false
+		_status("Sculpt %s" % ("ON" if v else "OFF")))
+	_mkoption(_mkrow("Mode"), ["raise", "flatten", "average"],
+		_sculpt_mode, func(s: String) -> void:
+			_sculpt_mode = s
+			if s == "flatten":
+				_status("Flatten — click sets target height; Ctrl-click eyedrops from cell")
+			elif s == "average":
+				_status("Average — click smooths heights under brush")
+			else:
+				_status("Raise — click raises, shift-click lowers"))
+	_mkspin(_mkrow("Brush radius"), _sculpt_radius, 0, 12, 1, func(v: float) -> void:
 		_sculpt_radius = int(v))
 	_mkspin(_mkrow("Strength (m)"), _sculpt_strength, 0.05, 4.0, 0.05, func(v: float) -> void:
 		_sculpt_strength = v)
+	_mkspin(_mkrow("Flatten target"), _flatten_target, -50.0, 50.0, 0.1, func(v: float) -> void:
+		_flatten_target = v)
+	var hard_row := _mkrow("Hard brush")
+	_mkcheck(hard_row, _hard_brush, func(v: bool) -> void:
+		_hard_brush = v)
 	# Quick-action buttons so the user can reset or normalise a patch
 	# without hand-sculpting every cell back to zero.
 	var flatten_btn := Button.new()
@@ -1823,8 +1907,6 @@ func _inspector_terrain() -> void:
 	var paint_row := _mkrow("Paint mode")
 	_mkcheck(paint_row, _paint_active, func(v: bool) -> void:
 		_paint_active = v
-		# Paint + sculpt are mutually exclusive — picking one disables
-		# the other so click events have one clear destination.
 		if v:
 			_sculpt_active = false
 		_status("Paint %s — click to paint, shift-click to erase" % ("ON" if v else "OFF")))

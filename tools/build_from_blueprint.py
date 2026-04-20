@@ -800,6 +800,30 @@ def build_scene(blueprint: dict, scene_name: str) -> Scene:
             top = oy + sy
             if effective_water_y is None or top > effective_water_y:
                 effective_water_y = top
+        # Terrain cells painted "water" are also water surfaces — the
+        # max cell-surface Y across all painted water cells becomes the
+        # global water_level_y, so swim-state fires when Mario's feet
+        # drop below the highest painted water in the level.
+        for patch in blueprint.get("terrain_patches", []):
+            grid = patch.get("surface_grid") or []
+            heights = patch.get("heights") or []
+            r = int(patch.get("resolution", 8))
+            if len(grid) != (r - 1) * (r - 1) or len(heights) != r * r:
+                continue
+            origin_y = float(patch["origin"][1])
+            for ci in range(r - 1):
+                for cj in range(r - 1):
+                    if str(grid[ci * (r - 1) + cj]) != "water":
+                        continue
+                    corner_avg = 0.25 * (
+                        float(heights[ci * r + cj])
+                        + float(heights[(ci + 1) * r + cj])
+                        + float(heights[(ci + 1) * r + (cj + 1)])
+                        + float(heights[ci * r + (cj + 1)])
+                    )
+                    cell_top = origin_y + corner_avg
+                    if effective_water_y is None or cell_top > effective_water_y:
+                        effective_water_y = cell_top
     if effective_water_y is not None:
         root_body += f'metadata/water_level_y = {float(effective_water_y)}\n'
     if "bgm" in blueprint:
