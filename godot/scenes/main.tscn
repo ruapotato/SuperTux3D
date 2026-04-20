@@ -70,40 +70,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 color = Color(0, 0, 0, 0.55)
 
-[node name="TitleScreen" type="ColorRect" parent="UI"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-color = Color(0, 0, 0, 0.75)
-
-[node name="TitleText" type="Label" parent="UI/TitleScreen"]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -400.0
-offset_top = -180.0
-offset_right = 400.0
-offset_bottom = 180.0
-theme_override_font_sizes/font_size = 28
-theme_override_colors/font_color = Color(1, 0.92, 0.6, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-horizontal_alignment = 1
-text = "SUPER MARIO 64 — GODOT PORT
-
-Move         WASD
-Jump         Space
-Crouch       Ctrl
-Attack/Dive  Shift / Left mouse
-Camera       Mouse / Wheel zoom
-Level cycle  Q / E  (or 1-9, 0 for castle)
-Respawn      R        Pause  P
-Collision    F1
-
-Press any key to start"
-
 [node name="Title" type="Label" parent="PauseMenu/PauseRoot"]
 anchors_preset = 8
 anchor_left = 0.5

@@ -108,10 +108,14 @@ const MARIO_ANIM_GRAB_POLE_SHORT             := 0x06
 # via * 30 * WORLD_SCALE (WORLD_SCALE = 0.01). Values commented inline.
 const GRAVITY              := 36.0
 const TERMINAL_VEL         := -22.5
-const WALK_MAX_VEL         := 9.6
-const RUN_MAX_VEL          := 14.4
+# Horizontal speeds used to be decomp-direct (9.6 / 14.4 m/s) which felt
+# fine on giant SM64 levels but made author-sized rooms feel like you
+# were zooming through them. Toned down ~27% for a more controlled pace;
+# everything else (accel, jumps, air steering) stays decomp-aligned.
+const WALK_MAX_VEL         := 7.0
+const RUN_MAX_VEL          := 10.5
 const WALK_ACCEL           := 18.0
-const BRAKE_DECEL          := 45.0
+const BRAKE_DECEL           := 45.0
 const IDLE_FRICTION        := 30.0
 const AIR_STEERING         := 11.0
 const JUMP_IMPULSE         := 12.6    # single jump (decomp 42/frame)
@@ -129,7 +133,9 @@ const GROUND_POUND_SPEED   := -22.5   # snap terminal on pound
 const TURN_RATE            := 12.0
 
 # Walking vs running threshold: if forward_vel exceeds this, use RUNNING anim.
-const RUN_ANIM_THRESHOLD := 8.0
+# Kept at ~57% of RUN_MAX_VEL so the anim switch happens at the same
+# stick-magnitude point it did before the speed rebalance.
+const RUN_ANIM_THRESHOLD := 6.0
 
 # ---- Controller input ----------------------------------------------------
 var input_stick: Vector2 = Vector2.ZERO
@@ -564,7 +570,7 @@ func _act_freefall(delta: float) -> bool:
         return set_action(ACT_GROUND_POUND)
     if input_attack_pressed:
         return _begin_dive()
-    if is_on_wall and input_jump_pressed:
+    if _wall_kick_allowed():
         return _begin_wall_kick()
     if is_on_floor:
         return set_action(ACT_FREEFALL_LAND)
@@ -774,7 +780,7 @@ func _hold_air_until_land(land_action: int) -> bool:
         return set_action(ACT_GROUND_POUND)
     if input_attack_pressed:
         return _begin_dive()
-    if is_on_wall and input_jump_pressed:
+    if _wall_kick_allowed():
         return _begin_wall_kick()
     if is_on_floor and action_time > 0.07 and vel.y <= 0.0:
         return set_action(land_action)
@@ -790,7 +796,7 @@ func _common_air_transitions(default_land: int) -> bool:
         return set_action(ACT_GROUND_POUND)
     if input_attack_pressed:
         return _begin_dive()
-    if is_on_wall and input_jump_pressed:
+    if _wall_kick_allowed():
         return _begin_wall_kick()
     # Only promote to FREEFALL once we're clearly past the peak AND a few
     # frames have elapsed. Too tight a threshold makes the jump anim snap
@@ -804,6 +810,30 @@ func _common_air_transitions(default_land: int) -> bool:
     if is_on_floor and action_time > 0.07 and vel.y <= 0.0:
         return set_action(default_land)
     return false
+
+
+# Wall-kick is only valid when all three conditions hold:
+#   1. Jump button was pressed this frame
+#   2. We've been in the current airborne action for at least one
+#      frame — prevents a ground-near-wall jump from chaining into a
+#      wall kick on the very first frame after launch (bug: "standing
+#      next to a wall + jump = wall kick away from wall")
+#   3. The stick is aimed INTO the wall (dot(stick, wall_normal) < -0.3)
+#      — wall kicks are the player's choice to push off. Just brushing
+#      a wall mid-air with the stick neutral shouldn't trigger one.
+func _wall_kick_allowed() -> bool:
+    if not input_jump_pressed:
+        return false
+    if not is_on_wall:
+        return false
+    if action_time <= 0.0:
+        return false
+    if wall_normal.length() < 0.01:
+        return false
+    var stick_dir := _stick_to_world_dir()
+    if stick_dir.length() < 0.15:
+        return false
+    return stick_dir.dot(wall_normal) < -0.3
 
 
 # ---- Jump initiators ---------------------------------------------------

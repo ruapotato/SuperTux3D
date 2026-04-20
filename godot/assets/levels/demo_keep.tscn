@@ -4,16 +4,16 @@
 [ext_resource type="Material" path="res://assets/materials/wood_dark.tres" id="e3_wood_dark"]
 [ext_resource type="Material" path="res://assets/materials/fabric_red.tres" id="e4_fabric_red"]
 [sub_resource type="BoxMesh" id="s1"]
-size = Vector3(12, 0.2, 16)
+size = Vector3(12.0, 0.2, 16.0)
 
 [sub_resource type="BoxShape3D" id="s2"]
-size = Vector3(12, 0.2, 16)
+size = Vector3(12.0, 0.2, 16.0)
 
 [sub_resource type="BoxMesh" id="s3"]
-size = Vector3(12, 0.2, 16)
+size = Vector3(12.0, 0.2, 16.0)
 
 [sub_resource type="BoxShape3D" id="s4"]
-size = Vector3(12, 0.2, 16)
+size = Vector3(12.0, 0.2, 16.0)
 
 [sub_resource type="BoxMesh" id="s5"]
 size = Vector3(4.5, 5.0, 0.4)
@@ -172,16 +172,16 @@ size = Vector3(0.4, 5.0, 3.5)
 size = Vector3(0.4, 5.0, 3.5)
 
 [sub_resource type="BoxMesh" id="s57"]
-size = Vector3(12, 0.2, 10)
+size = Vector3(12.0, 0.2, 10.0)
 
 [sub_resource type="BoxShape3D" id="s58"]
-size = Vector3(12, 0.2, 10)
+size = Vector3(12.0, 0.2, 10.0)
 
 [sub_resource type="BoxMesh" id="s59"]
-size = Vector3(12, 0.2, 10)
+size = Vector3(12.0, 0.2, 10.0)
 
 [sub_resource type="BoxShape3D" id="s60"]
-size = Vector3(12, 0.2, 10)
+size = Vector3(12.0, 0.2, 10.0)
 
 [sub_resource type="BoxMesh" id="s61"]
 size = Vector3(12.0, 6.0, 0.4)
@@ -346,520 +346,520 @@ size = Vector3(6, 0.4, 2)
 size = Vector3(6, 0.4, 2)
 
 [node name="BuildingRoot" type="Node3D"]
-[node name="EntryHall" type="Node3D" parent="BuildingRoot"]
+[node name="EntryHall" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
-[node name="Floor" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="Floor_0" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.0, -0.1, 8.0)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/Floor"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/Floor_0"]
 mesh = SubResource("s1")
 surface_material_override/0 = ExtResource("e2_stone_grey")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/Floor"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/Floor_0"]
 shape = SubResource("s2")
-[node name="Ceiling" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="Ceiling_0" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.0, 5.1, 8.0)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/Ceiling"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/Ceiling_0"]
 mesh = SubResource("s3")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/Ceiling"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/Ceiling_0"]
 shape = SubResource("s4")
-[node name="WallN_seg0" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallN_seg0" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.25, 2.5, 16)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallN_seg0"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallN_seg0"]
 mesh = SubResource("s5")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallN_seg0"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallN_seg0"]
 shape = SubResource("s6")
-[node name="WallN_seg1" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallN_seg1" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.0, 4.5, 16)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallN_seg1"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallN_seg1"]
 mesh = SubResource("s7")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallN_seg1"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallN_seg1"]
 shape = SubResource("s8")
-[node name="WallN_seg2" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallN_seg2" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.75, 2.5, 16)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallN_seg2"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallN_seg2"]
 mesh = SubResource("s9")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallN_seg2"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallN_seg2"]
 shape = SubResource("s10")
-[node name="WallS_seg0" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallS_seg0" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 2.5, 0.0)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallS_seg0"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallS_seg0"]
 mesh = SubResource("s11")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallS_seg0"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallS_seg0"]
 shape = SubResource("s12")
-[node name="WallS_seg1" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallS_seg1" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.0, 4.25, 0.0)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallS_seg1"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallS_seg1"]
 mesh = SubResource("s13")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallS_seg1"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallS_seg1"]
 shape = SubResource("s14")
-[node name="WallS_seg2" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallS_seg2" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 2.5, 0.0)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallS_seg2"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallS_seg2"]
 mesh = SubResource("s15")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallS_seg2"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallS_seg2"]
 shape = SubResource("s16")
-[node name="WallE_seg0" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallE_seg0" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 2.5, 1.5)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallE_seg0"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallE_seg0"]
 mesh = SubResource("s17")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallE_seg0"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallE_seg0"]
 shape = SubResource("s18")
-[node name="WallE_seg1" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallE_seg1" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.75, 3.75)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallE_seg1"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallE_seg1"]
 mesh = SubResource("s19")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallE_seg1"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallE_seg1"]
 shape = SubResource("s20")
-[node name="WallE_seg2" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallE_seg2" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 4.25, 3.75)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallE_seg2"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallE_seg2"]
 mesh = SubResource("s21")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallE_seg2"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallE_seg2"]
 shape = SubResource("s22")
-[node name="WallE_seg3" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallE_seg3" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 2.5, 5.75)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallE_seg3"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallE_seg3"]
 mesh = SubResource("s23")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallE_seg3"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallE_seg3"]
 shape = SubResource("s24")
-[node name="WallE_seg4" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallE_seg4" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.75, 7.75)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallE_seg4"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallE_seg4"]
 mesh = SubResource("s25")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallE_seg4"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallE_seg4"]
 shape = SubResource("s26")
-[node name="WallE_seg5" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallE_seg5" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 4.25, 7.75)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallE_seg5"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallE_seg5"]
 mesh = SubResource("s27")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallE_seg5"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallE_seg5"]
 shape = SubResource("s28")
-[node name="WallE_seg6" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallE_seg6" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 2.5, 9.75)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallE_seg6"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallE_seg6"]
 mesh = SubResource("s29")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallE_seg6"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallE_seg6"]
 shape = SubResource("s30")
-[node name="WallE_seg7" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallE_seg7" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.75, 11.75)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallE_seg7"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallE_seg7"]
 mesh = SubResource("s31")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallE_seg7"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallE_seg7"]
 shape = SubResource("s32")
-[node name="WallE_seg8" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallE_seg8" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 4.25, 11.75)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallE_seg8"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallE_seg8"]
 mesh = SubResource("s33")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallE_seg8"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallE_seg8"]
 shape = SubResource("s34")
-[node name="WallE_seg9" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallE_seg9" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 2.5, 14.25)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallE_seg9"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallE_seg9"]
 mesh = SubResource("s35")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallE_seg9"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallE_seg9"]
 shape = SubResource("s36")
-[node name="WallW_seg0" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallW_seg0" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 2.5, 1.5)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallW_seg0"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallW_seg0"]
 mesh = SubResource("s37")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallW_seg0"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallW_seg0"]
 shape = SubResource("s38")
-[node name="WallW_seg1" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallW_seg1" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 0.75, 3.75)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallW_seg1"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallW_seg1"]
 mesh = SubResource("s39")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallW_seg1"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallW_seg1"]
 shape = SubResource("s40")
-[node name="WallW_seg2" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallW_seg2" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 4.25, 3.75)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallW_seg2"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallW_seg2"]
 mesh = SubResource("s41")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallW_seg2"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallW_seg2"]
 shape = SubResource("s42")
-[node name="WallW_seg3" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallW_seg3" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 2.5, 5.75)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallW_seg3"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallW_seg3"]
 mesh = SubResource("s43")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallW_seg3"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallW_seg3"]
 shape = SubResource("s44")
-[node name="WallW_seg4" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallW_seg4" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 0.75, 7.75)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallW_seg4"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallW_seg4"]
 mesh = SubResource("s45")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallW_seg4"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallW_seg4"]
 shape = SubResource("s46")
-[node name="WallW_seg5" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallW_seg5" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 4.25, 7.75)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallW_seg5"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallW_seg5"]
 mesh = SubResource("s47")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallW_seg5"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallW_seg5"]
 shape = SubResource("s48")
-[node name="WallW_seg6" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallW_seg6" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 2.5, 9.75)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallW_seg6"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallW_seg6"]
 mesh = SubResource("s49")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallW_seg6"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallW_seg6"]
 shape = SubResource("s50")
-[node name="WallW_seg7" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallW_seg7" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 0.75, 11.75)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallW_seg7"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallW_seg7"]
 mesh = SubResource("s51")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallW_seg7"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallW_seg7"]
 shape = SubResource("s52")
-[node name="WallW_seg8" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallW_seg8" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 4.25, 11.75)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallW_seg8"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallW_seg8"]
 mesh = SubResource("s53")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallW_seg8"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallW_seg8"]
 shape = SubResource("s54")
-[node name="WallW_seg9" type="StaticBody3D" parent="BuildingRoot/EntryHall"]
+[node name="WallW_seg9" type="StaticBody3D" parent="EntryHall"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 2.5, 14.25)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/EntryHall/WallW_seg9"]
+[node name="Mesh" type="MeshInstance3D" parent="EntryHall/WallW_seg9"]
 mesh = SubResource("s55")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/EntryHall/WallW_seg9"]
+[node name="Col" type="CollisionShape3D" parent="EntryHall/WallW_seg9"]
 shape = SubResource("s56")
-[node name="ThroneRoom" type="Node3D" parent="BuildingRoot"]
+[node name="ThroneRoom" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 16)
-[node name="Floor" type="StaticBody3D" parent="BuildingRoot/ThroneRoom"]
+[node name="Floor_0" type="StaticBody3D" parent="ThroneRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.0, -0.1, 5.0)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneRoom/Floor"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneRoom/Floor_0"]
 mesh = SubResource("s57")
 surface_material_override/0 = ExtResource("e2_stone_grey")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneRoom/Floor"]
+[node name="Col" type="CollisionShape3D" parent="ThroneRoom/Floor_0"]
 shape = SubResource("s58")
-[node name="Ceiling" type="StaticBody3D" parent="BuildingRoot/ThroneRoom"]
+[node name="Ceiling_0" type="StaticBody3D" parent="ThroneRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.0, 6.1, 5.0)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneRoom/Ceiling"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneRoom/Ceiling_0"]
 mesh = SubResource("s59")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneRoom/Ceiling"]
+[node name="Col" type="CollisionShape3D" parent="ThroneRoom/Ceiling_0"]
 shape = SubResource("s60")
-[node name="WallN_seg0" type="StaticBody3D" parent="BuildingRoot/ThroneRoom"]
+[node name="WallN_seg0" type="StaticBody3D" parent="ThroneRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.0, 3.0, 10)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneRoom/WallN_seg0"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneRoom/WallN_seg0"]
 mesh = SubResource("s61")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneRoom/WallN_seg0"]
+[node name="Col" type="CollisionShape3D" parent="ThroneRoom/WallN_seg0"]
 shape = SubResource("s62")
-[node name="WallS_seg0" type="StaticBody3D" parent="BuildingRoot/ThroneRoom"]
+[node name="WallS_seg0" type="StaticBody3D" parent="ThroneRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 3.0, 0.0)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneRoom/WallS_seg0"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneRoom/WallS_seg0"]
 mesh = SubResource("s63")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneRoom/WallS_seg0"]
+[node name="Col" type="CollisionShape3D" parent="ThroneRoom/WallS_seg0"]
 shape = SubResource("s64")
-[node name="WallS_seg1" type="StaticBody3D" parent="BuildingRoot/ThroneRoom"]
+[node name="WallS_seg1" type="StaticBody3D" parent="ThroneRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.0, 4.75, 0.0)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneRoom/WallS_seg1"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneRoom/WallS_seg1"]
 mesh = SubResource("s65")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneRoom/WallS_seg1"]
+[node name="Col" type="CollisionShape3D" parent="ThroneRoom/WallS_seg1"]
 shape = SubResource("s66")
-[node name="WallS_seg2" type="StaticBody3D" parent="BuildingRoot/ThroneRoom"]
+[node name="WallS_seg2" type="StaticBody3D" parent="ThroneRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 3.0, 0.0)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneRoom/WallS_seg2"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneRoom/WallS_seg2"]
 mesh = SubResource("s67")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneRoom/WallS_seg2"]
+[node name="Col" type="CollisionShape3D" parent="ThroneRoom/WallS_seg2"]
 shape = SubResource("s68")
-[node name="WallE_seg0" type="StaticBody3D" parent="BuildingRoot/ThroneRoom"]
+[node name="WallE_seg0" type="StaticBody3D" parent="ThroneRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 3.0, 1.0)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneRoom/WallE_seg0"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneRoom/WallE_seg0"]
 mesh = SubResource("s69")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneRoom/WallE_seg0"]
+[node name="Col" type="CollisionShape3D" parent="ThroneRoom/WallE_seg0"]
 shape = SubResource("s70")
-[node name="WallE_seg1" type="StaticBody3D" parent="BuildingRoot/ThroneRoom"]
+[node name="WallE_seg1" type="StaticBody3D" parent="ThroneRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.0, 2.6)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneRoom/WallE_seg1"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneRoom/WallE_seg1"]
 mesh = SubResource("s71")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneRoom/WallE_seg1"]
+[node name="Col" type="CollisionShape3D" parent="ThroneRoom/WallE_seg1"]
 shape = SubResource("s72")
-[node name="WallE_seg2" type="StaticBody3D" parent="BuildingRoot/ThroneRoom"]
+[node name="WallE_seg2" type="StaticBody3D" parent="ThroneRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 5.25, 2.6)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneRoom/WallE_seg2"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneRoom/WallE_seg2"]
 mesh = SubResource("s73")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneRoom/WallE_seg2"]
+[node name="Col" type="CollisionShape3D" parent="ThroneRoom/WallE_seg2"]
 shape = SubResource("s74")
-[node name="WallE_seg3" type="StaticBody3D" parent="BuildingRoot/ThroneRoom"]
+[node name="WallE_seg3" type="StaticBody3D" parent="ThroneRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 3.0, 5.1)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneRoom/WallE_seg3"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneRoom/WallE_seg3"]
 mesh = SubResource("s75")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneRoom/WallE_seg3"]
+[node name="Col" type="CollisionShape3D" parent="ThroneRoom/WallE_seg3"]
 shape = SubResource("s76")
-[node name="WallE_seg4" type="StaticBody3D" parent="BuildingRoot/ThroneRoom"]
+[node name="WallE_seg4" type="StaticBody3D" parent="ThroneRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.0, 7.6)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneRoom/WallE_seg4"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneRoom/WallE_seg4"]
 mesh = SubResource("s77")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneRoom/WallE_seg4"]
+[node name="Col" type="CollisionShape3D" parent="ThroneRoom/WallE_seg4"]
 shape = SubResource("s78")
-[node name="WallE_seg5" type="StaticBody3D" parent="BuildingRoot/ThroneRoom"]
+[node name="WallE_seg5" type="StaticBody3D" parent="ThroneRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 5.25, 7.6)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneRoom/WallE_seg5"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneRoom/WallE_seg5"]
 mesh = SubResource("s79")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneRoom/WallE_seg5"]
+[node name="Col" type="CollisionShape3D" parent="ThroneRoom/WallE_seg5"]
 shape = SubResource("s80")
-[node name="WallE_seg6" type="StaticBody3D" parent="BuildingRoot/ThroneRoom"]
+[node name="WallE_seg6" type="StaticBody3D" parent="ThroneRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 3.0, 9.1)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneRoom/WallE_seg6"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneRoom/WallE_seg6"]
 mesh = SubResource("s81")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneRoom/WallE_seg6"]
+[node name="Col" type="CollisionShape3D" parent="ThroneRoom/WallE_seg6"]
 shape = SubResource("s82")
-[node name="WallW_seg0" type="StaticBody3D" parent="BuildingRoot/ThroneRoom"]
+[node name="WallW_seg0" type="StaticBody3D" parent="ThroneRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 3.0, 1.0)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneRoom/WallW_seg0"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneRoom/WallW_seg0"]
 mesh = SubResource("s83")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneRoom/WallW_seg0"]
+[node name="Col" type="CollisionShape3D" parent="ThroneRoom/WallW_seg0"]
 shape = SubResource("s84")
-[node name="WallW_seg1" type="StaticBody3D" parent="BuildingRoot/ThroneRoom"]
+[node name="WallW_seg1" type="StaticBody3D" parent="ThroneRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 1.0, 2.6)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneRoom/WallW_seg1"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneRoom/WallW_seg1"]
 mesh = SubResource("s85")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneRoom/WallW_seg1"]
+[node name="Col" type="CollisionShape3D" parent="ThroneRoom/WallW_seg1"]
 shape = SubResource("s86")
-[node name="WallW_seg2" type="StaticBody3D" parent="BuildingRoot/ThroneRoom"]
+[node name="WallW_seg2" type="StaticBody3D" parent="ThroneRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 5.25, 2.6)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneRoom/WallW_seg2"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneRoom/WallW_seg2"]
 mesh = SubResource("s87")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneRoom/WallW_seg2"]
+[node name="Col" type="CollisionShape3D" parent="ThroneRoom/WallW_seg2"]
 shape = SubResource("s88")
-[node name="WallW_seg3" type="StaticBody3D" parent="BuildingRoot/ThroneRoom"]
+[node name="WallW_seg3" type="StaticBody3D" parent="ThroneRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 3.0, 5.1)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneRoom/WallW_seg3"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneRoom/WallW_seg3"]
 mesh = SubResource("s89")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneRoom/WallW_seg3"]
+[node name="Col" type="CollisionShape3D" parent="ThroneRoom/WallW_seg3"]
 shape = SubResource("s90")
-[node name="WallW_seg4" type="StaticBody3D" parent="BuildingRoot/ThroneRoom"]
+[node name="WallW_seg4" type="StaticBody3D" parent="ThroneRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 1.0, 7.6)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneRoom/WallW_seg4"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneRoom/WallW_seg4"]
 mesh = SubResource("s91")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneRoom/WallW_seg4"]
+[node name="Col" type="CollisionShape3D" parent="ThroneRoom/WallW_seg4"]
 shape = SubResource("s92")
-[node name="WallW_seg5" type="StaticBody3D" parent="BuildingRoot/ThroneRoom"]
+[node name="WallW_seg5" type="StaticBody3D" parent="ThroneRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 5.25, 7.6)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneRoom/WallW_seg5"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneRoom/WallW_seg5"]
 mesh = SubResource("s93")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneRoom/WallW_seg5"]
+[node name="Col" type="CollisionShape3D" parent="ThroneRoom/WallW_seg5"]
 shape = SubResource("s94")
-[node name="WallW_seg6" type="StaticBody3D" parent="BuildingRoot/ThroneRoom"]
+[node name="WallW_seg6" type="StaticBody3D" parent="ThroneRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 3.0, 9.1)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneRoom/WallW_seg6"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneRoom/WallW_seg6"]
 mesh = SubResource("s95")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneRoom/WallW_seg6"]
+[node name="Col" type="CollisionShape3D" parent="ThroneRoom/WallW_seg6"]
 shape = SubResource("s96")
-[node name="PillarNE" type="StaticBody3D" parent="BuildingRoot"]
+[node name="PillarNE" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.5, 3)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/PillarNE"]
+[node name="Mesh" type="MeshInstance3D" parent="PillarNE"]
 mesh = SubResource("s97")
 surface_material_override/0 = ExtResource("e3_wood_dark")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/PillarNE"]
+[node name="Col" type="CollisionShape3D" parent="PillarNE"]
 shape = SubResource("s98")
-[node name="PillarNW" type="StaticBody3D" parent="BuildingRoot"]
+[node name="PillarNW" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2.5, 3)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/PillarNW"]
+[node name="Mesh" type="MeshInstance3D" parent="PillarNW"]
 mesh = SubResource("s99")
 surface_material_override/0 = ExtResource("e3_wood_dark")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/PillarNW"]
+[node name="Col" type="CollisionShape3D" parent="PillarNW"]
 shape = SubResource("s100")
-[node name="PillarSE" type="StaticBody3D" parent="BuildingRoot"]
+[node name="PillarSE" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.5, 13)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/PillarSE"]
+[node name="Mesh" type="MeshInstance3D" parent="PillarSE"]
 mesh = SubResource("s101")
 surface_material_override/0 = ExtResource("e3_wood_dark")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/PillarSE"]
+[node name="Col" type="CollisionShape3D" parent="PillarSE"]
 shape = SubResource("s102")
-[node name="PillarSW" type="StaticBody3D" parent="BuildingRoot"]
+[node name="PillarSW" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2.5, 13)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/PillarSW"]
+[node name="Mesh" type="MeshInstance3D" parent="PillarSW"]
 mesh = SubResource("s103")
 surface_material_override/0 = ExtResource("e3_wood_dark")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/PillarSW"]
+[node name="Col" type="CollisionShape3D" parent="PillarSW"]
 shape = SubResource("s104")
-[node name="ThroneStair_step0" type="StaticBody3D" parent="BuildingRoot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.0, 0.15, 22.25)
+[node name="ThroneStair_step0" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.0, 0.15, 22.25)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneStair_step0"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneStair_step0"]
 mesh = SubResource("s105")
 surface_material_override/0 = ExtResource("e2_stone_grey")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneStair_step0"]
+[node name="Col" type="CollisionShape3D" parent="ThroneStair_step0"]
 shape = SubResource("s106")
-[node name="ThroneStair_step1" type="StaticBody3D" parent="BuildingRoot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.0, 0.44999999999999996, 22.75)
+[node name="ThroneStair_step1" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.0, 0.44999999999999996, 22.75)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneStair_step1"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneStair_step1"]
 mesh = SubResource("s107")
 surface_material_override/0 = ExtResource("e2_stone_grey")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneStair_step1"]
+[node name="Col" type="CollisionShape3D" parent="ThroneStair_step1"]
 shape = SubResource("s108")
-[node name="ThroneStair_step2" type="StaticBody3D" parent="BuildingRoot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.0, 0.75, 23.25)
+[node name="ThroneStair_step2" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.0, 0.75, 23.25)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneStair_step2"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneStair_step2"]
 mesh = SubResource("s109")
 surface_material_override/0 = ExtResource("e2_stone_grey")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneStair_step2"]
+[node name="Col" type="CollisionShape3D" parent="ThroneStair_step2"]
 shape = SubResource("s110")
-[node name="ThroneStair_step3" type="StaticBody3D" parent="BuildingRoot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.0, 1.05, 23.75)
+[node name="ThroneStair_step3" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.0, 1.05, 23.75)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneStair_step3"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneStair_step3"]
 mesh = SubResource("s111")
 surface_material_override/0 = ExtResource("e2_stone_grey")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneStair_step3"]
+[node name="Col" type="CollisionShape3D" parent="ThroneStair_step3"]
 shape = SubResource("s112")
-[node name="ThroneDais" type="StaticBody3D" parent="BuildingRoot"]
+[node name="ThroneDais" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.0, 1.4, 25.0)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="BuildingRoot/ThroneDais"]
+[node name="Mesh" type="MeshInstance3D" parent="ThroneDais"]
 mesh = SubResource("s113")
 surface_material_override/0 = ExtResource("e4_fabric_red")
-[node name="Col" type="CollisionShape3D" parent="BuildingRoot/ThroneDais"]
+[node name="Col" type="CollisionShape3D" parent="ThroneDais"]
 shape = SubResource("s114")

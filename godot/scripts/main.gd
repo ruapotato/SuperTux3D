@@ -4,6 +4,7 @@ const CleanCharacterAnim := preload("res://scripts/clean_character_anim.gd")
 const LevelManagerScript := preload("res://scripts/level_manager.gd")
 const SoundBankScript := preload("res://scripts/sound_bank.gd")
 const SaveDataScript := preload("res://scripts/save_data.gd")
+const LevelSelectScript := preload("res://scripts/level_select.gd")
 const PLAYER_SCENE := preload("res://assets/characters/player.tscn")
 const BOOT_LEVEL := "grass_hub"
 const BOOT_AREA := 1
@@ -48,7 +49,7 @@ var _cam_distance: float = CAM_DISTANCE_DEFAULT
 @onready var camera_rig: Node3D = $CameraRig
 @onready var mario: CharacterBody3D = $Mario
 @onready var hud_label: Label = $UI/HUD
-@onready var title_screen: ColorRect = $UI/TitleScreen
+# Title/menu lives in scenes/main_menu.tscn now — this scene is game-only.
 
 var _animator: RefCounted
 var _level_manager: Node
@@ -93,14 +94,31 @@ func _ready() -> void:
     _level_manager.setup(world, mario)
     _level_manager.sound_bank = _sound_bank
     _level_manager.save_data = _save
-    _level_manager.load_level(_save.last_level, _save.last_area)
+    # If the user picked a specific level from the level-select menu,
+    # that choice wins over whatever save_data remembers. Consumed once
+    # so re-entering main.tscn from a different path falls back to the
+    # saved last-played level.
+    var boot_level: String = _save.last_level
+    var boot_area: int = _save.last_area
+    if LevelSelectScript.pending_level != "":
+        boot_level = LevelSelectScript.pending_level
+        boot_area = 1
+        LevelSelectScript.pending_level = ""
+    _level_manager.load_level(boot_level, boot_area)
+    # Temp-spawn override from the editor's Play button: drop Mario at
+    # the editor-picked position instead of the level's SpawnArea. One
+    # shot — cleared after use so subsequent respawns use the level's
+    # real spawn.
+    if LevelSelectScript.pending_temp_spawn.size() == 3:
+        var ts: Array = LevelSelectScript.pending_temp_spawn
+        mario.global_position = Vector3(float(ts[0]), float(ts[1]), float(ts[2]))
+        mario.velocity = Vector3.ZERO
+        LevelSelectScript.pending_temp_spawn = []
 
     mario.set_camera(camera)
-    # Hold on the title screen; the first key press closes it and captures
-    # the mouse.
-    if title_screen != null:
-        title_screen.visible = true
-    Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+    # Game starts immediately — the landing menu already decided we're
+    # playing. Capture the mouse so the orbit camera reads deltas.
+    Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
     get_tree().debug_collisions_hint = false
 
 
@@ -189,14 +207,6 @@ func get_anim(anim_id: int) -> Dictionary:
 
 
 func _input(event: InputEvent) -> void:
-    # Title screen swallows the first meaningful press.
-    if title_screen != null and title_screen.visible:
-        if (event is InputEventKey and event.pressed) \
-                or (event is InputEventMouseButton and event.pressed):
-            title_screen.visible = false
-            Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-            get_viewport().set_input_as_handled()
-            return
     if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
         _cam_yaw -= event.relative.x * MOUSE_SENSITIVITY
         # Mouse up → look up (camera pitches lower so it looks upward).

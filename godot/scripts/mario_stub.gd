@@ -53,6 +53,11 @@ func consume_key(color: String) -> bool:
 
 var _prev_crouch: bool = false
 var _prev_attack: bool = false
+# Horizontal velocity we asked move_and_slide to apply this tick,
+# captured BEFORE the slide runs. After a slide, a wall-blocked motion
+# zeroes the velocity field — the step-up logic needs the *intended*
+# motion direction to know "which way was I trying to go?"
+var _intended_h_vel: Vector3 = Vector3.ZERO
 # Water level Y in Godot units. -INF → no water. LevelManager sets this
 # per level; only the water-themed levels (JRB, DDD, CotMC, SA, WDW)
 # have a non-trivial value.
@@ -224,7 +229,13 @@ func _physics_process(delta: float) -> void:
     _prev_attack = attack_held
     _state.input_camera_yaw = _camera_yaw()
     _state.is_on_floor = is_on_floor()
-    _state.is_on_wall = is_on_wall()
+    # A stair riser is a 30–50cm vertical face — technically a wall, so
+    # is_on_wall() returns true. Feeding that raw into the state trips
+    # ACT_WALL_KICK_AIR every time Mario's toe bumps the next tread,
+    # launching him away from the stairs. Instead probe INTO the wall
+    # at head height — only TALL walls (full-height faces) count for
+    # wall kicks, so short risers get ignored and the stair plays nicely.
+    _state.is_on_wall = _is_on_tall_wall()
     _state.wall_normal = get_wall_normal() if is_on_wall() else Vector3.ZERO
     _state.pos = global_position
     _state.anim_at_end = _animator != null and _animator.is_at_end()
@@ -260,6 +271,7 @@ func _physics_process(delta: float) -> void:
     if _state.pos.distance_to(global_position) > 0.001:
         global_position = _state.pos
     velocity = _state.vel
+    _intended_h_vel = Vector3(velocity.x, 0.0, velocity.z)
     move_and_slide()
     _state.pos = global_position
     # Pick the surface kind we're standing on. Level .tscn files can tag
@@ -280,6 +292,11 @@ func _physics_process(delta: float) -> void:
 
     if _actor_anchor != null:
         _actor_anchor.rotation.y = _state.face_yaw
+
+    # Step-up pass: if horizontal motion got pinched against a short
+    # obstacle while Mario was on the floor, lift him over it so stairs
+    # (and curb-height ledges) are just walkable — no jump required.
+    _try_step_up()
 
     _sample_rays()
     _update_shadow()
@@ -302,6 +319,99 @@ func _physics_process(delta: float) -> void:
         if invulnerable_time > 0.0:
             want_visible = int(Time.get_ticks_msec() / 80) % 2 == 0
         _actor_anchor.visible = want_visible
+
+
+# Max ledge height Mario can auto-climb without jumping. Tuned just
+# above the tallest stair riser we generate (~0.42m) so every stair
+# walks cleanly while a genuine 0.6m ledge still blocks forward motion.
+const STEP_UP_MAX := 0.55
+# Only walls reaching above this y-offset from Mario's feet qualify as
+# "tall" — stair risers (≤ 0.5m) and curb-height blocks get ignored so
+# they don't false-trigger wall kicks.
+const TALL_WALL_HEAD_Y := 1.1
+
+
+func _is_on_tall_wall() -> bool:
+    if not is_on_wall():
+        return false
+    var n := get_wall_normal()
+    if n.length() < 0.01:
+        return false
+    # Probe from HEAD height directly into the wall (opposite the
+    # wall normal). If the ray hits solid geometry within a short
+    # reach, the wall extends up past Mario's shoulders and is a real
+    # wall worth kicking off; if it misses, we're brushing a low riser.
+    var from: Vector3 = global_position + Vector3(0, TALL_WALL_HEAD_Y, 0)
+    var to: Vector3 = from + (-n) * 0.6
+    var space := get_world_3d().direct_space_state
+    var q := PhysicsRayQueryParameters3D.create(from, to, 1)
+    q.exclude = [self]
+    var hit := space.intersect_ray(q)
+    return not hit.is_empty()
+
+
+func _try_step_up() -> void:
+    # Only step-up while grounded with horizontal intent. Jumping or
+    # falling over a ledge uses the normal physics and shouldn't be
+    # magnetized to nearby platforms.
+    if not is_on_floor():
+        return
+    # Read the INTENDED velocity, not the post-slide velocity. When
+    # move_and_slide is blocked by a wall it zeroes that component, so
+    # the post-slide vector points nowhere — meaning the loop below
+    # would never find a wall-opposing direction. Using the intended
+    # velocity recovers the original direction of travel.
+    var h_vel := _intended_h_vel
+    if h_vel.length() < 0.8:
+        return
+    var move_dir := h_vel.normalized()
+    # Did we actually hit something blocking us? If slide count is
+    # zero (no obstacles), skip the raycasts — nothing to step over.
+    var hit_wall: bool = false
+    for i in range(get_slide_collision_count()):
+        var c := get_slide_collision(i)
+        if c == null:
+            continue
+        var n := c.get_normal()
+        if abs(n.y) > 0.3:
+            continue              # floor/ceiling, not a wall
+        if n.dot(move_dir) > -0.2:
+            continue              # wall isn't in our way
+        hit_wall = true
+        break
+    if not hit_wall:
+        return
+    _probe_step_up(move_dir)
+
+
+func _probe_step_up(move_dir: Vector3) -> bool:
+    # Ask the physics world: if I were STEP_UP_MAX higher and one
+    # Mario-radius forward, would I be unblocked AND above a floor?
+    # If both, lift Mario onto that floor. Two ray casts — cheap.
+    var step_up := Vector3(0, STEP_UP_MAX, 0)
+    var forward_reach: float = 0.45
+    var from := global_position + step_up
+    var to := from + move_dir * forward_reach
+    var space := get_world_3d().direct_space_state
+
+    var q_forward := PhysicsRayQueryParameters3D.create(from, to, 1)
+    q_forward.exclude = [self]
+    if not space.intersect_ray(q_forward).is_empty():
+        return false   # still blocked at step height — obstacle is taller than STEP_UP_MAX
+
+    var q_down := PhysicsRayQueryParameters3D.create(
+        to, to + Vector3(0, -(STEP_UP_MAX + 0.15), 0), 1)
+    q_down.exclude = [self]
+    var hit_down := space.intersect_ray(q_down)
+    if hit_down.is_empty():
+        return false   # no floor at step height — just a gap, not a step
+
+    var floor_y: float = (hit_down["position"] as Vector3).y
+    var lift: float = floor_y - global_position.y + 0.02
+    if lift <= 0.0 or lift > STEP_UP_MAX:
+        return false
+    global_position.y += lift
+    return true
 
 
 func _update_shadow() -> void:

@@ -13,16 +13,16 @@ ambient_light_color = Color(0.8, 0.82, 0.78, 1)
 ambient_light_energy = 0.8
 
 [sub_resource type="BoxMesh" id="s2"]
-size = Vector3(14, 0.2, 14)
+size = Vector3(14.0, 0.2, 14.0)
 
 [sub_resource type="BoxShape3D" id="s3"]
-size = Vector3(14, 0.2, 14)
+size = Vector3(14.0, 0.2, 14.0)
 
 [sub_resource type="BoxMesh" id="s4"]
-size = Vector3(14, 0.2, 14)
+size = Vector3(14.0, 0.2, 14.0)
 
 [sub_resource type="BoxShape3D" id="s5"]
-size = Vector3(14, 0.2, 14)
+size = Vector3(14.0, 0.2, 14.0)
 
 [sub_resource type="BoxMesh" id="s6"]
 size = Vector3(6.0, 5.0, 0.4)
@@ -163,16 +163,16 @@ size = Vector3(0.4, 5.0, 1.5)
 size = Vector3(0.4, 5.0, 1.5)
 
 [sub_resource type="BoxMesh" id="s52"]
-size = Vector3(14, 0.2, 10)
+size = Vector3(14.0, 0.2, 10.0)
 
 [sub_resource type="BoxShape3D" id="s53"]
-size = Vector3(14, 0.2, 10)
+size = Vector3(14.0, 0.2, 10.0)
 
 [sub_resource type="BoxMesh" id="s54"]
-size = Vector3(14, 0.2, 10)
+size = Vector3(14.0, 0.2, 10.0)
 
 [sub_resource type="BoxShape3D" id="s55"]
-size = Vector3(14, 0.2, 10)
+size = Vector3(14.0, 0.2, 10.0)
 
 [sub_resource type="BoxMesh" id="s56"]
 size = Vector3(14.0, 6.0, 0.4)
@@ -357,7 +357,7 @@ size = Vector3(6, 0.4, 2)
 [sub_resource type="BoxShape3D" id="s116"]
 size = Vector3(6, 0.4, 2)
 
-[node name="LevelRoot" type="Node3D"]
+[node name="BuildingRoot" type="Node3D"]
 metadata/spawn_point = Vector3(7, 1, 2)
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("s1")
@@ -365,23 +365,23 @@ environment = SubResource("s1")
 transform = Transform3D(0.7, -0.5, 0.5, 0.0, 0.7, 0.7, -0.7, -0.5, 0.5, 0, 6, 0)
 [node name="Antechamber" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
-[node name="Floor" type="StaticBody3D" parent="Antechamber"]
+[node name="Floor_0" type="StaticBody3D" parent="Antechamber"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.0, -0.1, 7.0)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="Antechamber/Floor"]
+[node name="Mesh" type="MeshInstance3D" parent="Antechamber/Floor_0"]
 mesh = SubResource("s2")
 surface_material_override/0 = ExtResource("e2_stone_grey")
-[node name="Col" type="CollisionShape3D" parent="Antechamber/Floor"]
+[node name="Col" type="CollisionShape3D" parent="Antechamber/Floor_0"]
 shape = SubResource("s3")
-[node name="Ceiling" type="StaticBody3D" parent="Antechamber"]
+[node name="Ceiling_0" type="StaticBody3D" parent="Antechamber"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.0, 5.1, 7.0)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="Antechamber/Ceiling"]
+[node name="Mesh" type="MeshInstance3D" parent="Antechamber/Ceiling_0"]
 mesh = SubResource("s4")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="Antechamber/Ceiling"]
+[node name="Col" type="CollisionShape3D" parent="Antechamber/Ceiling_0"]
 shape = SubResource("s5")
 [node name="WallN_seg0" type="StaticBody3D" parent="Antechamber"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.0, 2.5, 14)
@@ -592,23 +592,23 @@ surface_material_override/0 = ExtResource("e1_brick_stone")
 shape = SubResource("s51")
 [node name="VaultRoom" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 14)
-[node name="Floor" type="StaticBody3D" parent="VaultRoom"]
+[node name="Floor_0" type="StaticBody3D" parent="VaultRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.0, -0.1, 5.0)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="VaultRoom/Floor"]
+[node name="Mesh" type="MeshInstance3D" parent="VaultRoom/Floor_0"]
 mesh = SubResource("s52")
 surface_material_override/0 = ExtResource("e2_stone_grey")
-[node name="Col" type="CollisionShape3D" parent="VaultRoom/Floor"]
+[node name="Col" type="CollisionShape3D" parent="VaultRoom/Floor_0"]
 shape = SubResource("s53")
-[node name="Ceiling" type="StaticBody3D" parent="VaultRoom"]
+[node name="Ceiling_0" type="StaticBody3D" parent="VaultRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.0, 6.1, 5.0)
 collision_layer = 1
 collision_mask = 1
-[node name="Mesh" type="MeshInstance3D" parent="VaultRoom/Ceiling"]
+[node name="Mesh" type="MeshInstance3D" parent="VaultRoom/Ceiling_0"]
 mesh = SubResource("s54")
 surface_material_override/0 = ExtResource("e1_brick_stone")
-[node name="Col" type="CollisionShape3D" parent="VaultRoom/Ceiling"]
+[node name="Col" type="CollisionShape3D" parent="VaultRoom/Ceiling_0"]
 shape = SubResource("s55")
 [node name="WallN_seg0" type="StaticBody3D" parent="VaultRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.0, 3.0, 10)
@@ -853,7 +853,7 @@ surface_material_override/0 = ExtResource("e3_wood_dark")
 [node name="Col" type="CollisionShape3D" parent="SW_Pillar"]
 shape = SubResource("s106")
 [node name="VaultStair_step0" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.0, 0.15, 22.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.0, 0.15, 22.25)
 collision_layer = 1
 collision_mask = 1
 [node name="Mesh" type="MeshInstance3D" parent="VaultStair_step0"]
@@ -862,7 +862,7 @@ surface_material_override/0 = ExtResource("e2_stone_grey")
 [node name="Col" type="CollisionShape3D" parent="VaultStair_step0"]
 shape = SubResource("s108")
 [node name="VaultStair_step1" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.0, 0.44999999999999996, 22.75)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.0, 0.44999999999999996, 22.75)
 collision_layer = 1
 collision_mask = 1
 [node name="Mesh" type="MeshInstance3D" parent="VaultStair_step1"]
@@ -871,7 +871,7 @@ surface_material_override/0 = ExtResource("e2_stone_grey")
 [node name="Col" type="CollisionShape3D" parent="VaultStair_step1"]
 shape = SubResource("s110")
 [node name="VaultStair_step2" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.0, 0.75, 23.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.0, 0.75, 23.25)
 collision_layer = 1
 collision_mask = 1
 [node name="Mesh" type="MeshInstance3D" parent="VaultStair_step2"]
@@ -880,7 +880,7 @@ surface_material_override/0 = ExtResource("e2_stone_grey")
 [node name="Col" type="CollisionShape3D" parent="VaultStair_step2"]
 shape = SubResource("s112")
 [node name="VaultStair_step3" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.0, 1.05, 23.75)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.0, 1.05, 23.75)
 collision_layer = 1
 collision_mask = 1
 [node name="Mesh" type="MeshInstance3D" parent="VaultStair_step3"]

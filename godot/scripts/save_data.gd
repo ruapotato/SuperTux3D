@@ -12,15 +12,12 @@ var lives: int = 4
 var last_level: String = "grass_hub"
 var last_area: int = 1
 
-# Valid level names in the clean-room world list. If a save file points
-# at a pre-rewrite level (castle_inside / bob / etc.), fall back to the
-# hub instead of erroring on launch.
-const VALID_LEVELS := {
-    "grass_hub": true, "mountain": true, "snow": true, "water": true,
-    "lava": true, "sand": true, "sky": true, "bowser": true,
-    "demo_full": true,
-    "test_multistory": true,
-}
+# A level is valid if the runtime can actually load its .tscn. This
+# auto-accepts any level the user authors in the editor (no hardcoded
+# list to maintain) and still falls back to the hub when an old save
+# points at a deleted level.
+func _level_exists(name: String) -> bool:
+    return ResourceLoader.exists("res://assets/levels/%s.tscn" % name)
 
 
 func load_file() -> void:
@@ -37,7 +34,7 @@ func load_file() -> void:
     lives = int(parsed.get("lives", lives))
     last_level = String(parsed.get("last_level", last_level))
     last_area = int(parsed.get("last_area", last_area))
-    if not VALID_LEVELS.has(last_level):
+    if not _level_exists(last_level):
         last_level = "grass_hub"
         last_area = 1
 

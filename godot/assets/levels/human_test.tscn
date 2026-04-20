@@ -1,0 +1,2401 @@
+[gd_scene load_steps=324 format=3]
+[ext_resource type="Material" path="res://assets/materials/brick_stone.tres" id="e1_brick_stone"]
+[ext_resource type="Material" path="res://assets/materials/stone_grey.tres" id="e2_stone_grey"]
+[ext_resource type="Material" path="res://assets/materials/wood_planks.tres" id="e3_wood_planks"]
+[ext_resource type="Material" path="res://assets/materials/gold.tres" id="e4_gold"]
+[ext_resource type="Material" path="res://assets/materials/metal_grey.tres" id="e5_metal_grey"]
+[ext_resource type="Material" path="res://assets/materials/fabric_red.tres" id="e6_fabric_red"]
+[ext_resource type="Material" path="res://assets/materials/wood_dark.tres" id="e7_wood_dark"]
+[ext_resource type="Script" path="res://scripts/terrain_patch.gd" id="e8_terrain_patch"]
+[sub_resource type="Environment" id="s1"]
+background_mode = 1
+background_color = Color(0.52, 0.75, 0.98, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.8, 0.82, 0.78, 1)
+ambient_light_energy = 0.8
+
+[sub_resource type="BoxMesh" id="s2"]
+size = Vector3(27.5, 0.2, 18.0)
+
+[sub_resource type="BoxShape3D" id="s3"]
+size = Vector3(27.5, 0.2, 18.0)
+
+[sub_resource type="BoxMesh" id="s4"]
+size = Vector3(27.5, 0.2, 18.0)
+
+[sub_resource type="BoxShape3D" id="s5"]
+size = Vector3(27.5, 0.2, 18.0)
+
+[sub_resource type="BoxMesh" id="s6"]
+size = Vector3(12.2, 5.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s7"]
+size = Vector3(12.2, 5.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s8"]
+size = Vector3(3.0, 1.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s9"]
+size = Vector3(3.0, 1.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s10"]
+size = Vector3(12.3, 5.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s11"]
+size = Vector3(12.3, 5.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s12"]
+size = Vector3(12.5, 5.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s13"]
+size = Vector3(12.5, 5.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s14"]
+size = Vector3(3.0, 1.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s15"]
+size = Vector3(3.0, 1.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s16"]
+size = Vector3(12.0, 5.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s17"]
+size = Vector3(12.0, 5.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s18"]
+size = Vector3(0.4, 5.0, 18.0)
+
+[sub_resource type="BoxShape3D" id="s19"]
+size = Vector3(0.4, 5.0, 18.0)
+
+[sub_resource type="BoxMesh" id="s20"]
+size = Vector3(0.4, 5.0, 18.0)
+
+[sub_resource type="BoxShape3D" id="s21"]
+size = Vector3(0.4, 5.0, 18.0)
+
+[sub_resource type="BoxMesh" id="s22"]
+size = Vector3(3.0, 0.2, 15.5)
+
+[sub_resource type="BoxShape3D" id="s23"]
+size = Vector3(3.0, 0.2, 15.5)
+
+[sub_resource type="BoxMesh" id="s24"]
+size = Vector3(3.0, 0.2, 15.5)
+
+[sub_resource type="BoxShape3D" id="s25"]
+size = Vector3(3.0, 0.2, 15.5)
+
+[sub_resource type="BoxMesh" id="s26"]
+size = Vector3(2.8550720214844, 2.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s27"]
+size = Vector3(2.8550720214844, 2.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s28"]
+size = Vector3(0.14492797851560013, 6.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s29"]
+size = Vector3(0.14492797851560013, 6.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s30"]
+size = Vector3(2.9884059906006115, 2.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s31"]
+size = Vector3(2.9884059906006115, 2.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s32"]
+size = Vector3(0.011594009399388483, 6.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s33"]
+size = Vector3(0.011594009399388483, 6.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s34"]
+size = Vector3(0.4, 6.0, 15.5)
+
+[sub_resource type="BoxShape3D" id="s35"]
+size = Vector3(0.4, 6.0, 15.5)
+
+[sub_resource type="BoxMesh" id="s36"]
+size = Vector3(0.4, 6.0, 15.5)
+
+[sub_resource type="BoxShape3D" id="s37"]
+size = Vector3(0.4, 6.0, 15.5)
+
+[sub_resource type="BoxMesh" id="s38"]
+size = Vector3(21.5, 0.2, 10.5)
+
+[sub_resource type="BoxShape3D" id="s39"]
+size = Vector3(21.5, 0.2, 10.5)
+
+[sub_resource type="BoxMesh" id="s40"]
+size = Vector3(21.5, 0.2, 2.5444446563721)
+
+[sub_resource type="BoxShape3D" id="s41"]
+size = Vector3(21.5, 0.2, 2.5444446563721)
+
+[sub_resource type="BoxMesh" id="s42"]
+size = Vector3(21.5, 0.2, 4.155555343627903)
+
+[sub_resource type="BoxShape3D" id="s43"]
+size = Vector3(21.5, 0.2, 4.155555343627903)
+
+[sub_resource type="BoxMesh" id="s44"]
+size = Vector3(13.566666030883791, 0.2, 3.799999999999997)
+
+[sub_resource type="BoxShape3D" id="s45"]
+size = Vector3(13.566666030883791, 0.2, 3.799999999999997)
+
+[sub_resource type="BoxMesh" id="s46"]
+size = Vector3(4.4833339691162095, 0.2, 3.799999999999997)
+
+[sub_resource type="BoxShape3D" id="s47"]
+size = Vector3(4.4833339691162095, 0.2, 3.799999999999997)
+
+[sub_resource type="BoxMesh" id="s48"]
+size = Vector3(8.8, 5.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s49"]
+size = Vector3(8.8, 5.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s50"]
+size = Vector3(3.0, 1.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s51"]
+size = Vector3(3.0, 1.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s52"]
+size = Vector3(9.7, 5.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s53"]
+size = Vector3(9.7, 5.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s54"]
+size = Vector3(9.4, 5.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s55"]
+size = Vector3(9.4, 5.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s56"]
+size = Vector3(1.5, 1.5, 0.4)
+
+[sub_resource type="BoxShape3D" id="s57"]
+size = Vector3(1.5, 1.5, 0.4)
+
+[sub_resource type="BoxMesh" id="s58"]
+size = Vector3(1.5, 1.5, 0.4)
+
+[sub_resource type="BoxShape3D" id="s59"]
+size = Vector3(1.5, 1.5, 0.4)
+
+[sub_resource type="BoxMesh" id="s60"]
+size = Vector3(10.6, 5.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s61"]
+size = Vector3(10.6, 5.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s62"]
+size = Vector3(0.4, 5.0, 2.1)
+
+[sub_resource type="BoxShape3D" id="s63"]
+size = Vector3(0.4, 5.0, 2.1)
+
+[sub_resource type="BoxMesh" id="s64"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s65"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s66"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s67"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s68"]
+size = Vector3(0.4, 5.0, 2.4)
+
+[sub_resource type="BoxShape3D" id="s69"]
+size = Vector3(0.4, 5.0, 2.4)
+
+[sub_resource type="BoxMesh" id="s70"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s71"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s72"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s73"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s74"]
+size = Vector3(0.4, 5.0, 3.0)
+
+[sub_resource type="BoxShape3D" id="s75"]
+size = Vector3(0.4, 5.0, 3.0)
+
+[sub_resource type="BoxMesh" id="s76"]
+size = Vector3(0.4, 5.0, 4.3)
+
+[sub_resource type="BoxShape3D" id="s77"]
+size = Vector3(0.4, 5.0, 4.3)
+
+[sub_resource type="BoxMesh" id="s78"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s79"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s80"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s81"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s82"]
+size = Vector3(0.4, 5.0, 4.7)
+
+[sub_resource type="BoxShape3D" id="s83"]
+size = Vector3(0.4, 5.0, 4.7)
+
+[sub_resource type="BoxMesh" id="s84"]
+size = Vector3(15.0, 0.2, 1.1000000000000014)
+
+[sub_resource type="BoxShape3D" id="s85"]
+size = Vector3(15.0, 0.2, 1.1000000000000014)
+
+[sub_resource type="BoxMesh" id="s86"]
+size = Vector3(15.0, 0.2, 2.6000000000000014)
+
+[sub_resource type="BoxShape3D" id="s87"]
+size = Vector3(15.0, 0.2, 2.6000000000000014)
+
+[sub_resource type="BoxMesh" id="s88"]
+size = Vector3(9.900000000000002, 0.2, 3.799999999999997)
+
+[sub_resource type="BoxShape3D" id="s89"]
+size = Vector3(9.900000000000002, 0.2, 3.799999999999997)
+
+[sub_resource type="BoxMesh" id="s90"]
+size = Vector3(1.6499999999999986, 0.2, 3.799999999999997)
+
+[sub_resource type="BoxShape3D" id="s91"]
+size = Vector3(1.6499999999999986, 0.2, 3.799999999999997)
+
+[sub_resource type="BoxMesh" id="s92"]
+size = Vector3(15.0, 0.2, 1.0149026927372198)
+
+[sub_resource type="BoxShape3D" id="s93"]
+size = Vector3(15.0, 0.2, 1.0149026927372198)
+
+[sub_resource type="BoxMesh" id="s94"]
+size = Vector3(2.2395784292504395, 0.2, 0.03826437363896673)
+
+[sub_resource type="BoxShape3D" id="s95"]
+size = Vector3(2.2395784292504395, 0.2, 0.03826437363896673)
+
+[sub_resource type="BoxMesh" id="s96"]
+size = Vector3(9.952450312251553, 0.2, 0.03826437363896673)
+
+[sub_resource type="BoxShape3D" id="s97"]
+size = Vector3(9.952450312251553, 0.2, 0.03826437363896673)
+
+[sub_resource type="BoxMesh" id="s98"]
+size = Vector3(15.0, 0.2, 1.2520895313085099)
+
+[sub_resource type="BoxShape3D" id="s99"]
+size = Vector3(15.0, 0.2, 1.2520895313085099)
+
+[sub_resource type="BoxMesh" id="s100"]
+size = Vector3(3.6519321747186186, 0.2, 0.859351588470755)
+
+[sub_resource type="BoxShape3D" id="s101"]
+size = Vector3(3.6519321747186186, 0.2, 0.859351588470755)
+
+[sub_resource type="BoxMesh" id="s102"]
+size = Vector3(9.027516898405638, 0.2, 0.859351588470755)
+
+[sub_resource type="BoxShape3D" id="s103"]
+size = Vector3(9.027516898405638, 0.2, 0.859351588470755)
+
+[sub_resource type="BoxMesh" id="s104"]
+size = Vector3(3.6519321747186186, 0.2, 0.7697015358568962)
+
+[sub_resource type="BoxShape3D" id="s105"]
+size = Vector3(3.6519321747186186, 0.2, 0.7697015358568962)
+
+[sub_resource type="BoxMesh" id="s106"]
+size = Vector3(9.027516898405638, 0.2, 0.7697015358568962)
+
+[sub_resource type="BoxShape3D" id="s107"]
+size = Vector3(9.027516898405638, 0.2, 0.7697015358568962)
+
+[sub_resource type="BoxMesh" id="s108"]
+size = Vector3(3.6519321747186186, 0.2, 0.7715821250981705)
+
+[sub_resource type="BoxShape3D" id="s109"]
+size = Vector3(3.6519321747186186, 0.2, 0.7715821250981705)
+
+[sub_resource type="BoxMesh" id="s110"]
+size = Vector3(9.020543236002567, 0.2, 0.7715821250981705)
+
+[sub_resource type="BoxShape3D" id="s111"]
+size = Vector3(9.020543236002567, 0.2, 0.7715821250981705)
+
+[sub_resource type="BoxMesh" id="s112"]
+size = Vector3(3.019158843739831, 0.2, 0.38674537529621134)
+
+[sub_resource type="BoxShape3D" id="s113"]
+size = Vector3(3.019158843739831, 0.2, 0.38674537529621134)
+
+[sub_resource type="BoxMesh" id="s114"]
+size = Vector3(9.020543236002567, 0.2, 0.38674537529621134)
+
+[sub_resource type="BoxShape3D" id="s115"]
+size = Vector3(9.020543236002567, 0.2, 0.38674537529621134)
+
+[sub_resource type="BoxMesh" id="s116"]
+size = Vector3(0.6251394929855199, 0.2, 2.4073627775932707)
+
+[sub_resource type="BoxShape3D" id="s117"]
+size = Vector3(0.6251394929855199, 0.2, 2.4073627775932707)
+
+[sub_resource type="BoxMesh" id="s118"]
+size = Vector3(9.952450312251553, 0.2, 0.03283595398103856)
+
+[sub_resource type="BoxShape3D" id="s119"]
+size = Vector3(9.952450312251553, 0.2, 0.03283595398103856)
+
+[sub_resource type="BoxMesh" id="s120"]
+size = Vector3(9.020543236002567, 0.2, 0.26268763907711445)
+
+[sub_resource type="BoxShape3D" id="s121"]
+size = Vector3(9.020543236002567, 0.2, 0.26268763907711445)
+
+[sub_resource type="BoxMesh" id="s122"]
+size = Vector3(9.020543236002567, 0.2, 0.26678591749854874)
+
+[sub_resource type="BoxShape3D" id="s123"]
+size = Vector3(9.020543236002567, 0.2, 0.26678591749854874)
+
+[sub_resource type="BoxMesh" id="s124"]
+size = Vector3(9.952450312251553, 0.2, 0.13346095639447952)
+
+[sub_resource type="BoxShape3D" id="s125"]
+size = Vector3(9.952450312251553, 0.2, 0.13346095639447952)
+
+[sub_resource type="BoxMesh" id="s126"]
+size = Vector3(9.299603538948404, 0.2, 0.592277782918643)
+
+[sub_resource type="BoxShape3D" id="s127"]
+size = Vector3(9.299603538948404, 0.2, 0.592277782918643)
+
+[sub_resource type="BoxMesh" id="s128"]
+size = Vector3(9.020543236002567, 0.2, 1.1193145277234464)
+
+[sub_resource type="BoxShape3D" id="s129"]
+size = Vector3(9.020543236002567, 0.2, 1.1193145277234464)
+
+[sub_resource type="BoxMesh" id="s130"]
+size = Vector3(1.9, 5.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s131"]
+size = Vector3(1.9, 5.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s132"]
+size = Vector3(1.5, 1.5, 0.4)
+
+[sub_resource type="BoxShape3D" id="s133"]
+size = Vector3(1.5, 1.5, 0.4)
+
+[sub_resource type="BoxMesh" id="s134"]
+size = Vector3(1.5, 1.5, 0.4)
+
+[sub_resource type="BoxShape3D" id="s135"]
+size = Vector3(1.5, 1.5, 0.4)
+
+[sub_resource type="BoxMesh" id="s136"]
+size = Vector3(11.6, 5.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s137"]
+size = Vector3(11.6, 5.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s138"]
+size = Vector3(1.9, 5.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s139"]
+size = Vector3(1.9, 5.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s140"]
+size = Vector3(1.5, 1.5, 0.4)
+
+[sub_resource type="BoxShape3D" id="s141"]
+size = Vector3(1.5, 1.5, 0.4)
+
+[sub_resource type="BoxMesh" id="s142"]
+size = Vector3(1.5, 1.5, 0.4)
+
+[sub_resource type="BoxShape3D" id="s143"]
+size = Vector3(1.5, 1.5, 0.4)
+
+[sub_resource type="BoxMesh" id="s144"]
+size = Vector3(11.6, 5.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s145"]
+size = Vector3(11.6, 5.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s146"]
+size = Vector3(0.4, 5.0, 0.6)
+
+[sub_resource type="BoxShape3D" id="s147"]
+size = Vector3(0.4, 5.0, 0.6)
+
+[sub_resource type="BoxMesh" id="s148"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s149"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s150"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s151"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s152"]
+size = Vector3(0.4, 5.0, 2.9)
+
+[sub_resource type="BoxShape3D" id="s153"]
+size = Vector3(0.4, 5.0, 2.9)
+
+[sub_resource type="BoxMesh" id="s154"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s155"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s156"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s157"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s158"]
+size = Vector3(0.4, 5.0, 1.0)
+
+[sub_resource type="BoxShape3D" id="s159"]
+size = Vector3(0.4, 5.0, 1.0)
+
+[sub_resource type="BoxMesh" id="s160"]
+size = Vector3(0.4, 5.0, 2.9)
+
+[sub_resource type="BoxShape3D" id="s161"]
+size = Vector3(0.4, 5.0, 2.9)
+
+[sub_resource type="BoxMesh" id="s162"]
+size = Vector3(0.4, 1.5, 1.5000000000000004)
+
+[sub_resource type="BoxShape3D" id="s163"]
+size = Vector3(0.4, 1.5, 1.5000000000000004)
+
+[sub_resource type="BoxMesh" id="s164"]
+size = Vector3(0.4, 1.5, 1.5000000000000004)
+
+[sub_resource type="BoxShape3D" id="s165"]
+size = Vector3(0.4, 1.5, 1.5000000000000004)
+
+[sub_resource type="BoxMesh" id="s166"]
+size = Vector3(0.4, 5.0, 3.0999999999999996)
+
+[sub_resource type="BoxShape3D" id="s167"]
+size = Vector3(0.4, 5.0, 3.0999999999999996)
+
+[sub_resource type="BoxMesh" id="s168"]
+size = Vector3(9.5, 0.2, 0.5149026927372198)
+
+[sub_resource type="BoxShape3D" id="s169"]
+size = Vector3(9.5, 0.2, 0.5149026927372198)
+
+[sub_resource type="BoxMesh" id="s170"]
+size = Vector3(2.2395784292504395, 0.2, 0.03826437363896673)
+
+[sub_resource type="BoxShape3D" id="s171"]
+size = Vector3(2.2395784292504395, 0.2, 0.03826437363896673)
+
+[sub_resource type="BoxMesh" id="s172"]
+size = Vector3(4.452450312251553, 0.2, 0.03826437363896673)
+
+[sub_resource type="BoxShape3D" id="s173"]
+size = Vector3(4.452450312251553, 0.2, 0.03826437363896673)
+
+[sub_resource type="BoxMesh" id="s174"]
+size = Vector3(9.5, 0.2, 0.7520895313085099)
+
+[sub_resource type="BoxShape3D" id="s175"]
+size = Vector3(9.5, 0.2, 0.7520895313085099)
+
+[sub_resource type="BoxMesh" id="s176"]
+size = Vector3(3.6519321747186186, 0.2, 0.859351588470755)
+
+[sub_resource type="BoxShape3D" id="s177"]
+size = Vector3(3.6519321747186186, 0.2, 0.859351588470755)
+
+[sub_resource type="BoxMesh" id="s178"]
+size = Vector3(3.527516898405638, 0.2, 0.859351588470755)
+
+[sub_resource type="BoxShape3D" id="s179"]
+size = Vector3(3.527516898405638, 0.2, 0.859351588470755)
+
+[sub_resource type="BoxMesh" id="s180"]
+size = Vector3(3.6519321747186186, 0.2, 0.7697015358568962)
+
+[sub_resource type="BoxShape3D" id="s181"]
+size = Vector3(3.6519321747186186, 0.2, 0.7697015358568962)
+
+[sub_resource type="BoxMesh" id="s182"]
+size = Vector3(3.527516898405638, 0.2, 0.7697015358568962)
+
+[sub_resource type="BoxShape3D" id="s183"]
+size = Vector3(3.527516898405638, 0.2, 0.7697015358568962)
+
+[sub_resource type="BoxMesh" id="s184"]
+size = Vector3(3.6519321747186186, 0.2, 0.7715821250981705)
+
+[sub_resource type="BoxShape3D" id="s185"]
+size = Vector3(3.6519321747186186, 0.2, 0.7715821250981705)
+
+[sub_resource type="BoxMesh" id="s186"]
+size = Vector3(3.520543236002567, 0.2, 0.7715821250981705)
+
+[sub_resource type="BoxShape3D" id="s187"]
+size = Vector3(3.520543236002567, 0.2, 0.7715821250981705)
+
+[sub_resource type="BoxMesh" id="s188"]
+size = Vector3(3.019158843739831, 0.2, 0.38674537529621134)
+
+[sub_resource type="BoxShape3D" id="s189"]
+size = Vector3(3.019158843739831, 0.2, 0.38674537529621134)
+
+[sub_resource type="BoxMesh" id="s190"]
+size = Vector3(3.520543236002567, 0.2, 0.38674537529621134)
+
+[sub_resource type="BoxShape3D" id="s191"]
+size = Vector3(3.520543236002567, 0.2, 0.38674537529621134)
+
+[sub_resource type="BoxMesh" id="s192"]
+size = Vector3(0.6251394929855199, 0.2, 2.4073627775932707)
+
+[sub_resource type="BoxShape3D" id="s193"]
+size = Vector3(0.6251394929855199, 0.2, 2.4073627775932707)
+
+[sub_resource type="BoxMesh" id="s194"]
+size = Vector3(4.452450312251553, 0.2, 0.03283595398103856)
+
+[sub_resource type="BoxShape3D" id="s195"]
+size = Vector3(4.452450312251553, 0.2, 0.03283595398103856)
+
+[sub_resource type="BoxMesh" id="s196"]
+size = Vector3(3.520543236002567, 0.2, 0.26268763907711445)
+
+[sub_resource type="BoxShape3D" id="s197"]
+size = Vector3(3.520543236002567, 0.2, 0.26268763907711445)
+
+[sub_resource type="BoxMesh" id="s198"]
+size = Vector3(3.520543236002567, 0.2, 0.26678591749854874)
+
+[sub_resource type="BoxShape3D" id="s199"]
+size = Vector3(3.520543236002567, 0.2, 0.26678591749854874)
+
+[sub_resource type="BoxMesh" id="s200"]
+size = Vector3(4.452450312251553, 0.2, 0.13346095639447952)
+
+[sub_resource type="BoxShape3D" id="s201"]
+size = Vector3(4.452450312251553, 0.2, 0.13346095639447952)
+
+[sub_resource type="BoxMesh" id="s202"]
+size = Vector3(3.7996035389484035, 0.2, 0.592277782918643)
+
+[sub_resource type="BoxShape3D" id="s203"]
+size = Vector3(3.7996035389484035, 0.2, 0.592277782918643)
+
+[sub_resource type="BoxMesh" id="s204"]
+size = Vector3(3.520543236002567, 0.2, 1.1193145277234464)
+
+[sub_resource type="BoxShape3D" id="s205"]
+size = Vector3(3.520543236002567, 0.2, 1.1193145277234464)
+
+[sub_resource type="BoxMesh" id="s206"]
+size = Vector3(9.5, 0.2, 6.5)
+
+[sub_resource type="BoxShape3D" id="s207"]
+size = Vector3(9.5, 0.2, 6.5)
+
+[sub_resource type="BoxMesh" id="s208"]
+size = Vector3(4.6, 4.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s209"]
+size = Vector3(4.6, 4.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s210"]
+size = Vector3(1.5, 1.5, 0.4)
+
+[sub_resource type="BoxShape3D" id="s211"]
+size = Vector3(1.5, 1.5, 0.4)
+
+[sub_resource type="BoxMesh" id="s212"]
+size = Vector3(1.5, 0.5, 0.4)
+
+[sub_resource type="BoxShape3D" id="s213"]
+size = Vector3(1.5, 0.5, 0.4)
+
+[sub_resource type="BoxMesh" id="s214"]
+size = Vector3(1.5, 1.5, 0.4)
+
+[sub_resource type="BoxShape3D" id="s215"]
+size = Vector3(1.5, 1.5, 0.4)
+
+[sub_resource type="BoxMesh" id="s216"]
+size = Vector3(1.5, 0.5, 0.4)
+
+[sub_resource type="BoxShape3D" id="s217"]
+size = Vector3(1.5, 0.5, 0.4)
+
+[sub_resource type="BoxMesh" id="s218"]
+size = Vector3(3.4000000000000004, 4.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s219"]
+size = Vector3(3.4000000000000004, 4.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s220"]
+size = Vector3(4.2, 4.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s221"]
+size = Vector3(4.2, 4.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s222"]
+size = Vector3(1.5, 1.5, 0.4)
+
+[sub_resource type="BoxShape3D" id="s223"]
+size = Vector3(1.5, 1.5, 0.4)
+
+[sub_resource type="BoxMesh" id="s224"]
+size = Vector3(1.5, 0.5, 0.4)
+
+[sub_resource type="BoxShape3D" id="s225"]
+size = Vector3(1.5, 0.5, 0.4)
+
+[sub_resource type="BoxMesh" id="s226"]
+size = Vector3(1.5, 1.5, 0.4)
+
+[sub_resource type="BoxShape3D" id="s227"]
+size = Vector3(1.5, 1.5, 0.4)
+
+[sub_resource type="BoxMesh" id="s228"]
+size = Vector3(1.5, 0.5, 0.4)
+
+[sub_resource type="BoxShape3D" id="s229"]
+size = Vector3(1.5, 0.5, 0.4)
+
+[sub_resource type="BoxMesh" id="s230"]
+size = Vector3(3.8, 4.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s231"]
+size = Vector3(3.8, 4.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s232"]
+size = Vector3(0.4, 4.0, 2.6)
+
+[sub_resource type="BoxShape3D" id="s233"]
+size = Vector3(0.4, 4.0, 2.6)
+
+[sub_resource type="BoxMesh" id="s234"]
+size = Vector3(0.4, 1.5, 1.4999999999999996)
+
+[sub_resource type="BoxShape3D" id="s235"]
+size = Vector3(0.4, 1.5, 1.4999999999999996)
+
+[sub_resource type="BoxMesh" id="s236"]
+size = Vector3(0.4, 0.5, 1.4999999999999996)
+
+[sub_resource type="BoxShape3D" id="s237"]
+size = Vector3(0.4, 0.5, 1.4999999999999996)
+
+[sub_resource type="BoxMesh" id="s238"]
+size = Vector3(0.4, 1.5, 1.4999999999999996)
+
+[sub_resource type="BoxShape3D" id="s239"]
+size = Vector3(0.4, 1.5, 1.4999999999999996)
+
+[sub_resource type="BoxMesh" id="s240"]
+size = Vector3(0.4, 0.5, 1.4999999999999996)
+
+[sub_resource type="BoxShape3D" id="s241"]
+size = Vector3(0.4, 0.5, 1.4999999999999996)
+
+[sub_resource type="BoxMesh" id="s242"]
+size = Vector3(0.4, 4.0, 2.4000000000000004)
+
+[sub_resource type="BoxShape3D" id="s243"]
+size = Vector3(0.4, 4.0, 2.4000000000000004)
+
+[sub_resource type="BoxMesh" id="s244"]
+size = Vector3(0.4, 4.0, 2.6)
+
+[sub_resource type="BoxShape3D" id="s245"]
+size = Vector3(0.4, 4.0, 2.6)
+
+[sub_resource type="BoxMesh" id="s246"]
+size = Vector3(0.4, 1.5, 1.4999999999999996)
+
+[sub_resource type="BoxShape3D" id="s247"]
+size = Vector3(0.4, 1.5, 1.4999999999999996)
+
+[sub_resource type="BoxMesh" id="s248"]
+size = Vector3(0.4, 0.5, 1.4999999999999996)
+
+[sub_resource type="BoxShape3D" id="s249"]
+size = Vector3(0.4, 0.5, 1.4999999999999996)
+
+[sub_resource type="BoxMesh" id="s250"]
+size = Vector3(0.4, 1.5, 1.4999999999999996)
+
+[sub_resource type="BoxShape3D" id="s251"]
+size = Vector3(0.4, 1.5, 1.4999999999999996)
+
+[sub_resource type="BoxMesh" id="s252"]
+size = Vector3(0.4, 0.5, 1.4999999999999996)
+
+[sub_resource type="BoxShape3D" id="s253"]
+size = Vector3(0.4, 0.5, 1.4999999999999996)
+
+[sub_resource type="BoxMesh" id="s254"]
+size = Vector3(0.4, 4.0, 2.4000000000000004)
+
+[sub_resource type="BoxShape3D" id="s255"]
+size = Vector3(0.4, 4.0, 2.4000000000000004)
+
+[sub_resource type="BoxMesh" id="s256"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxShape3D" id="s257"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxMesh" id="s258"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxShape3D" id="s259"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxMesh" id="s260"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxShape3D" id="s261"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxMesh" id="s262"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxShape3D" id="s263"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxMesh" id="s264"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxShape3D" id="s265"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxMesh" id="s266"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxShape3D" id="s267"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxMesh" id="s268"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxShape3D" id="s269"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxMesh" id="s270"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxShape3D" id="s271"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxMesh" id="s272"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxShape3D" id="s273"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxMesh" id="s274"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxShape3D" id="s275"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxMesh" id="s276"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxShape3D" id="s277"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxMesh" id="s278"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxShape3D" id="s279"]
+size = Vector3(0.55, 0.4166666666666667, 3.0)
+
+[sub_resource type="BoxMesh" id="s280"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxShape3D" id="s281"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxMesh" id="s282"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxShape3D" id="s283"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxMesh" id="s284"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxShape3D" id="s285"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxMesh" id="s286"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxShape3D" id="s287"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxMesh" id="s288"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxShape3D" id="s289"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxMesh" id="s290"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxShape3D" id="s291"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxMesh" id="s292"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxShape3D" id="s293"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxMesh" id="s294"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxShape3D" id="s295"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxMesh" id="s296"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxShape3D" id="s297"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxMesh" id="s298"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxShape3D" id="s299"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxMesh" id="s300"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxShape3D" id="s301"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxMesh" id="s302"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxShape3D" id="s303"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxMesh" id="s304"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxShape3D" id="s305"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxMesh" id="s306"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxShape3D" id="s307"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxMesh" id="s308"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxShape3D" id="s309"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxMesh" id="s310"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxShape3D" id="s311"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxMesh" id="s312"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxShape3D" id="s313"]
+size = Vector3(1.6, 0.29411764705882354, 0.6)
+
+[sub_resource type="BoxMesh" id="s314"]
+size = Vector3(1.0, 5.0, 1.0)
+
+[sub_resource type="BoxShape3D" id="s315"]
+size = Vector3(1.0, 5.0, 1.0)
+
+[node name="BuildingRoot" type="Node3D"]
+metadata/spawn_point = Vector3(4.0, 1.0, 4.0)
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("s1")
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.7, -0.5, 0.5, 0.0, 0.7, 0.7, -0.7, -0.5, 0.5, 0, 6, 0)
+[node name="Room1" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 0.0, 0.5)
+[node name="Floor_0" type="StaticBody3D" parent="Room1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.75, -0.1, 9.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room1/Floor_0"]
+mesh = SubResource("s2")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room1/Floor_0"]
+shape = SubResource("s3")
+[node name="Ceiling_0" type="StaticBody3D" parent="Room1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.75, 5.1, 9.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room1/Ceiling_0"]
+mesh = SubResource("s4")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room1/Ceiling_0"]
+shape = SubResource("s5")
+[node name="WallN_seg0" type="StaticBody3D" parent="Room1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.1, 2.5, 18.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room1/WallN_seg0"]
+mesh = SubResource("s6")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room1/WallN_seg0"]
+shape = SubResource("s7")
+[node name="WallN_seg1" type="StaticBody3D" parent="Room1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.7, 4.5, 18.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room1/WallN_seg1"]
+mesh = SubResource("s8")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room1/WallN_seg1"]
+shape = SubResource("s9")
+[node name="WallN_seg2" type="StaticBody3D" parent="Room1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.35, 2.5, 18.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room1/WallN_seg2"]
+mesh = SubResource("s10")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room1/WallN_seg2"]
+shape = SubResource("s11")
+[node name="WallS_seg0" type="StaticBody3D" parent="Room1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.25, 2.5, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room1/WallS_seg0"]
+mesh = SubResource("s12")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room1/WallS_seg0"]
+shape = SubResource("s13")
+[node name="WallS_seg1" type="StaticBody3D" parent="Room1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.0, 4.5, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room1/WallS_seg1"]
+mesh = SubResource("s14")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room1/WallS_seg1"]
+shape = SubResource("s15")
+[node name="WallS_seg2" type="StaticBody3D" parent="Room1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 2.5, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room1/WallS_seg2"]
+mesh = SubResource("s16")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room1/WallS_seg2"]
+shape = SubResource("s17")
+[node name="WallE_seg0" type="StaticBody3D" parent="Room1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.5, 2.5, 9.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room1/WallE_seg0"]
+mesh = SubResource("s18")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room1/WallE_seg0"]
+shape = SubResource("s19")
+[node name="WallW_seg0" type="StaticBody3D" parent="Room1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 2.5, 9.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room1/WallW_seg0"]
+mesh = SubResource("s20")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room1/WallW_seg0"]
+shape = SubResource("s21")
+[node name="Room2" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.6449279785156, 0.0, -14.9999997615814)
+[node name="Floor_0" type="StaticBody3D" parent="Room2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, -0.1, 7.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room2/Floor_0"]
+mesh = SubResource("s22")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room2/Floor_0"]
+shape = SubResource("s23")
+[node name="Ceiling_0" type="StaticBody3D" parent="Room2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 6.1, 7.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room2/Ceiling_0"]
+mesh = SubResource("s24")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room2/Ceiling_0"]
+shape = SubResource("s25")
+[node name="WallN_seg0" type="StaticBody3D" parent="Room2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4275360107422, 5.0, 15.5)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room2/WallN_seg0"]
+mesh = SubResource("s26")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room2/WallN_seg0"]
+shape = SubResource("s27")
+[node name="WallN_seg1" type="StaticBody3D" parent="Room2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9275360107422, 3.0, 15.5)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room2/WallN_seg1"]
+mesh = SubResource("s28")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room2/WallN_seg1"]
+shape = SubResource("s29")
+[node name="WallS_seg0" type="StaticBody3D" parent="Room2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4942029953003058, 5.0, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room2/WallS_seg0"]
+mesh = SubResource("s30")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room2/WallS_seg0"]
+shape = SubResource("s31")
+[node name="WallS_seg1" type="StaticBody3D" parent="Room2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9942029953003058, 3.0, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room2/WallS_seg1"]
+mesh = SubResource("s32")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room2/WallS_seg1"]
+shape = SubResource("s33")
+[node name="WallE_seg0" type="StaticBody3D" parent="Room2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.0, 3.0, 7.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room2/WallE_seg0"]
+mesh = SubResource("s34")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room2/WallE_seg0"]
+shape = SubResource("s35")
+[node name="WallW_seg0" type="StaticBody3D" parent="Room2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 3.0, 7.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room2/WallW_seg0"]
+mesh = SubResource("s36")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room2/WallW_seg0"]
+shape = SubResource("s37")
+[node name="Room3" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.83333396911621, 0.0, -25.4444446563721)
+[node name="Floor_0" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.75, -0.1, 5.25)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/Floor_0"]
+mesh = SubResource("s38")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room3/Floor_0"]
+shape = SubResource("s39")
+[node name="Ceiling_0" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.75, 5.1, 1.27222232818605)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/Ceiling_0"]
+mesh = SubResource("s40")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room3/Ceiling_0"]
+shape = SubResource("s41")
+[node name="Ceiling_1" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.75, 5.1, 8.422222328186049)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/Ceiling_1"]
+mesh = SubResource("s42")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room3/Ceiling_1"]
+shape = SubResource("s43")
+[node name="Ceiling_2" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.783333015441896, 5.1, 4.444444656372099)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/Ceiling_2"]
+mesh = SubResource("s44")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room3/Ceiling_2"]
+shape = SubResource("s45")
+[node name="Ceiling_3" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.258333015441895, 5.1, 4.444444656372099)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/Ceiling_3"]
+mesh = SubResource("s46")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room3/Ceiling_3"]
+shape = SubResource("s47")
+[node name="WallN_seg0" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.4, 2.5, 10.5)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/WallN_seg0"]
+mesh = SubResource("s48")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room3/WallN_seg0"]
+shape = SubResource("s49")
+[node name="WallN_seg1" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.3, 4.5, 10.5)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/WallN_seg1"]
+mesh = SubResource("s50")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room3/WallN_seg1"]
+shape = SubResource("s51")
+[node name="WallN_seg2" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.65, 2.5, 10.5)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/WallN_seg2"]
+mesh = SubResource("s52")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room3/WallN_seg2"]
+shape = SubResource("s53")
+[node name="WallS_seg0" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.7, 2.5, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/WallS_seg0"]
+mesh = SubResource("s54")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room3/WallS_seg0"]
+shape = SubResource("s55")
+[node name="WallS_seg1" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.15, 0.75, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/WallS_seg1"]
+mesh = SubResource("s56")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room3/WallS_seg1"]
+shape = SubResource("s57")
+[node name="WallS_seg2" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.15, 4.25, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/WallS_seg2"]
+mesh = SubResource("s58")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room3/WallS_seg2"]
+shape = SubResource("s59")
+[node name="WallS_seg3" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.2, 2.5, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/WallS_seg3"]
+mesh = SubResource("s60")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room3/WallS_seg3"]
+shape = SubResource("s61")
+[node name="WallE_seg0" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 2.5, 1.05)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/WallE_seg0"]
+mesh = SubResource("s62")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room3/WallE_seg0"]
+shape = SubResource("s63")
+[node name="WallE_seg1" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 0.75, 2.85)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/WallE_seg1"]
+mesh = SubResource("s64")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room3/WallE_seg1"]
+shape = SubResource("s65")
+[node name="WallE_seg2" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 4.25, 2.85)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/WallE_seg2"]
+mesh = SubResource("s66")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room3/WallE_seg2"]
+shape = SubResource("s67")
+[node name="WallE_seg3" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 2.5, 4.8)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/WallE_seg3"]
+mesh = SubResource("s68")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room3/WallE_seg3"]
+shape = SubResource("s69")
+[node name="WallE_seg4" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 0.75, 6.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/WallE_seg4"]
+mesh = SubResource("s70")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room3/WallE_seg4"]
+shape = SubResource("s71")
+[node name="WallE_seg5" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 4.25, 6.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/WallE_seg5"]
+mesh = SubResource("s72")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room3/WallE_seg5"]
+shape = SubResource("s73")
+[node name="WallE_seg6" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 2.5, 9.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/WallE_seg6"]
+mesh = SubResource("s74")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room3/WallE_seg6"]
+shape = SubResource("s75")
+[node name="WallW_seg0" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 2.5, 2.15)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/WallW_seg0"]
+mesh = SubResource("s76")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room3/WallW_seg0"]
+shape = SubResource("s77")
+[node name="WallW_seg1" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 0.75, 5.05)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/WallW_seg1"]
+mesh = SubResource("s78")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room3/WallW_seg1"]
+shape = SubResource("s79")
+[node name="WallW_seg2" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 4.25, 5.05)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/WallW_seg2"]
+mesh = SubResource("s80")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room3/WallW_seg2"]
+shape = SubResource("s81")
+[node name="WallW_seg3" type="StaticBody3D" parent="Room3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 2.5, 8.15)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room3/WallW_seg3"]
+mesh = SubResource("s82")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room3/WallW_seg3"]
+shape = SubResource("s83")
+[node name="Room4" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 5.0, -24.0)
+[node name="Floor_0" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, -0.1, 0.5500000000000007)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Floor_0"]
+mesh = SubResource("s84")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room4/Floor_0"]
+shape = SubResource("s85")
+[node name="Floor_1" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, -0.1, 6.199999999999999)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Floor_1"]
+mesh = SubResource("s86")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room4/Floor_1"]
+shape = SubResource("s87")
+[node name="Floor_2" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.950000000000001, -0.1, 3.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Floor_2"]
+mesh = SubResource("s88")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room4/Floor_2"]
+shape = SubResource("s89")
+[node name="Floor_3" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.175, -0.1, 3.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Floor_3"]
+mesh = SubResource("s90")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room4/Floor_3"]
+shape = SubResource("s91")
+[node name="Ceiling_0" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 5.1, 0.5074513463686099)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Ceiling_0"]
+mesh = SubResource("s92")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/Ceiling_0"]
+shape = SubResource("s93")
+[node name="Ceiling_1" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1197892146252197, 5.1, 1.0340348795567031)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Ceiling_1"]
+mesh = SubResource("s94")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/Ceiling_1"]
+shape = SubResource("s95")
+[node name="Ceiling_2" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.023774843874223, 5.1, 1.0340348795567031)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Ceiling_2"]
+mesh = SubResource("s96")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/Ceiling_2"]
+shape = SubResource("s97")
+[node name="Ceiling_3" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 5.1, 6.873955234345745)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Ceiling_3"]
+mesh = SubResource("s98")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/Ceiling_3"]
+shape = SubResource("s99")
+[node name="Ceiling_4" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8259660873593093, 5.1, 5.818234674456113)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Ceiling_4"]
+mesh = SubResource("s100")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/Ceiling_4"]
+shape = SubResource("s101")
+[node name="Ceiling_5" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.486241550797182, 5.1, 5.818234674456113)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Ceiling_5"]
+mesh = SubResource("s102")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/Ceiling_5"]
+shape = SubResource("s103")
+[node name="Ceiling_6" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8259660873593093, 5.1, 5.003708112292287)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Ceiling_6"]
+mesh = SubResource("s104")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/Ceiling_6"]
+shape = SubResource("s105")
+[node name="Ceiling_7" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.486241550797182, 5.1, 5.003708112292287)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Ceiling_7"]
+mesh = SubResource("s106")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/Ceiling_7"]
+shape = SubResource("s107")
+[node name="Ceiling_8" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8259660873593093, 5.1, 4.233066281814754)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Ceiling_8"]
+mesh = SubResource("s108")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/Ceiling_8"]
+shape = SubResource("s109")
+[node name="Ceiling_9" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.489728381998717, 5.1, 4.233066281814754)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Ceiling_9"]
+mesh = SubResource("s110")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/Ceiling_9"]
+shape = SubResource("s111")
+[node name="Ceiling_10" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5095794218699154, 5.1, 3.653902531617563)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Ceiling_10"]
+mesh = SubResource("s112")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/Ceiling_10"]
+shape = SubResource("s113")
+[node name="Ceiling_11" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.489728381998717, 5.1, 3.653902531617563)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Ceiling_11"]
+mesh = SubResource("s114")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/Ceiling_11"]
+shape = SubResource("s115")
+[node name="Ceiling_12" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3125697464927599, 5.1, 2.256848455172822)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Ceiling_12"]
+mesh = SubResource("s116")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/Ceiling_12"]
+shape = SubResource("s117")
+[node name="Ceiling_13" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.023774843874223, 5.1, 1.0695850433667058)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Ceiling_13"]
+mesh = SubResource("s118")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/Ceiling_13"]
+shape = SubResource("s119")
+[node name="Ceiling_14" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.489728381998717, 5.1, 3.3291860244309)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Ceiling_14"]
+mesh = SubResource("s120")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/Ceiling_14"]
+shape = SubResource("s121")
+[node name="Ceiling_15" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.489728381998717, 5.1, 3.0644492461430684)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Ceiling_15"]
+mesh = SubResource("s122")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/Ceiling_15"]
+shape = SubResource("s123")
+[node name="Ceiling_16" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.023774843874223, 5.1, 1.1527334985544648)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Ceiling_16"]
+mesh = SubResource("s124")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/Ceiling_16"]
+shape = SubResource("s125")
+[node name="Ceiling_17" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.350198230525798, 5.1, 1.515602868211026)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Ceiling_17"]
+mesh = SubResource("s126")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/Ceiling_17"]
+shape = SubResource("s127")
+[node name="Ceiling_18" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.489728381998717, 5.1, 2.3713990235320708)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/Ceiling_18"]
+mesh = SubResource("s128")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/Ceiling_18"]
+shape = SubResource("s129")
+[node name="WallN_seg0" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95, 2.5, 7.5)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/WallN_seg0"]
+mesh = SubResource("s130")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/WallN_seg0"]
+shape = SubResource("s131")
+[node name="WallN_seg1" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.65, 0.75, 7.5)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/WallN_seg1"]
+mesh = SubResource("s132")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/WallN_seg1"]
+shape = SubResource("s133")
+[node name="WallN_seg2" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.65, 4.25, 7.5)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/WallN_seg2"]
+mesh = SubResource("s134")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/WallN_seg2"]
+shape = SubResource("s135")
+[node name="WallN_seg3" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.2, 2.5, 7.5)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/WallN_seg3"]
+mesh = SubResource("s136")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/WallN_seg3"]
+shape = SubResource("s137")
+[node name="WallS_seg0" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95, 2.5, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/WallS_seg0"]
+mesh = SubResource("s138")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/WallS_seg0"]
+shape = SubResource("s139")
+[node name="WallS_seg1" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.65, 0.75, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/WallS_seg1"]
+mesh = SubResource("s140")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/WallS_seg1"]
+shape = SubResource("s141")
+[node name="WallS_seg2" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.65, 4.25, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/WallS_seg2"]
+mesh = SubResource("s142")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/WallS_seg2"]
+shape = SubResource("s143")
+[node name="WallS_seg3" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.2, 2.5, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/WallS_seg3"]
+mesh = SubResource("s144")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/WallS_seg3"]
+shape = SubResource("s145")
+[node name="WallE_seg0" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.0, 2.5, 0.3)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/WallE_seg0"]
+mesh = SubResource("s146")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/WallE_seg0"]
+shape = SubResource("s147")
+[node name="WallE_seg1" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.0, 0.75, 1.35)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/WallE_seg1"]
+mesh = SubResource("s148")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/WallE_seg1"]
+shape = SubResource("s149")
+[node name="WallE_seg2" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.0, 4.25, 1.35)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/WallE_seg2"]
+mesh = SubResource("s150")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/WallE_seg2"]
+shape = SubResource("s151")
+[node name="WallE_seg3" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.0, 2.5, 3.55)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/WallE_seg3"]
+mesh = SubResource("s152")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/WallE_seg3"]
+shape = SubResource("s153")
+[node name="WallE_seg4" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.0, 0.75, 5.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/WallE_seg4"]
+mesh = SubResource("s154")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/WallE_seg4"]
+shape = SubResource("s155")
+[node name="WallE_seg5" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.0, 4.25, 5.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/WallE_seg5"]
+mesh = SubResource("s156")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/WallE_seg5"]
+shape = SubResource("s157")
+[node name="WallE_seg6" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.0, 2.5, 7.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/WallE_seg6"]
+mesh = SubResource("s158")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/WallE_seg6"]
+shape = SubResource("s159")
+[node name="WallW_seg0" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 2.5, 1.45)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/WallW_seg0"]
+mesh = SubResource("s160")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/WallW_seg0"]
+shape = SubResource("s161")
+[node name="WallW_seg1" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 0.75, 3.6500000000000004)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/WallW_seg1"]
+mesh = SubResource("s162")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/WallW_seg1"]
+shape = SubResource("s163")
+[node name="WallW_seg2" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 4.25, 3.6500000000000004)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/WallW_seg2"]
+mesh = SubResource("s164")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/WallW_seg2"]
+shape = SubResource("s165")
+[node name="WallW_seg3" type="StaticBody3D" parent="Room4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 2.5, 5.95)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room4/WallW_seg3"]
+mesh = SubResource("s166")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room4/WallW_seg3"]
+shape = SubResource("s167")
+[node name="Room5" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 10.0, -23.5)
+[node name="Floor_0" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.75, -0.1, 0.2574513463686099)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/Floor_0"]
+mesh = SubResource("s168")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room5/Floor_0"]
+shape = SubResource("s169")
+[node name="Floor_1" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1197892146252197, -0.1, 0.5340348795567031)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/Floor_1"]
+mesh = SubResource("s170")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room5/Floor_1"]
+shape = SubResource("s171")
+[node name="Floor_2" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.273774843874223, -0.1, 0.5340348795567031)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/Floor_2"]
+mesh = SubResource("s172")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room5/Floor_2"]
+shape = SubResource("s173")
+[node name="Floor_3" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.75, -0.1, 6.123955234345745)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/Floor_3"]
+mesh = SubResource("s174")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room5/Floor_3"]
+shape = SubResource("s175")
+[node name="Floor_4" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8259660873593093, -0.1, 5.318234674456113)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/Floor_4"]
+mesh = SubResource("s176")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room5/Floor_4"]
+shape = SubResource("s177")
+[node name="Floor_5" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.736241550797181, -0.1, 5.318234674456113)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/Floor_5"]
+mesh = SubResource("s178")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room5/Floor_5"]
+shape = SubResource("s179")
+[node name="Floor_6" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8259660873593093, -0.1, 4.503708112292287)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/Floor_6"]
+mesh = SubResource("s180")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room5/Floor_6"]
+shape = SubResource("s181")
+[node name="Floor_7" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.736241550797181, -0.1, 4.503708112292287)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/Floor_7"]
+mesh = SubResource("s182")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room5/Floor_7"]
+shape = SubResource("s183")
+[node name="Floor_8" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8259660873593093, -0.1, 3.7330662818147538)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/Floor_8"]
+mesh = SubResource("s184")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room5/Floor_8"]
+shape = SubResource("s185")
+[node name="Floor_9" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.739728381998717, -0.1, 3.7330662818147538)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/Floor_9"]
+mesh = SubResource("s186")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room5/Floor_9"]
+shape = SubResource("s187")
+[node name="Floor_10" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5095794218699154, -0.1, 3.153902531617563)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/Floor_10"]
+mesh = SubResource("s188")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room5/Floor_10"]
+shape = SubResource("s189")
+[node name="Floor_11" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.739728381998717, -0.1, 3.153902531617563)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/Floor_11"]
+mesh = SubResource("s190")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room5/Floor_11"]
+shape = SubResource("s191")
+[node name="Floor_12" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3125697464927599, -0.1, 1.7568484551728218)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/Floor_12"]
+mesh = SubResource("s192")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room5/Floor_12"]
+shape = SubResource("s193")
+[node name="Floor_13" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.273774843874223, -0.1, 0.5695850433667058)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/Floor_13"]
+mesh = SubResource("s194")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room5/Floor_13"]
+shape = SubResource("s195")
+[node name="Floor_14" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.739728381998717, -0.1, 2.8291860244309)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/Floor_14"]
+mesh = SubResource("s196")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room5/Floor_14"]
+shape = SubResource("s197")
+[node name="Floor_15" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.739728381998717, -0.1, 2.5644492461430684)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/Floor_15"]
+mesh = SubResource("s198")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room5/Floor_15"]
+shape = SubResource("s199")
+[node name="Floor_16" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.273774843874223, -0.1, 0.6527334985544648)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/Floor_16"]
+mesh = SubResource("s200")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room5/Floor_16"]
+shape = SubResource("s201")
+[node name="Floor_17" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.600198230525798, -0.1, 1.015602868211026)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/Floor_17"]
+mesh = SubResource("s202")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room5/Floor_17"]
+shape = SubResource("s203")
+[node name="Floor_18" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.739728381998717, -0.1, 1.8713990235320708)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/Floor_18"]
+mesh = SubResource("s204")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Room5/Floor_18"]
+shape = SubResource("s205")
+[node name="Ceiling_0" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.75, 4.1, 3.25)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/Ceiling_0"]
+mesh = SubResource("s206")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/Ceiling_0"]
+shape = SubResource("s207")
+[node name="WallN_seg0" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.3, 2.0, 6.5)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallN_seg0"]
+mesh = SubResource("s208")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallN_seg0"]
+shape = SubResource("s209")
+[node name="WallN_seg1" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.35, 0.75, 6.5)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallN_seg1"]
+mesh = SubResource("s210")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallN_seg1"]
+shape = SubResource("s211")
+[node name="WallN_seg2" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.35, 3.75, 6.5)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallN_seg2"]
+mesh = SubResource("s212")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallN_seg2"]
+shape = SubResource("s213")
+[node name="WallN_seg3" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.35, 0.75, 6.5)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallN_seg3"]
+mesh = SubResource("s214")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallN_seg3"]
+shape = SubResource("s215")
+[node name="WallN_seg4" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.35, 3.75, 6.5)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallN_seg4"]
+mesh = SubResource("s216")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallN_seg4"]
+shape = SubResource("s217")
+[node name="WallN_seg5" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.8, 2.0, 6.5)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallN_seg5"]
+mesh = SubResource("s218")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallN_seg5"]
+shape = SubResource("s219")
+[node name="WallS_seg0" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1, 2.0, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallS_seg0"]
+mesh = SubResource("s220")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallS_seg0"]
+shape = SubResource("s221")
+[node name="WallS_seg1" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.95, 0.75, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallS_seg1"]
+mesh = SubResource("s222")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallS_seg1"]
+shape = SubResource("s223")
+[node name="WallS_seg2" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.95, 3.75, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallS_seg2"]
+mesh = SubResource("s224")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallS_seg2"]
+shape = SubResource("s225")
+[node name="WallS_seg3" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.95, 0.75, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallS_seg3"]
+mesh = SubResource("s226")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallS_seg3"]
+shape = SubResource("s227")
+[node name="WallS_seg4" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.95, 3.75, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallS_seg4"]
+mesh = SubResource("s228")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallS_seg4"]
+shape = SubResource("s229")
+[node name="WallS_seg5" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.6, 2.0, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallS_seg5"]
+mesh = SubResource("s230")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallS_seg5"]
+shape = SubResource("s231")
+[node name="WallE_seg0" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 2.0, 1.3)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallE_seg0"]
+mesh = SubResource("s232")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallE_seg0"]
+shape = SubResource("s233")
+[node name="WallE_seg1" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 0.75, 3.3499999999999996)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallE_seg1"]
+mesh = SubResource("s234")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallE_seg1"]
+shape = SubResource("s235")
+[node name="WallE_seg2" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 3.75, 3.3499999999999996)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallE_seg2"]
+mesh = SubResource("s236")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallE_seg2"]
+shape = SubResource("s237")
+[node name="WallE_seg3" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 0.75, 3.3499999999999996)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallE_seg3"]
+mesh = SubResource("s238")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallE_seg3"]
+shape = SubResource("s239")
+[node name="WallE_seg4" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 3.75, 3.3499999999999996)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallE_seg4"]
+mesh = SubResource("s240")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallE_seg4"]
+shape = SubResource("s241")
+[node name="WallE_seg5" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 2.0, 5.3)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallE_seg5"]
+mesh = SubResource("s242")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallE_seg5"]
+shape = SubResource("s243")
+[node name="WallW_seg0" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 2.0, 1.3)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallW_seg0"]
+mesh = SubResource("s244")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallW_seg0"]
+shape = SubResource("s245")
+[node name="WallW_seg1" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 0.75, 3.3499999999999996)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallW_seg1"]
+mesh = SubResource("s246")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallW_seg1"]
+shape = SubResource("s247")
+[node name="WallW_seg2" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 3.75, 3.3499999999999996)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallW_seg2"]
+mesh = SubResource("s248")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallW_seg2"]
+shape = SubResource("s249")
+[node name="WallW_seg3" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 0.75, 3.3499999999999996)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallW_seg3"]
+mesh = SubResource("s250")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallW_seg3"]
+shape = SubResource("s251")
+[node name="WallW_seg4" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 3.75, 3.3499999999999996)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallW_seg4"]
+mesh = SubResource("s252")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallW_seg4"]
+shape = SubResource("s253")
+[node name="WallW_seg5" type="StaticBody3D" parent="Room5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 2.0, 5.3)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Room5/WallW_seg5"]
+mesh = SubResource("s254")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="Room5/WallW_seg5"]
+shape = SubResource("s255")
+[node name="Stair1_step0" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.275, 0.20833333333333334, -21.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Stair1_step0"]
+mesh = SubResource("s256")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Stair1_step0"]
+shape = SubResource("s257")
+[node name="Stair1_step1" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.825, 0.625, -21.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Stair1_step1"]
+mesh = SubResource("s258")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Stair1_step1"]
+shape = SubResource("s259")
+[node name="Stair1_step2" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.375, 1.0416666666666667, -21.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Stair1_step2"]
+mesh = SubResource("s260")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Stair1_step2"]
+shape = SubResource("s261")
+[node name="Stair1_step3" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.925, 1.4583333333333335, -21.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Stair1_step3"]
+mesh = SubResource("s262")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Stair1_step3"]
+shape = SubResource("s263")
+[node name="Stair1_step4" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.475, 1.875, -21.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Stair1_step4"]
+mesh = SubResource("s264")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Stair1_step4"]
+shape = SubResource("s265")
+[node name="Stair1_step5" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.025, 2.291666666666667, -21.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Stair1_step5"]
+mesh = SubResource("s266")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Stair1_step5"]
+shape = SubResource("s267")
+[node name="Stair1_step6" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.575, 2.7083333333333335, -21.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Stair1_step6"]
+mesh = SubResource("s268")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Stair1_step6"]
+shape = SubResource("s269")
+[node name="Stair1_step7" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.125, 3.125, -21.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Stair1_step7"]
+mesh = SubResource("s270")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Stair1_step7"]
+shape = SubResource("s271")
+[node name="Stair1_step8" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.675, 3.541666666666667, -21.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Stair1_step8"]
+mesh = SubResource("s272")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Stair1_step8"]
+shape = SubResource("s273")
+[node name="Stair1_step9" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.225, 3.9583333333333335, -21.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Stair1_step9"]
+mesh = SubResource("s274")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Stair1_step9"]
+shape = SubResource("s275")
+[node name="Stair1_step10" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.775, 4.375, -21.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Stair1_step10"]
+mesh = SubResource("s276")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Stair1_step10"]
+shape = SubResource("s277")
+[node name="Stair1_step11" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.325, 4.791666666666667, -21.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Stair1_step11"]
+mesh = SubResource("s278")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Stair1_step11"]
+shape = SubResource("s279")
+[node name="Spiral1_step0" type="StaticBody3D" parent="."]
+transform = Transform3D(1.0, 0, -0.0, 0, 1, 0, 0.0, 0, 1.0, 12.5, 5.147058823529412, -20.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Spiral1_step0"]
+mesh = SubResource("s280")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Spiral1_step0"]
+shape = SubResource("s281")
+[node name="Spiral1_step1" type="StaticBody3D" parent="."]
+transform = Transform3D(0.9130889403123083, 0, -0.40776045305957015, 0, 1, 0, 0.40776045305957015, 0, 0.9130889403123083, 12.326177880624616, 5.4411764705882355, -19.18447909388086)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Spiral1_step1"]
+mesh = SubResource("s282")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Spiral1_step1"]
+shape = SubResource("s283")
+[node name="Spiral1_step2" type="StaticBody3D" parent="."]
+transform = Transform3D(0.6674628258413081, 0, -0.7446431199708593, 0, 1, 0, 0.7446431199708593, 0, 0.6674628258413081, 11.834925651682616, 5.735294117647059, -18.51071376005828)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Spiral1_step2"]
+mesh = SubResource("s284")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Spiral1_step2"]
+shape = SubResource("s285")
+[node name="Spiral1_step3" type="StaticBody3D" parent="."]
+transform = Transform3D(0.30581690837828934, 0, -0.9520903415905158, 0, 1, 0, 0.9520903415905158, 0, 0.30581690837828934, 11.111633816756578, 6.029411764705882, -18.095819316818968)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Spiral1_step3"]
+mesh = SubResource("s286")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Spiral1_step3"]
+shape = SubResource("s287")
+[node name="Spiral1_step4" type="StaticBody3D" parent="."]
+transform = Transform3D(-0.10898675223987112, 0, -0.994043202198076, 0, 1, 0, 0.994043202198076, 0, -0.10898675223987112, 10.282026495520258, 6.323529411764706, -18.011913595603847)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Spiral1_step4"]
+mesh = SubResource("s288")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Spiral1_step4"]
+shape = SubResource("s289")
+[node name="Spiral1_step5" type="StaticBody3D" parent="."]
+transform = Transform3D(-0.5048461045998576, 0, -0.8632093666488737, 0, 1, 0, 0.8632093666488737, 0, -0.5048461045998576, 9.490307790800285, 6.617647058823529, -18.27358126670225)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Spiral1_step5"]
+mesh = SubResource("s290")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Spiral1_step5"]
+shape = SubResource("s291")
+[node name="Spiral1_step6" type="StaticBody3D" parent="."]
+transform = Transform3D(-0.81295203709989, 0, -0.5823306495240819, 0, 1, 0, 0.5823306495240819, 0, -0.81295203709989, 8.87409592580022, 6.911764705882353, -18.835338700951837)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Spiral1_step6"]
+mesh = SubResource("s292")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Spiral1_step6"]
+shape = SubResource("s293")
+[node name="Spiral1_step7" type="StaticBody3D" parent="."]
+transform = Transform3D(-0.9797489235606842, 0, -0.20022998472177053, 0, 1, 0, 0.20022998472177053, 0, -0.9797489235606842, 8.54050215287863, 7.205882352941177, -19.599540030556458)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Spiral1_step7"]
+mesh = SubResource("s294")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Spiral1_step7"]
+shape = SubResource("s295")
+[node name="Spiral1_step8" type="StaticBody3D" parent="."]
+transform = Transform3D(-0.9762437756724099, 0, 0.21667508038737962, 0, 1, 0, -0.21667508038737962, 0, -0.9762437756724099, 8.54751244865518, 7.5, -20.433350160774758)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Spiral1_step8"]
+mesh = SubResource("s296")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Spiral1_step8"]
+shape = SubResource("s297")
+[node name="Spiral1_step9" type="StaticBody3D" parent="."]
+transform = Transform3D(-0.8030458656697309, 0, 0.5959172238077639, 0, 1, 0, -0.5959172238077639, 0, -0.8030458656697309, 8.893908268660539, 7.794117647058824, -21.191834447615527)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Spiral1_step9"]
+mesh = SubResource("s298")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Spiral1_step9"]
+shape = SubResource("s299")
+[node name="Spiral1_step10" type="StaticBody3D" parent="."]
+transform = Transform3D(-0.4902608213406994, 0, 0.8715757724135882, 0, 1, 0, -0.8715757724135882, 0, -0.4902608213406994, 9.5194783573186, 8.088235294117647, -21.743151544827178)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Spiral1_step10"]
+mesh = SubResource("s300")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Spiral1_step10"]
+shape = SubResource("s301")
+[node name="Spiral1_step11" type="StaticBody3D" parent="."]
+transform = Transform3D(-0.09225760199951166, 0, 0.9957351730622453, 0, 1, 0, -0.9957351730622453, 0, -0.09225760199951166, 10.315484796000977, 8.382352941176471, -21.99147034612449)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Spiral1_step11"]
+mesh = SubResource("s302")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Spiral1_step11"]
+shape = SubResource("s303")
+[node name="Spiral1_step12" type="StaticBody3D" parent="."]
+transform = Transform3D(0.3217820292497218, 0, 0.9468137755926089, 0, 1, 0, -0.9468137755926089, 0, 0.3217820292497218, 11.143564058499443, 8.676470588235293, -21.89362755118522)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Spiral1_step12"]
+mesh = SubResource("s304")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Spiral1_step12"]
+shape = SubResource("s305")
+[node name="Spiral1_step13" type="StaticBody3D" parent="."]
+transform = Transform3D(0.6798888261978571, 0, 0.7333152009956565, 0, 1, 0, -0.7333152009956565, 0, 0.6798888261978571, 11.859777652395714, 8.970588235294118, -21.466630401991313)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Spiral1_step13"]
+mesh = SubResource("s306")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Spiral1_step13"]
+shape = SubResource("s307")
+[node name="Spiral1_step14" type="StaticBody3D" parent="."]
+transform = Transform3D(0.9198159064366391, 0, 0.39235022399145386, 0, 1, 0, -0.39235022399145386, 0, 0.9198159064366391, 12.339631812873279, 9.264705882352942, -20.784700447982907)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Spiral1_step14"]
+mesh = SubResource("s308")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Spiral1_step14"]
+shape = SubResource("s309")
+[node name="Spiral1_step15" type="StaticBody3D" parent="."]
+transform = Transform3D(0.9998586363834151, 0, -0.016813900484349713, 0, 1, 0, 0.016813900484349713, 0, 0.9998586363834151, 12.49971727276683, 9.558823529411764, -19.9663721990313)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Spiral1_step15"]
+mesh = SubResource("s310")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Spiral1_step15"]
+shape = SubResource("s311")
+[node name="Spiral1_step16" type="StaticBody3D" parent="."]
+transform = Transform3D(0.9061038190782451, 0, -0.42305539714299684, 0, 1, 0, 0.42305539714299684, 0, 0.9061038190782451, 12.31220763815649, 9.852941176470589, -19.153889205714005)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Spiral1_step16"]
+mesh = SubResource("s312")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Spiral1_step16"]
+shape = SubResource("s313")
+[node name="Spiral1_column" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, 7.5, -20.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Spiral1_column"]
+mesh = SubResource("s314")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Spiral1_column"]
+shape = SubResource("s315")
+[node name="Terrain1" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -62.5, -0.02, -48.0)
+collision_layer = 1
+collision_mask = 1
+script = ExtResource("e8_terrain_patch")
+metadata/terrain_heights = PackedFloat32Array(3.5387, 5.4711, 5.4638, 3.5258, 2.9816, 7.9677, 8.6561, 4.9509, 3.8816, 4.7832, 5.5901, 4.9449, 3.1168, 3.6725, 5.8917, 3.5296, 5.2688, 9.0393, 8.0353, 5.0757, 3.4373, 7.4777, 7.2495, 4.3454, 4.2312, 5.5910, 7.2320, 7.3352, 6.0587, 8.7321, 13.1798, 7.2396, 3.0385, 7.1693, 7.6832, 7.9524, 2.5100, 0.5582, 0.2211, 0.3219, 0.5400, 1.5956, 2.8866, 4.3447, 4.3583, 5.2358, 8.8230, 4.4649, 2.1899, 6.5964, 7.4129, 8.5956, 2.7073, 0.0000, 0.0000, 0.0000, 0.0000, 0.1693, 0.9636, 4.0239, 6.9476, 6.0565, 6.3017, 2.8783, 1.7555, 4.7132, 1.6024, 0.6986, 0.0051, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0103, 0.8313, 3.4446, 5.3643, 6.4244, 2.7384, 1.6383, 4.5015, 1.6510, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.5066, 4.4831, 7.4703, 2.4634, 1.3688, 3.9016, 1.4325, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0695, 5.8337, 10.6399, 3.1712, 0.9320, 2.8298, 0.7796, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.1000, 6.3669, 12.0217, 4.0532, 2.2874, 5.2047, 1.4220, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0802, 3.5903, 7.1809, 2.4518, 3.8743, 6.5394, 1.0994, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 1.5851, 3.9859, 1.5738, 4.0172, 5.7101, 0.5221, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.1022, 1.9896, 3.9080, 0.9027, 3.4929, 5.1222, 1.0885, 0.1109, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 1.3002, 3.2463, 7.0427, 8.3604, 1.5638, 5.8579, 9.5620, 6.1188, 4.0373, 0.2147, 0.0000, 0.0000, 0.0000, 0.0114, 0.0265, 0.6220, 3.2375, 5.2663, 9.6346, 11.2253, 2.7664, 7.3648, 12.9884, 8.5878, 6.5280, 2.5604, 0.6571, 0.2735, 0.3966, 0.6948, 0.8807, 1.9952, 4.3477, 4.3858, 6.2036, 7.8120, 2.9432, 3.3403, 7.7241, 4.9813, 4.0836, 3.7515, 2.2836, 1.4961, 1.4535, 1.7477, 2.5248, 4.2505, 6.3004, 6.4698, 6.2220, 6.5186, 3.0096, 0.1596, 1.4909, 1.9735, 1.3724, 1.3819, 1.4377, 1.4200, 1.1802, 1.2282, 1.8780, 2.4044, 2.5256, 1.8765, 1.8710, 2.2236, 0.7899)
+metadata/terrain_size_x = 158.0
+metadata/terrain_size_z = 139.0
+metadata/terrain_resolution = 16
+metadata/terrain_material = ""
+metadata/terrain_flat_color = [0.35, 0.55, 0.22]
+metadata/terrain_slope_color = [0.45, 0.32, 0.18]
+metadata/terrain_slope_threshold = 0.72
+metadata/terrain_slope_softness = 0.15

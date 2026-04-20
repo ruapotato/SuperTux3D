@@ -329,28 +329,300 @@ def _inject_hole(room: dict, axis: str, hole: dict) -> None:
     room.setdefault(key, []).append(hole)
 
 
+def _auto_mirror_shared_openings(blueprint: dict, tol: float = 0.1) -> None:
+    """Scan every room pair for walls that share a plane (and overlap on
+    the in-plane axis), and for every door/window opening on one side,
+    inject a matching opening on the other side if it isn't already
+    there. Lets an author draw ONE door between two adjacent rooms and
+    have both walls lose the solid segment, without needing a manual
+    `connectors` entry.
+
+    This runs BEFORE wall emission so the normal emit path sees
+    already-mirrored openings and splits both walls cleanly.
+
+    Tolerance `tol` (world units) covers small snapping errors: rooms
+    that ALMOST line up (e.g. origin.z=-15 vs origin.z=-14.94) are
+    treated as flush. Openings that extend past the neighbour wall's
+    length get clamped to the neighbour's extent.
+    """
+    rooms = blueprint.get("rooms", [])
+
+    def opposite(side: str) -> str:
+        return {"north": "south", "south": "north",
+                "east": "west", "west": "east"}[side]
+
+    def wall_world_plane(room: dict, side: str) -> float:
+        ox, _oy, oz = room["origin"]
+        sx, _sy, sz = room["size"]
+        return {"south": oz, "north": oz + sz,
+                "west":  ox, "east":  ox + sx}[side]
+
+    def wall_world_axis_range(room: dict, side: str) -> tuple[float, float]:
+        # The length of the wall along the in-plane axis in WORLD coords.
+        ox, _oy, oz = room["origin"]
+        sx, _sy, sz = room["size"]
+        if side in ("north", "south"):
+            return (ox, ox + sx)
+        else:
+            return (oz, oz + sz)
+
+    for a in rooms:
+        a_origin = a["origin"]
+        walls = a.get("walls", {})
+        for side, spec in list(walls.items()):
+            openings = spec.get("openings", [])
+            if not openings:
+                continue
+            ox_a, _oy_a, oz_a = a_origin
+            for op in list(openings):
+                if op.get("_auto_mirrored"):
+                    continue
+                plane_a = wall_world_plane(a, side)
+                # World-axis range of this opening (along the wall).
+                lx = float(op.get("x", 0.0))
+                lw = float(op.get("width", 0.0))
+                if side in ("north", "south"):
+                    world_start = ox_a + lx
+                else:
+                    world_start = oz_a + lx
+                world_end = world_start + lw
+                opp = opposite(side)
+                for b in rooms:
+                    if b is a:
+                        continue
+                    if abs(wall_world_plane(b, opp) - plane_a) > tol:
+                        continue
+                    b_start, b_end = wall_world_axis_range(b, opp)
+                    # Clamp the opening to b's wall — if there's no
+                    # overlap at all, skip.
+                    clamped_start = max(world_start, b_start)
+                    clamped_end = min(world_end, b_end)
+                    if clamped_end - clamped_start < 0.5:
+                        continue
+                    local_x = clamped_start - b_start
+                    local_w = clamped_end - clamped_start
+                    b_walls = b.setdefault("walls", {})
+                    b_spec = b_walls.setdefault(opp, {})
+                    b_openings = b_spec.setdefault("openings", [])
+                    # Skip if b already has an opening that overlaps the
+                    # same span — respects explicit authoring.
+                    already = False
+                    for bo in b_openings:
+                        bx = float(bo.get("x", 0.0))
+                        bw = float(bo.get("width", 0.0))
+                        if not (local_x + local_w < bx or local_x > bx + bw):
+                            already = True
+                            break
+                    if already:
+                        continue
+                    mirror = dict(op)
+                    mirror["x"] = local_x
+                    mirror["width"] = local_w
+                    mirror["_auto_mirrored"] = True
+                    b_openings.append(mirror)
+                    break
+
+
+def _auto_infer_punch_through(blueprint: dict, tol: float = 0.6) -> None:
+    """Pick a sensible `punch_through` room for every stair / spiral /
+    elevator that didn't name one, so authors building multi-story
+    levels in the editor don't have to know about the field at all:
+    climb from floor A to floor B, the converter notices B lives
+    `tol` meters above the climb's top AND the climb's base sits
+    inside B's xz extents, and wires A → B.
+
+    Authors who want a stair that genuinely leads nowhere can leave
+    the climb top between floors or set punch_through to an empty
+    string — auto-infer only fills MISSING values, never overrides.
+    """
+    rooms = blueprint.get("rooms", [])
+    for extra in blueprint.get("extras", []):
+        if "punch_through" in extra:
+            continue   # author was explicit — respect it
+        kind = extra.get("type", "")
+        if kind not in ("stair", "spiral_stair", "elevator"):
+            continue
+        px, py, pz = extra["pos"]
+        if kind == "stair":
+            steps = int(extra.get("steps", 6))
+            landing = extra.get("landing")
+            landing_steps = int(landing.get("steps", steps)) if landing else 0
+            rise = float(extra.get("rise", 0.4))
+            top_y = float(py) + rise * (steps + landing_steps)
+        elif kind == "spiral_stair":
+            steps = int(extra.get("steps", 16))
+            rise = float(extra.get("rise", 0.35))
+            top_y = float(py) + rise * steps
+        else:  # elevator
+            top_y = float(extra.get("high_y", float(py) + 4.0))
+        best: dict | None = None
+        best_d: float = tol
+        for r in rooms:
+            rx, ry, rz = r["origin"]
+            rsx, _rsy, rsz = r["size"]
+            d = abs(float(ry) - top_y)
+            if d > best_d:
+                continue
+            if not (float(rx) - 0.5 <= float(px) <= float(rx) + float(rsx) + 0.5):
+                continue
+            if not (float(rz) - 0.5 <= float(pz) <= float(rz) + float(rsz) + 0.5):
+                continue
+            best = r
+            best_d = d
+        if best is not None:
+            extra["punch_through"] = best["name"]
+
+
+def _spiral_step_holes(extra: dict, target_y: float,
+                       rise: float) -> list[tuple[float, float, float, float]]:
+    """For a spiral stair, return a list of tight axis-aligned hole
+    rects (hx0, hz0, hx1, hz1) in WORLD xz that follow the climbing
+    path wherever it crosses the horizontal plane y=target_y.
+
+    A single bounding-box hole (as the earlier implementation used)
+    leaves big empty corners at target_y outside the stair's actual
+    circular footprint — the player can run off the top step
+    tangentially and drop into those corners. Per-step holes track
+    the spiral and leave the target room's floor intact everywhere
+    else.
+
+    Each step contributes a rect only when its body OR the player
+    standing on it intersects the target plane (step bot ≤ target_y
+    ≤ step_top + MARIO_HEIGHT). Rect is the AABB of the rotated step
+    footprint plus Mario's capsule radius and a small cushion.
+    """
+    import math as _m
+    steps = int(extra.get("steps", 16))
+    radius = float(extra.get("radius", 1.6))
+    width = float(extra.get("width", 1.8))
+    depth = float(extra.get("depth", 0.55))
+    angle_per_step = float(extra.get("angle", 0.45))
+    px, py, pz = extra["pos"]
+    MARIO_H = 1.6
+    R = 0.4
+    margin = 0.15
+    rects: list[tuple[float, float, float, float]] = []
+    for i in range(steps):
+        step_top_y = float(py) + rise * (i + 1)
+        step_bot_y = float(py) + rise * i
+        if target_y < step_bot_y - 0.05:
+            continue
+        if target_y > step_top_y + MARIO_H + 0.2:
+            continue
+        theta = i * angle_per_step
+        cx = float(px) + radius * _m.cos(theta)
+        cz = float(pz) + radius * _m.sin(theta)
+        cos_t = abs(_m.cos(theta))
+        sin_t = abs(_m.sin(theta))
+        # AABB of rectangle rotated by theta: tangent axis = (-sin, cos)
+        # carries `width`; radial axis = (cos, sin) carries `depth`.
+        # Half-extents: ex = (w/2)|sin| + (d/2)|cos|, ez = (w/2)|cos| + (d/2)|sin|.
+        ex = width * 0.5 * sin_t + depth * 0.5 * cos_t + R + margin
+        ez = width * 0.5 * cos_t + depth * 0.5 * sin_t + R + margin
+        rects.append((cx - ex, cz - ez, cx + ex, cz + ez))
+    return rects
+
+
+def _effective_stair_rise(blueprint: dict, extra: dict) -> float:
+    """Return the per-step rise in world units, auto-snapped when a
+    `punch_through` room is declared so the top step's upper surface is
+    FLUSH with the target room's origin.y — no 4–20cm lip between the
+    last tread and the upper floor plate. Used identically by the
+    emit-stair path and the hole-geometry path so both see the same
+    climb profile.
+
+    When no punch_through is set, returns the declared rise unchanged.
+    """
+    rise = float(extra.get("rise", 0.4))
+    pt = extra.get("punch_through")
+    if not pt:
+        return rise
+    pt_room = _find_room(blueprint, pt)
+    if pt_room is None:
+        return rise
+    kind = extra.get("type")
+    py = float(extra["pos"][1])
+    needed = float(pt_room["origin"][1]) - py
+    if needed <= 0.1:
+        return rise
+    if kind == "stair":
+        steps = int(extra.get("steps", 6))
+        landing = extra.get("landing")
+        l_steps = int(landing.get("steps", steps)) if landing else 0
+        total = steps + l_steps
+    elif kind == "spiral_stair":
+        total = int(extra.get("steps", 16))
+    else:
+        return rise
+    if total <= 0:
+        return rise
+    return needed / total
+
+
 def _auto_punch_for_stair(blueprint: dict, extra: dict) -> None:
     """When a stair/spiral_stair/elevator extra declares
     `punch_through: "RoomName"`, compute a hole that covers its top
     exit and add it to the target room's floor_holes AND to whichever
-    room is below (meaning any room whose origin.y + height crosses
-    the top_y). Padding is added so the opening is a bit larger than
-    the footprint."""
+    room is below.
+
+    The old implementation extended the hole symmetrically past the
+    stair top (`tx ± 2*run`), which created a visible pit in the upper
+    floor *beyond* the stair exit — the player would walk off the top
+    tread and fall. The corrected geometry:
+
+      - On the CLIMB side (where the climber is still ascending), the
+        hole extends back `head_pad` — enough room for the climber's
+        head while they're still below the upper floor plane. Derived
+        from 1.7m ÷ rise × run, so taller risers need less setback.
+      - On the EXIT side (forward from the stair top), the hole extends
+        only `exit_pad` — just a lip so the player has a moment to
+        transition onto the upper floor without clipping the hole edge.
+    """
     target = extra.get("punch_through")
     if not target:
+        return
+    target_room = _find_room(blueprint, target)
+    if target_room is None:
         return
     px, py, pz = extra["pos"]
     pad = float(extra.get("punch_pad", 0.4))
     kind = extra.get("type")
+    exit_pad = 0.25  # forward margin past the stair top
     if kind == "stair":
         direction = extra.get("direction", "+z")
         steps = int(extra.get("steps", 6))
+        rise = _effective_stair_rise(blueprint, extra)
         run = float(extra.get("run", 0.6))
         width = float(extra.get("width", 2.0))
         landing = extra.get("landing")
-        # The top of the stair is at (px + dx*run*steps, py + rise*steps,
-        # pz + dz*run*steps). If there's a landing + second flight,
-        # recompute with that.
+        # head_pad = how far BACK along the climb the hole extends from
+        # the stair top so Mario's capsule clears the upper-floor edge
+        # while his head is still above the climb line.
+        #
+        # Derivation:
+        #   MARIO_HEIGHT = 1.6m, CAPSULE_RADIUS = 0.4m.
+        #   First step where the head pokes above target_y:
+        #     i* = ceil((target_y - py - MARIO_HEIGHT) / rise) - 1
+        #   When Mario just step-upped onto step i*, his body_center
+        #   sits at (px + run*i* - CAPSULE_RADIUS) so body_back can be
+        #   as far back as (px + run*i* - 2*CAPSULE_RADIUS). The hole
+        #   must reach at least there, i.e.
+        #     hole_back <= px + run*i* - 2*CAPSULE_RADIUS
+        #   → head_pad + pad >= run*(steps - i*) + 2*CAPSULE_RADIUS.
+        #
+        # The old formula (1.7/rise * run) only counted steps that
+        # poke, missed Mario's body radius on both ends, and left a
+        # ~0.35m gap at the back of the hole — the player would slam
+        # their head on the upper-floor lip while climbing.
+        import math as _math
+        MARIO_H = 1.6
+        R = 0.4
+        target_y = float(target_room["origin"][1])
+        head_steps = steps - (int(_math.ceil(
+            (target_y - float(py) - MARIO_H) / max(rise, 0.01))) - 1)
+        head_steps = max(head_steps, 1)
+        # +0.2m safety so the hole edge isn't flush with Mario's back.
+        head_pad = head_steps * run + 2.0 * R + 0.2 - pad
         if direction == "+z":
             dx, dz = 0, 1
         elif direction == "-z":
@@ -361,9 +633,10 @@ def _auto_punch_for_stair(blueprint: dict, extra: dict) -> None:
             dx, dz = -1, 0
         tx = px + dx * run * steps
         tz = pz + dz * run * steps
-        foot_x, foot_z = tx, tz  # default top-of-flight-1 exit
         if landing:
-            # L-shape: exit is at end of second flight.
+            # L-shape: hole covers the landing + second flight. Exit
+            # margin is applied to the FAR end of the second flight
+            # along its climb direction.
             l_size = float(landing.get("size", width))
             l_steps = int(landing.get("steps", steps))
             l_dir = landing.get("direction", "+z")
@@ -379,34 +652,79 @@ def _auto_punch_for_stair(blueprint: dict, extra: dict) -> None:
             land_cz = pz + dz * (run * steps + l_size * 0.5)
             foot_x = land_cx + ddx * run * l_steps
             foot_z = land_cz + ddz * run * l_steps
-            # Hole spans the landing + the full second flight.
             if abs(ddx) > 0:
-                hx0 = min(land_cx, foot_x) - width * 0.5 - pad
-                hx1 = max(land_cx, foot_x) + width * 0.5 + pad
+                if ddx > 0:
+                    hx0 = land_cx - l_size * 0.5 - pad
+                    hx1 = foot_x + exit_pad
+                else:
+                    hx0 = foot_x - exit_pad
+                    hx1 = land_cx + l_size * 0.5 + pad
                 hz0 = land_cz - width * 0.5 - pad
                 hz1 = land_cz + width * 0.5 + pad
             else:
+                if ddz > 0:
+                    hz0 = land_cz - l_size * 0.5 - pad
+                    hz1 = foot_z + exit_pad
+                else:
+                    hz0 = foot_z - exit_pad
+                    hz1 = land_cz + l_size * 0.5 + pad
                 hx0 = land_cx - width * 0.5 - pad
                 hx1 = land_cx + width * 0.5 + pad
-                hz0 = min(land_cz, foot_z) - width * 0.5 - pad
-                hz1 = max(land_cz, foot_z) + width * 0.5 + pad
         else:
-            if abs(dx) > 0:
-                hx0 = tx - run * 2 - pad
-                hx1 = tx + run * 2 + pad
+            # Single flight: head_pad back along climb, exit_pad forward.
+            if dx > 0:
+                hx0 = tx - head_pad - pad
+                hx1 = tx + exit_pad
                 hz0 = pz - width * 0.5 - pad
                 hz1 = pz + width * 0.5 + pad
-            else:
+            elif dx < 0:
+                hx0 = tx - exit_pad
+                hx1 = tx + head_pad + pad
+                hz0 = pz - width * 0.5 - pad
+                hz1 = pz + width * 0.5 + pad
+            elif dz > 0:
+                hz0 = tz - head_pad - pad
+                hz1 = tz + exit_pad
                 hx0 = px - width * 0.5 - pad
                 hx1 = px + width * 0.5 + pad
-                hz0 = tz - run * 2 - pad
-                hz1 = tz + run * 2 + pad
+            else:
+                hz0 = tz - exit_pad
+                hz1 = tz + head_pad + pad
+                hx0 = px - width * 0.5 - pad
+                hx1 = px + width * 0.5 + pad
     elif kind == "spiral_stair":
-        radius = float(extra.get("radius", 1.6))
-        hx0 = px - radius - pad
-        hx1 = px + radius + pad
-        hz0 = pz - radius - pad
-        hz1 = pz + radius + pad
+        # Spiral gets special treatment: per-step holes tight to the
+        # climbing path rather than one bounding box that leaves the
+        # corners fall-throughable. Handled below in a dedicated
+        # branch; we return after injecting the holes ourselves.
+        import math as _math
+        rise = _effective_stair_rise(blueprint, extra)
+        target_y = float(target_room["origin"][1])
+        base_y = float(py)
+        rx, _, rz = target_room["origin"]
+        for (a, b, c, d) in _spiral_step_holes(extra, target_y, rise):
+            _inject_hole(target_room, "floor", {
+                "x": a - rx, "z": b - rz,
+                "width": c - a, "depth": d - b,
+            })
+        for r in blueprint.get("rooms", []):
+            if r is target_room:
+                continue
+            rx2, ry2, rz2 = r["origin"]
+            rsx2, rsy2, rsz2 = r["size"]
+            r_ceiling = float(ry2) + float(rsy2)
+            if not (base_y + 0.05 < r_ceiling <= target_y + 0.05):
+                continue
+            for (a, b, c, d) in _spiral_step_holes(extra, r_ceiling, rise):
+                if c < float(rx2) or a > float(rx2) + float(rsx2):
+                    continue
+                if d < float(rz2) or b > float(rz2) + float(rsz2):
+                    continue
+                _inject_hole(r, "ceiling", {
+                    "x": a - float(rx2), "z": b - float(rz2),
+                    "width": c - a, "depth": d - b,
+                })
+        return
     elif kind == "elevator":
         w = float(extra.get("width", 2.4))
         d = float(extra.get("depth", 2.4))
@@ -417,10 +735,6 @@ def _auto_punch_for_stair(blueprint: dict, extra: dict) -> None:
     else:
         return
 
-    target_room = _find_room(blueprint, target)
-    if target_room is None:
-        return
-    ty0, tsy = target_room["origin"][1], target_room["size"][1]
     # Convert WORLD xz to target-room-local xz.
     rx, _, rz = target_room["origin"]
     local = {
@@ -430,21 +744,41 @@ def _auto_punch_for_stair(blueprint: dict, extra: dict) -> None:
         "depth": hz1 - hz0,
     }
     _inject_hole(target_room, "floor", local)
-    # Also punch the ceiling of any room whose ceiling is immediately
-    # below the target floor (origin.y + size.y == target origin.y).
+    # Ceiling holes: punch the ceiling of every room whose ceiling Y
+    # sits between the stair's BASE y and the TARGET y — i.e., every
+    # ceiling the climb passes through on its way up. The earlier
+    # version only matched ceilings that were flush with the target
+    # floor (tol 0.05m), which missed the common case of a short
+    # intermediate room with a gap above it before the next floor
+    # (e.g. Room4 y=5..9 under a target at y=10 — a 1m air pocket).
+    # Requires xz overlap too so we don't punch unrelated rooms that
+    # happen to sit at the right height elsewhere on the map.
+    base_y = float(extra["pos"][1])
+    if kind == "elevator":
+        base_y = float(extra.get("low_y", base_y))
+    target_y = float(target_room["origin"][1])
     for r in blueprint.get("rooms", []):
         if r is target_room:
             continue
-        bottom_of_target = target_room["origin"][1]
-        top_of_r = r["origin"][1] + r["size"][1]
-        if abs(top_of_r - bottom_of_target) < 0.05:
-            rx2, _, rz2 = r["origin"]
-            _inject_hole(r, "ceiling", {
-                "x": hx0 - rx2,
-                "z": hz0 - rz2,
-                "width": hx1 - hx0,
-                "depth": hz1 - hz0,
-            })
+        rx2, ry2, rz2 = r["origin"]
+        rsx2, _rsy, rsz2 = r["size"]
+        r_ceiling: float = float(ry2) + float(_rsy)
+        # Strictly above the base (so the lower room whose ceiling IS
+        # the stair's base doesn't get punched) and at or below the
+        # target (with a small cushion for floating-point drift).
+        if not (base_y + 0.05 < r_ceiling <= target_y + 0.05):
+            continue
+        # xz overlap: hole rect vs room rect.
+        if hx1 < float(rx2) or hx0 > float(rx2) + float(rsx2):
+            continue
+        if hz1 < float(rz2) or hz0 > float(rz2) + float(rsz2):
+            continue
+        _inject_hole(r, "ceiling", {
+            "x": hx0 - float(rx2),
+            "z": hz0 - float(rz2),
+            "width": hx1 - hx0,
+            "depth": hz1 - hz0,
+        })
 
 
 def build_scene(blueprint: dict, scene_name: str) -> Scene:
@@ -477,11 +811,21 @@ def build_scene(blueprint: dict, scene_name: str) -> Scene:
 
     wall_t = float(blueprint.get("wall_thickness", 0.3))
 
+    # Fill in missing punch_through values from room geometry before
+    # running the punch pass — saves authors from having to wire each
+    # multi-story stair by hand.
+    _auto_infer_punch_through(blueprint)
+
     # Auto-punch holes in floors/ceilings for stairs/elevators that
     # declare `punch_through`. Must run BEFORE rooms emit so the holes
     # are baked into the slab partitioner.
     for extra in blueprint.get("extras", []):
         _auto_punch_for_stair(blueprint, extra)
+
+    # Mirror openings across shared walls so a door drawn once opens
+    # BOTH sides — otherwise Room1's south door would render but
+    # Room2's adjacent wall would stay solid.
+    _auto_mirror_shared_openings(blueprint)
 
     # Resolve connectors FIRST so rooms emit their walls with the
     # injected openings already in place. A connector links two
@@ -700,7 +1044,10 @@ def build_scene(blueprint: dict, scene_name: str) -> Scene:
             # at half-height forms an L-shape via a second flight in
             # a perpendicular direction.
             steps = int(extra.get("steps", 6))
-            rise = float(extra.get("rise", 0.4))
+            # Use the punch-through-aware rise so the top tread lands
+            # flush with the target room's floor; falls through to the
+            # declared rise when punch_through is absent.
+            rise = _effective_stair_rise(blueprint, extra)
             run = float(extra.get("run", 0.6))
             width = float(extra.get("width", 2.0))
             direction = extra.get("direction", "+z")
@@ -762,7 +1109,7 @@ def build_scene(blueprint: dict, scene_name: str) -> Scene:
             # around Y by its angular offset. For a cheap wedge we use
             # a thin box positioned outward from the axis.
             steps = int(extra.get("steps", 16))
-            rise = float(extra.get("rise", 0.35))
+            rise = _effective_stair_rise(blueprint, extra)
             radius = float(extra.get("radius", 1.6))
             width = float(extra.get("width", 1.8))
             depth = float(extra.get("depth", 0.55))
@@ -823,6 +1170,57 @@ def build_scene(blueprint: dict, scene_name: str) -> Scene:
             scene.node("Mesh", f"{scene_name}/{name}", "MeshInstance3D", mi)
             scene.node("Col", f"{scene_name}/{name}", "CollisionShape3D",
                        f'shape = SubResource("{shape_id}")\n')
+
+    # Terrain patches: each entry declares a rectangular heightmap grid.
+    # The actual mesh + collision are rebuilt at runtime by
+    # scripts/terrain_patch.gd using the metadata we emit here — this
+    # keeps the .tscn small (just a single node + a Float32 array) and
+    # lets sculpt edits round-trip through the JSON without anyone
+    # touching generated .tscn files.
+    for patch in blueprint.get("terrain_patches", []):
+        ox, oy, oz = patch["origin"]
+        pname = patch.get("name") or f"Terrain_{ox}_{oy}_{oz}"
+        size_x = float(patch.get("size_x", 10.0))
+        size_z = float(patch.get("size_z", 10.0))
+        res = int(patch.get("resolution", 8))
+        mat_name = patch.get("material", "")
+        mat_path = mats.get(mat_name, "") if mat_name else ""
+        heights = patch.get("heights") or [0.0] * (res * res)
+        if len(heights) != res * res:
+            heights = (list(heights) + [0.0] * (res * res))[: res * res]
+        heights_literal = "PackedFloat32Array(" + ", ".join(
+            f"{float(h):.4f}" for h in heights) + ")"
+        # Slope-aware colouring defaults: grass on flats, dirt on slopes.
+        # Authors can override by setting flat_color / slope_color /
+        # slope_threshold / slope_softness on the JSON patch.
+        flat_c = patch.get("flat_color") or [0.35, 0.55, 0.22]
+        slope_c = patch.get("slope_color") or [0.45, 0.32, 0.18]
+        slope_thr = float(patch.get("slope_threshold", 0.72))
+        slope_soft = float(patch.get("slope_softness", 0.15))
+        script_id = scene.ext_resource(
+            "res://scripts/terrain_patch.gd", "Script")
+        # Sink the whole patch 2cm to stop Z-fighting with room floor
+        # slabs that share the same origin.y. Authors set terrain at
+        # "floor height"; the tiny drop keeps the two from rendering
+        # on the exact same plane. Collision picks whichever surface
+        # is higher so the player still stands on the floor slab.
+        TERRAIN_Z_OFFSET = 0.02
+        body = (
+            f'transform = {xform_translate(ox, oy - TERRAIN_Z_OFFSET, oz)}\n'
+            f'collision_layer = 1\n'
+            f'collision_mask = 1\n'
+            f'script = ExtResource("{script_id}")\n'
+            f'metadata/terrain_heights = {heights_literal}\n'
+            f'metadata/terrain_size_x = {size_x}\n'
+            f'metadata/terrain_size_z = {size_z}\n'
+            f'metadata/terrain_resolution = {res}\n'
+            f'metadata/terrain_material = "{mat_path}"\n'
+            f'metadata/terrain_flat_color = [{flat_c[0]}, {flat_c[1]}, {flat_c[2]}]\n'
+            f'metadata/terrain_slope_color = [{slope_c[0]}, {slope_c[1]}, {slope_c[2]}]\n'
+            f'metadata/terrain_slope_threshold = {slope_thr}\n'
+            f'metadata/terrain_slope_softness = {slope_soft}\n'
+        )
+        scene.node(pname, scene_name, "StaticBody3D", body)
 
     return scene
 
