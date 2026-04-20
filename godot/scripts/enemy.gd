@@ -43,6 +43,10 @@ func _ready() -> void:
     _mode = _mode_for_bhv(bhv_name)
     _randomize_motion()
     _build_visual()
+    # Tag aerial predators so they can query each other for flocking
+    # separation in _physics_process.
+    if bhv_name == "bhvCuttlefish":
+        add_to_group("cuttlefish")
     # Friendly NPCs (BobombBuddy) don't have a hurt area — Mario bumps
     # past them harmlessly. Everything else gets the squish/hurt zone.
     if _mode != "friendly":
@@ -153,13 +157,16 @@ func _build_hurt_area() -> void:
             cs.shape = cap
             cs.position.y = 0.5
         "bhvCuttlefish":
-            # Elongated body hovering in the air — wider catch area so
-            # a well-timed jump can reach it from below.
+            # Reach DOWN from the enemy origin so a well-timed jump
+            # reliably catches the cuttlefish — the mantle center is
+            # ~2m up when hovering, and Tux maxes out at ~1.5m tall
+            # even on a triple jump from below. Extending the hurt
+            # capsule down gives real overlap.
             var cap := CapsuleShape3D.new()
-            cap.radius = 0.55
-            cap.height = 1.3
+            cap.radius = 0.65
+            cap.height = 2.2
             cs.shape = cap
-            cs.position.y = 0.0  # centered on the enemy origin
+            cs.position.y = -0.7
         _:
             var sph := SphereShape3D.new()
             sph.radius = 0.55
@@ -276,38 +283,55 @@ func _physics_process(delta: float) -> void:
                     pump = 1.0 + sin(_time * 14.0) * 0.08
                 _mesh.scale = _mesh.scale.lerp(Vector3(pump, pump, pump), 0.2)
         "glide":
-            # Cuttlefish-style aerial predator: floats at _center.y +
-            # hover_height, drifts toward the player with a sine bob,
-            # and periodically commits to a swoop that drops ALL the way
-            # down to player level so it can actually hit. State tracks
-            # the phase of the swoop for a satisfying arc:
-            #   idle      0..5s   hover + bob
-            #   dive      5..6s   drop toward player
-            #   retreat   6..7s   climb back up
+            # Aerial predator with proper separation + swoop cycle.
+            #   0..4s   hover + orbit idly around spawn
+            #   4..6s   approach player horizontally
+            #   6..7.5s DIVE (drop to player height, fast, damaging)
+            #   7.5..9s retreat (climb back to hover altitude)
             var hover_y: float = _center.y + 2.2
             var target: Vector3 = _center
             target.y = hover_y + sin(_time * 1.6) * 0.35
+            # Drift in a wide orbit around spawn when idle so multiple
+            # cuttlefish don't converge on a single point.
+            var idle_angle: float = _time * 0.6 + _time * 0.0
+            target.x = _center.x + cos(idle_angle) * 3.0
+            target.z = _center.z + sin(idle_angle) * 3.0
             var aggressive: bool = false
             if mario != null:
+                var cycle: float = fposmod(_time, 9.0)
                 var dist: float = global_position.distance_to(mario.global_position)
-                target = mario.global_position
-                target.y = hover_y + sin(_time * 1.6) * 0.35
-                var cycle: float = fposmod(_time, 7.0)
-                if dist < 10.0 and cycle > 5.0 and cycle < 6.0:
-                    # Dive: target = close to the player's actual body so
-                    # the hurt area actually touches them.
-                    target.y = mario.global_position.y + 0.4
+                if cycle > 4.0 and cycle < 6.0 and dist < 14.0:
+                    # Approach phase — hover at altitude above player.
+                    target = mario.global_position
+                    target.y = hover_y
+                elif cycle >= 6.0 and cycle < 7.5 and dist < 14.0:
+                    # Dive — drop to player height.
+                    target = mario.global_position
+                    target.y = mario.global_position.y + 0.3
                     aggressive = true
                 # Tilt the body forward during dive for visual intent.
                 if _mesh != null:
-                    var tilt: float = clamp((6.0 - cycle), 0.0, 1.0) * -0.6 if aggressive else 0.0
-                    _mesh.rotation.x = lerp(_mesh.rotation.x, tilt, 0.2)
+                    var tilt: float = -0.7 if aggressive else 0.0
+                    _mesh.rotation.x = lerp(_mesh.rotation.x, tilt, 0.15)
+            # Separation — scan nearby cuttlefish and push away so we
+            # don't clump into a single blob.
+            var separation: Vector3 = Vector3.ZERO
+            for node in get_tree().get_nodes_in_group("cuttlefish"):
+                if node == self:
+                    continue
+                if node is Node3D:
+                    var diff: Vector3 = global_position - node.global_position
+                    var d: float = diff.length()
+                    if d < 3.0 and d > 0.01:
+                        separation += diff.normalized() * (3.0 - d)
             var to_target: Vector3 = target - global_position
-            # Speed up during the dive so it reads as an attack.
-            var dive_speed: float = speed * (2.2 if aggressive else 1.0)
-            var move_step: float = min(dive_speed * delta, to_target.length())
+            var move_dir: Vector3 = to_target.normalized() + separation * 0.6
+            if move_dir.length() > 0.01:
+                move_dir = move_dir.normalized()
+            var dive_speed: float = speed * (2.6 if aggressive else 1.0)
+            var move_step: float = dive_speed * delta
+            global_position += move_dir * move_step
             if to_target.length() > 0.01:
-                global_position += to_target.normalized() * move_step
                 rotation.y = atan2(-to_target.x, -to_target.z)
             return  # skip the ground-walker pipeline below
 

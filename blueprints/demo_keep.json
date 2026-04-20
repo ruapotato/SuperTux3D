@@ -1,0 +1,81 @@
+{
+  "materials": {
+    "brick":   "res://assets/materials/brick_stone.tres",
+    "floor":   "res://assets/materials/stone_grey.tres",
+    "wood":    "res://assets/materials/wood_dark.tres",
+    "red":     "res://assets/materials/fabric_red.tres"
+  },
+  "wall_thickness": 0.4,
+  "rooms": [
+    {
+      "name": "EntryHall",
+      "origin": [0, 0, 0],
+      "size": [12, 5, 16],
+      "material": "brick",
+      "floor_material": "floor",
+      "walls": {
+        "north": {
+          "openings": [
+            {"type": "door", "x": 4.5, "width": 3, "height": 4}
+          ]
+        },
+        "south": {
+          "openings": [
+            {"type": "door", "x": 5, "width": 2, "height": 3.5}
+          ]
+        },
+        "east": {
+          "openings": [
+            {"type": "window", "x": 3, "width": 1.5, "height": 2, "sill": 1.5},
+            {"type": "window", "x": 7, "width": 1.5, "height": 2, "sill": 1.5},
+            {"type": "window", "x": 11, "width": 1.5, "height": 2, "sill": 1.5}
+          ]
+        },
+        "west": {
+          "openings": [
+            {"type": "window", "x": 3, "width": 1.5, "height": 2, "sill": 1.5},
+            {"type": "window", "x": 7, "width": 1.5, "height": 2, "sill": 1.5},
+            {"type": "window", "x": 11, "width": 1.5, "height": 2, "sill": 1.5}
+          ]
+        }
+      }
+    },
+    {
+      "name": "ThroneRoom",
+      "origin": [0, 0, 16],
+      "size": [12, 6, 10],
+      "material": "brick",
+      "floor_material": "floor",
+      "walls": {
+        "north": {
+          "openings": []
+        },
+        "south": {
+          "openings": [
+            {"type": "door", "x": 5, "width": 2, "height": 3.5}
+          ]
+        },
+        "east": {
+          "openings": [
+            {"type": "window", "x": 2, "width": 1.2, "height": 2.5, "sill": 2},
+            {"type": "window", "x": 7, "width": 1.2, "height": 2.5, "sill": 2}
+          ]
+        },
+        "west": {
+          "openings": [
+            {"type": "window", "x": 2, "width": 1.2, "height": 2.5, "sill": 2},
+            {"type": "window", "x": 7, "width": 1.2, "height": 2.5, "sill": 2}
+          ]
+        }
+      }
+    }
+  ],
+  "extras": [
+    {"type": "pillar", "name": "PillarNE", "pos": [2, 0, 3],  "radius": 0.35, "height": 5, "material": "wood"},
+    {"type": "pillar", "name": "PillarNW", "pos": [10, 0, 3], "radius": 0.35, "height": 5, "material": "wood"},
+    {"type": "pillar", "name": "PillarSE", "pos": [2, 0, 13], "radius": 0.35, "height": 5, "material": "wood"},
+    {"type": "pillar", "name": "PillarSW", "pos": [10, 0, 13], "radius": 0.35, "height": 5, "material": "wood"},
+    {"type": "stair", "name": "ThroneStair", "pos": [4, 0, 22], "steps": 4, "rise": 0.3, "run": 0.5, "width": 4, "material": "floor"},
+    {"type": "platform", "name": "ThroneDais", "pos": [3, 1.2, 24], "size": [6, 0.4, 2], "material": "red"}
+  ]
+}

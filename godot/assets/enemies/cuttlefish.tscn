@@ -1,117 +1,113 @@
-[gd_scene load_steps=17 format=3 uid="uid://bcuttle007"]
+[gd_scene load_steps=22 format=3 uid="uid://bcuttle02"]
 
-; Clean-room cuttlefish-like aerial enemy. Elongated capsule body (authored
-; along +Z) with top-mounted eyes, top fin-crest, long side fins, rear siphon
-; funnel, chromatophore spots, and six tentacles hanging down-and-outward.
-; Origin sits at body center (no feet — it's aerial). enemy.gd rotates 180°
-; on instantiate so the body ends up facing -Z in world. AnimationPlayer
-; autoplays "drift" so the creature undulates/sways even when static.
+; Cuttlefish — proper anatomy this time. Real cuttlefish have:
+;  - a flattened oval mantle (wider than tall, long nose-to-tail)
+;  - a continuous fringe-fin running the full length of BOTH flanks
+;    (not two vertical wings like before — a horizontal ruffle)
+;  - side-mounted eyes with iconic W-shaped pupils
+;  - 8 short arms + 2 longer feeding tentacles below the mouth
+;  - iridescent chromatophore stripes along the body
+; Origin is at body center. Faces +Z (enemy.gd rotates 180° to put
+; the head at Godot -Z).
 
-[sub_resource type="CapsuleMesh" id="body_mesh"]
-radius = 0.5
-height = 1.6
+[sub_resource type="SphereMesh" id="mantle_mesh"]
+radius = 0.42
+height = 0.62
 radial_segments = 20
+rings = 14
+
+[sub_resource type="SphereMesh" id="belly_mesh"]
+radius = 0.30
+height = 0.42
+radial_segments = 18
 rings = 12
 
-[sub_resource type="StandardMaterial3D" id="body_mat"]
-albedo_color = Color(0.35, 0.3, 0.65, 1)
-roughness = 0.7
-shading_mode = 1
+[sub_resource type="TorusMesh" id="fringe_mesh"]
+inner_radius = 0.38
+outer_radius = 0.56
+rings = 32
+ring_segments = 8
 
-[sub_resource type="CapsuleMesh" id="belly_mesh"]
-radius = 0.42
-height = 1.4
-radial_segments = 18
-rings = 10
-
-[sub_resource type="StandardMaterial3D" id="belly_mat"]
-albedo_color = Color(0.62, 0.58, 0.85, 1)
-roughness = 0.75
-shading_mode = 1
-
-[sub_resource type="BoxMesh" id="side_fin_mesh"]
-size = Vector3(0.05, 0.9, 0.25)
-
-[sub_resource type="StandardMaterial3D" id="fin_mat"]
-albedo_color = Color(0.45, 0.4, 0.78, 1)
-roughness = 0.7
-shading_mode = 1
-
-[sub_resource type="PrismMesh" id="crest_mesh"]
-size = Vector3(1.4, 0.18, 0.04)
+[sub_resource type="PrismMesh" id="tail_mesh"]
+size = Vector3(0.35, 0.22, 0.24)
 left_to_right = 0.5
 
-[sub_resource type="CapsuleMesh" id="tent_mesh"]
-radius = 0.08
-height = 0.6
-radial_segments = 12
+[sub_resource type="CapsuleMesh" id="arm_short_mesh"]
+radius = 0.055
+height = 0.48
+radial_segments = 10
 rings = 5
 
-[sub_resource type="StandardMaterial3D" id="tent_mat"]
-albedo_color = Color(0.38, 0.32, 0.7, 1)
-roughness = 0.8
-shading_mode = 1
-
-[sub_resource type="CylinderMesh" id="siphon_mesh"]
-top_radius = 0.08
-bottom_radius = 0.18
-height = 0.35
-radial_segments = 12
-
-[sub_resource type="SphereMesh" id="eye_mesh"]
-radius = 0.16
-height = 0.32
-radial_segments = 14
-rings = 10
-
-[sub_resource type="StandardMaterial3D" id="eye_white_mat"]
-albedo_color = Color(0.98, 0.97, 0.95, 1)
-roughness = 0.3
-shading_mode = 1
-
-[sub_resource type="SphereMesh" id="pupil_mesh"]
-radius = 0.08
-height = 0.16
-radial_segments = 12
-rings = 8
-
-[sub_resource type="StandardMaterial3D" id="pupil_mat"]
-albedo_color = Color(0.04, 0.05, 0.18, 1)
-roughness = 0.4
-shading_mode = 1
-
-[sub_resource type="SphereMesh" id="highlight_mesh"]
-radius = 0.03
-height = 0.06
+[sub_resource type="CapsuleMesh" id="arm_long_mesh"]
+radius = 0.042
+height = 0.82
 radial_segments = 8
-rings = 6
-
-[sub_resource type="StandardMaterial3D" id="highlight_mat"]
-albedo_color = Color(1, 1, 1, 1)
-emission_enabled = true
-emission = Color(1, 1, 1, 1)
-emission_energy_multiplier = 0.6
-shading_mode = 1
-
-[sub_resource type="SphereMesh" id="chroma_mesh"]
-radius = 0.08
-height = 0.04
-radial_segments = 12
 rings = 4
 
-[sub_resource type="StandardMaterial3D" id="chroma_mat"]
-albedo_color = Color(0.2, 0.85, 0.95, 1)
-emission_enabled = true
-emission = Color(0.3, 0.95, 1, 1)
-emission_energy_multiplier = 0.9
+[sub_resource type="SphereMesh" id="eye_mesh"]
+radius = 0.085
+height = 0.17
+radial_segments = 14
+rings = 8
+
+[sub_resource type="SphereMesh" id="pupil_mesh"]
+radius = 0.04
+height = 0.08
+radial_segments = 10
+rings = 6
+
+[sub_resource type="SphereMesh" id="spec_mesh"]
+radius = 0.012
+height = 0.024
+radial_segments = 6
+rings = 4
+
+[sub_resource type="BoxMesh" id="stripe_mesh"]
+size = Vector3(0.7, 0.02, 0.08)
+
+[sub_resource type="StandardMaterial3D" id="mantle_mat"]
+albedo_color = Color(0.38, 0.30, 0.58, 1)
+metallic = 0.1
+roughness = 0.55
+
+[sub_resource type="StandardMaterial3D" id="belly_mat"]
+albedo_color = Color(0.82, 0.78, 0.95, 1)
+roughness = 0.65
+
+[sub_resource type="StandardMaterial3D" id="fin_mat"]
+albedo_color = Color(0.72, 0.60, 0.92, 0.75)
+transparency = 1
 roughness = 0.5
-shading_mode = 1
+
+[sub_resource type="StandardMaterial3D" id="tentacle_mat"]
+albedo_color = Color(0.42, 0.32, 0.62, 1)
+roughness = 0.6
+
+[sub_resource type="StandardMaterial3D" id="eye_mat"]
+albedo_color = Color(0.98, 0.95, 0.85, 1)
+roughness = 0.25
+
+[sub_resource type="StandardMaterial3D" id="pupil_mat"]
+albedo_color = Color(0.02, 0.02, 0.05, 1)
+emission_enabled = true
+emission = Color(0.08, 0.02, 0.15, 1)
+emission_energy_multiplier = 0.6
+roughness = 0.2
+
+[sub_resource type="StandardMaterial3D" id="spec_mat"]
+albedo_color = Color(1, 1, 1, 1)
+shading_mode = 0
+
+[sub_resource type="StandardMaterial3D" id="stripe_mat"]
+albedo_color = Color(0.85, 0.55, 0.95, 1)
+emission_enabled = true
+emission = Color(0.85, 0.55, 0.95, 1)
+emission_energy_multiplier = 1.8
+roughness = 0.3
 
 [sub_resource type="Animation" id="drift_anim"]
-resource_name = "drift"
-length = 1.6666
+length = 2.4
 loop_mode = 1
-step = 0.08333
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -119,220 +115,187 @@ tracks/0/path = NodePath("Body:rotation")
 tracks/0/interp = 2
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.4167, 0.8333, 1.25, 1.6666),
+"times": PackedFloat32Array(0, 0.6, 1.2, 1.8, 2.4),
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1),
 "update": 0,
-"values": [Vector3(0, 0, 0), Vector3(0, 0.12, 0.12), Vector3(0, 0, 0), Vector3(0, -0.12, -0.12), Vector3(0, 0, 0)]
+"values": [Vector3(0, 0, 0), Vector3(0.08, 0, 0.06), Vector3(0, 0, 0), Vector3(-0.08, 0, -0.06), Vector3(0, 0, 0)],
 }
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("Tent1:rotation")
+tracks/1/path = NodePath("Body/FringeL:rotation")
 tracks/1/interp = 2
 tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.4167, 0.8333, 1.25, 1.6666),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"times": PackedFloat32Array(0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
 "update": 0,
-"values": [Vector3(0, 0, 0), Vector3(0.25, 0, 0), Vector3(0, 0, 0), Vector3(-0.25, 0, 0), Vector3(0, 0, 0)]
+"values": [Vector3(0, 0, 0), Vector3(0.22, 0, 0), Vector3(0, 0, 0), Vector3(-0.22, 0, 0), Vector3(0, 0, 0), Vector3(0.22, 0, 0), Vector3(0, 0, 0)],
 }
 tracks/2/type = "value"
 tracks/2/imported = false
 tracks/2/enabled = true
-tracks/2/path = NodePath("Tent2:rotation")
+tracks/2/path = NodePath("Body/FringeR:rotation")
 tracks/2/interp = 2
 tracks/2/loop_wrap = true
 tracks/2/keys = {
-"times": PackedFloat32Array(0, 0.4167, 0.8333, 1.25, 1.6666),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"times": PackedFloat32Array(0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
 "update": 0,
-"values": [Vector3(0.125, 0, 0), Vector3(0.2664, 0, 0), Vector3(-0.125, 0, 0), Vector3(-0.2164, 0, 0), Vector3(0.125, 0, 0)]
+"values": [Vector3(0, 0, 0), Vector3(-0.22, 0, 0), Vector3(0, 0, 0), Vector3(0.22, 0, 0), Vector3(0, 0, 0), Vector3(-0.22, 0, 0), Vector3(0, 0, 0)],
 }
 tracks/3/type = "value"
 tracks/3/imported = false
 tracks/3/enabled = true
-tracks/3/path = NodePath("Tent3:rotation")
+tracks/3/path = NodePath("Body/Tentacles:rotation")
 tracks/3/interp = 2
 tracks/3/loop_wrap = true
 tracks/3/keys = {
-"times": PackedFloat32Array(0, 0.4167, 0.8333, 1.25, 1.6666),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"times": PackedFloat32Array(0, 0.8, 1.6, 2.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
 "update": 0,
-"values": [Vector3(0.2164, 0, 0), Vector3(0.125, 0, 0), Vector3(-0.2164, 0, 0), Vector3(-0.125, 0, 0), Vector3(0.2164, 0, 0)]
-}
-tracks/4/type = "value"
-tracks/4/imported = false
-tracks/4/enabled = true
-tracks/4/path = NodePath("Tent4:rotation")
-tracks/4/interp = 2
-tracks/4/loop_wrap = true
-tracks/4/keys = {
-"times": PackedFloat32Array(0, 0.4167, 0.8333, 1.25, 1.6666),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
-"update": 0,
-"values": [Vector3(0.25, 0, 0), Vector3(0, 0, 0), Vector3(-0.25, 0, 0), Vector3(0, 0, 0), Vector3(0.25, 0, 0)]
-}
-tracks/5/type = "value"
-tracks/5/imported = false
-tracks/5/enabled = true
-tracks/5/path = NodePath("Tent5:rotation")
-tracks/5/interp = 2
-tracks/5/loop_wrap = true
-tracks/5/keys = {
-"times": PackedFloat32Array(0, 0.4167, 0.8333, 1.25, 1.6666),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
-"update": 0,
-"values": [Vector3(0.2164, 0, 0), Vector3(-0.125, 0, 0), Vector3(-0.2164, 0, 0), Vector3(0.125, 0, 0), Vector3(0.2164, 0, 0)]
-}
-tracks/6/type = "value"
-tracks/6/imported = false
-tracks/6/enabled = true
-tracks/6/path = NodePath("Tent6:rotation")
-tracks/6/interp = 2
-tracks/6/loop_wrap = true
-tracks/6/keys = {
-"times": PackedFloat32Array(0, 0.4167, 0.8333, 1.25, 1.6666),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
-"update": 0,
-"values": [Vector3(0.125, 0, 0), Vector3(-0.2164, 0, 0), Vector3(-0.125, 0, 0), Vector3(0.2164, 0, 0), Vector3(0.125, 0, 0)]
-}
-tracks/7/type = "value"
-tracks/7/imported = false
-tracks/7/enabled = true
-tracks/7/path = NodePath("Crest:scale")
-tracks/7/interp = 2
-tracks/7/loop_wrap = true
-tracks/7/keys = {
-"times": PackedFloat32Array(0, 0.4167, 0.8333, 1.25, 1.6666),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
-"update": 0,
-"values": [Vector3(1, 1, 1), Vector3(1, 1.1, 1), Vector3(1, 1, 1), Vector3(1, 0.9, 1), Vector3(1, 1, 1)]
+"values": [Vector3(0, 0, 0), Vector3(0.14, 0, 0), Vector3(-0.14, 0, 0), Vector3(0, 0, 0)],
 }
 
 [sub_resource type="AnimationLibrary" id="anim_lib"]
 _data = {
-"drift": SubResource("drift_anim")
+"drift": SubResource("drift_anim"),
 }
 
 [node name="EnemyVisual" type="Node3D"]
 
-[node name="Body" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0)
-mesh = SubResource("body_mesh")
-surface_material_override/0 = SubResource("body_mat")
+[node name="Body" type="Node3D" parent="."]
 
-[node name="Belly" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, -0.1, 0.05)
+[node name="Mantle" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1.15, 0, 0, 0, 0.7, 0, 0, 0, 1.6, 0, 0, 0)
+mesh = SubResource("mantle_mesh")
+surface_material_override/0 = SubResource("mantle_mat")
+
+[node name="Belly" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1.05, 0, 0, 0, 0.55, 0, 0, 0, 1.45, 0, -0.13, 0)
 mesh = SubResource("belly_mesh")
 surface_material_override/0 = SubResource("belly_mat")
 
-[node name="FinL" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.52, 0, 0)
-mesh = SubResource("side_fin_mesh")
+[node name="FringeL" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(0.12, 0, 0, 0, 0, 1.6, 0, 0.5, 0, -0.42, 0, 0)
+mesh = SubResource("fringe_mesh")
 surface_material_override/0 = SubResource("fin_mat")
 
-[node name="FinR" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.52, 0, 0)
-mesh = SubResource("side_fin_mesh")
+[node name="FringeR" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(0.12, 0, 0, 0, 0, 1.6, 0, 0.5, 0, 0.42, 0, 0)
+mesh = SubResource("fringe_mesh")
 surface_material_override/0 = SubResource("fin_mat")
 
-[node name="Crest" type="MeshInstance3D" parent="."]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 0.52, 0)
-mesh = SubResource("crest_mesh")
-surface_material_override/0 = SubResource("fin_mat")
+[node name="Tail" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(0.7, 0, 0, 0, 0.7, 0, 0, 0, 0.7, 0, 0.02, -0.85)
+mesh = SubResource("tail_mesh")
+surface_material_override/0 = SubResource("mantle_mat")
 
-[node name="Siphon" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.5, -0.866, 0, 0.866, 0.5, 0, -0.15, -0.75)
-mesh = SubResource("siphon_mesh")
-surface_material_override/0 = SubResource("fin_mat")
+[node name="Stripe1" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0.3)
+mesh = SubResource("stripe_mesh")
+surface_material_override/0 = SubResource("stripe_mat")
 
-[node name="Tent1" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25, -0.78, 0.35)
-mesh = SubResource("tent_mesh")
-surface_material_override/0 = SubResource("tent_mat")
+[node name="Stripe2" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+mesh = SubResource("stripe_mesh")
+surface_material_override/0 = SubResource("stripe_mat")
 
-[node name="Tent2" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, -0.78, 0.35)
-mesh = SubResource("tent_mesh")
-surface_material_override/0 = SubResource("tent_mat")
+[node name="Stripe3" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, -0.3)
+mesh = SubResource("stripe_mesh")
+surface_material_override/0 = SubResource("stripe_mat")
 
-[node name="Tent3" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.28, -0.8, 0)
-mesh = SubResource("tent_mesh")
-surface_material_override/0 = SubResource("tent_mat")
-
-[node name="Tent4" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, -0.8, 0)
-mesh = SubResource("tent_mesh")
-surface_material_override/0 = SubResource("tent_mat")
-
-[node name="Tent5" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, -0.78, -0.3)
-mesh = SubResource("tent_mesh")
-surface_material_override/0 = SubResource("tent_mat")
-
-[node name="Tent6" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, -0.78, -0.3)
-mesh = SubResource("tent_mesh")
-surface_material_override/0 = SubResource("tent_mat")
-
-[node name="EyeL" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.24, 0.4, 0.5)
+[node name="EyeL" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.33, 0.12, 0.56)
 mesh = SubResource("eye_mesh")
-surface_material_override/0 = SubResource("eye_white_mat")
+surface_material_override/0 = SubResource("eye_mat")
 
-[node name="EyeR" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.24, 0.4, 0.5)
+[node name="EyeR" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.33, 0.12, 0.56)
 mesh = SubResource("eye_mesh")
-surface_material_override/0 = SubResource("eye_white_mat")
+surface_material_override/0 = SubResource("eye_mat")
 
-[node name="PupilL" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.24, 0.4, 0.62)
+[node name="PupilL" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 0.35, 0, 0, 0, 1, -0.36, 0.12, 0.64)
 mesh = SubResource("pupil_mesh")
 surface_material_override/0 = SubResource("pupil_mat")
 
-[node name="PupilR" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.24, 0.4, 0.62)
+[node name="PupilR" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 0.35, 0, 0, 0, 1, 0.36, 0.12, 0.64)
 mesh = SubResource("pupil_mesh")
 surface_material_override/0 = SubResource("pupil_mat")
 
-[node name="SpecL" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.21, 0.45, 0.66)
-mesh = SubResource("highlight_mesh")
-surface_material_override/0 = SubResource("highlight_mat")
+[node name="SpecL" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.30, 0.15, 0.66)
+mesh = SubResource("spec_mesh")
+surface_material_override/0 = SubResource("spec_mat")
 
-[node name="SpecR" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.27, 0.45, 0.66)
-mesh = SubResource("highlight_mesh")
-surface_material_override/0 = SubResource("highlight_mat")
+[node name="SpecR" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.30, 0.15, 0.66)
+mesh = SubResource("spec_mesh")
+surface_material_override/0 = SubResource("spec_mat")
 
-[node name="Chroma1" type="MeshInstance3D" parent="."]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -0.48, 0.15, 0.2)
-mesh = SubResource("chroma_mesh")
-surface_material_override/0 = SubResource("chroma_mat")
+[node name="Tentacles" type="Node3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.18, 0.7)
 
-[node name="Chroma2" type="MeshInstance3D" parent="."]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -0.48, -0.05, -0.15)
-mesh = SubResource("chroma_mesh")
-surface_material_override/0 = SubResource("chroma_mat")
+[node name="Arm1" type="MeshInstance3D" parent="Body/Tentacles"]
+transform = Transform3D(0.95, 0.3, 0, -0.3, 0.95, 0, 0, 0, 1, -0.24, -0.24, 0.02)
+mesh = SubResource("arm_short_mesh")
+surface_material_override/0 = SubResource("tentacle_mat")
 
-[node name="Chroma3" type="MeshInstance3D" parent="."]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0.48, 0.1, -0.05)
-mesh = SubResource("chroma_mesh")
-surface_material_override/0 = SubResource("chroma_mat")
+[node name="Arm2" type="MeshInstance3D" parent="Body/Tentacles"]
+transform = Transform3D(0.97, 0.15, 0, -0.15, 0.97, 0, 0, 0, 1, -0.12, -0.26, 0.08)
+mesh = SubResource("arm_short_mesh")
+surface_material_override/0 = SubResource("tentacle_mat")
 
-[node name="Chroma4" type="MeshInstance3D" parent="."]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0.48, -0.1, 0.3)
-mesh = SubResource("chroma_mesh")
-surface_material_override/0 = SubResource("chroma_mat")
+[node name="Arm3" type="MeshInstance3D" parent="Body/Tentacles"]
+transform = Transform3D(0.97, -0.15, 0, 0.15, 0.97, 0, 0, 0, 1, 0.12, -0.26, 0.08)
+mesh = SubResource("arm_short_mesh")
+surface_material_override/0 = SubResource("tentacle_mat")
 
-[node name="Chroma5" type="MeshInstance3D" parent="."]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0.48, 0.25, -0.35)
-mesh = SubResource("chroma_mesh")
-surface_material_override/0 = SubResource("chroma_mat")
+[node name="Arm4" type="MeshInstance3D" parent="Body/Tentacles"]
+transform = Transform3D(0.95, -0.3, 0, 0.3, 0.95, 0, 0, 0, 1, 0.24, -0.24, 0.02)
+mesh = SubResource("arm_short_mesh")
+surface_material_override/0 = SubResource("tentacle_mat")
+
+[node name="Arm5" type="MeshInstance3D" parent="Body/Tentacles"]
+transform = Transform3D(0.95, 0.15, 0.28, -0.15, 0.97, -0.19, -0.28, 0.19, 0.94, -0.2, -0.24, -0.12)
+mesh = SubResource("arm_short_mesh")
+surface_material_override/0 = SubResource("tentacle_mat")
+
+[node name="Arm6" type="MeshInstance3D" parent="Body/Tentacles"]
+transform = Transform3D(0.98, 0.05, 0.19, -0.05, 0.99, -0.05, -0.19, 0.05, 0.98, -0.08, -0.26, -0.18)
+mesh = SubResource("arm_short_mesh")
+surface_material_override/0 = SubResource("tentacle_mat")
+
+[node name="Arm7" type="MeshInstance3D" parent="Body/Tentacles"]
+transform = Transform3D(0.98, -0.05, -0.19, 0.05, 0.99, -0.05, 0.19, 0.05, 0.98, 0.08, -0.26, -0.18)
+mesh = SubResource("arm_short_mesh")
+surface_material_override/0 = SubResource("tentacle_mat")
+
+[node name="Arm8" type="MeshInstance3D" parent="Body/Tentacles"]
+transform = Transform3D(0.95, -0.15, -0.28, 0.15, 0.97, -0.19, 0.28, 0.19, 0.94, 0.2, -0.24, -0.12)
+mesh = SubResource("arm_short_mesh")
+surface_material_override/0 = SubResource("tentacle_mat")
+
+[node name="FeederL" type="MeshInstance3D" parent="Body/Tentacles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, -0.42, -0.02)
+mesh = SubResource("arm_long_mesh")
+surface_material_override/0 = SubResource("tentacle_mat")
+
+[node name="FeederR" type="MeshInstance3D" parent="Body/Tentacles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, -0.42, -0.02)
+mesh = SubResource("arm_long_mesh")
+surface_material_override/0 = SubResource("tentacle_mat")
+
+[node name="Siphon" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.35, 0, -0.1, -1.02)
+mesh = SubResource("tail_mesh")
+surface_material_override/0 = SubResource("tentacle_mat")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
-"": SubResource("anim_lib")
+"": SubResource("anim_lib"),
 }
 autoplay = "drift"

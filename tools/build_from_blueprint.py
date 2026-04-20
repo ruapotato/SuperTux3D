@@ -1,0 +1,354 @@
+#!/usr/bin/env python3
+"""Blueprint → .tscn building converter.
+
+The pain point with CSG-based level authoring: a wall with a cut-out
+doorway is fragile. If the cut's Z-depth is shorter than the wall's
+thickness, the doorway stays sealed. If the cut is offset wrong, you
+get a hole in the wrong place. Agents authoring 3000-line scenes
+routinely ship these bugs.
+
+The fix: author buildings as **floorplans** — a JSON/YAML schema that
+describes rooms, walls as SEGMENTS with gap-openings (no CSG), doors
+as explicit mesh pairs (frame + floor patch), windows as top-and-
+bottom wall segments framing an open slot.
+
+This script reads a blueprint JSON and emits a .tscn with plain
+MeshInstance3D + StaticBody3D pairs. No CSG. No alignment math that
+can drift. If the blueprint says there's a door, the door is there —
+the geometry is assembled piece-by-piece around it.
+
+Schema (see bottom of file for examples):
+
+    {
+      "materials": {"brick": "res://assets/materials/brick_stone.tres"},
+      "floor_height": 4.0,
+      "wall_thickness": 0.3,
+      "rooms": [
+        {
+          "name": "GrandHall",
+          "origin": [0, 0, 0],
+          "size": [12, 4, 16],
+          "material": "brick",
+          "floor_material": "stone_grey",
+          "walls": {
+            "north": {
+              "openings": [
+                {"type": "door", "x": 4.5, "width": 3, "height": 3}
+              ]
+            },
+            "south": {
+              "openings": [
+                {"type": "window", "x": 2, "width": 1.5, "height": 1.5, "sill": 1.5},
+                {"type": "window", "x": 8, "width": 1.5, "height": 1.5, "sill": 1.5}
+              ]
+            }
+          }
+        }
+      ],
+      "extras": [
+        {"type": "pillar", "pos": [6, 0, 4], "radius": 0.4, "height": 4, "material": "stone_grey"}
+      ]
+    }
+
+Walls are one-per-side (north/south/east/west). Openings split a wall
+into pieces: floor-sill-piece, jamb-left, lintel-top, jamb-right.
+These get glued back together as separate MeshInstance3D+StaticBody3D
+pairs so the build is mechanically guaranteed to have the gap where
+it's supposed to be.
+
+Run: python3 tools/build_from_blueprint.py <blueprint.json> <out.tscn>
+"""
+from __future__ import annotations
+import argparse
+import json
+import os
+import sys
+
+# -----------------------------------------------------------------------
+# TSCN emitter — we build a dict of subresources (shape + mesh) and a
+# list of top-level nodes, then format the whole thing as one text file.
+
+class Scene:
+    def __init__(self) -> None:
+        self.ext_resources: list[tuple[str, str, str]] = []  # (path, type, id)
+        self.sub_resources: list[tuple[str, str, str]] = []  # (id, type, body)
+        self.nodes: list[tuple[str, str | None, str, str]] = []  # (name, parent, type, body)
+        self._next_sub = 1
+
+    def ext_resource(self, path: str, type_: str) -> str:
+        for p, t, i in self.ext_resources:
+            if p == path and t == type_:
+                return i
+        new_id = f"e{len(self.ext_resources) + 1}_{os.path.basename(path).split('.')[0]}"
+        self.ext_resources.append((path, type_, new_id))
+        return new_id
+
+    def sub(self, type_: str, body: str) -> str:
+        sid = f"s{self._next_sub}"
+        self._next_sub += 1
+        self.sub_resources.append((sid, type_, body))
+        return sid
+
+    def node(self, name: str, parent: str | None, type_: str, body: str = "") -> None:
+        self.nodes.append((name, parent, type_, body))
+
+    def format(self) -> str:
+        load_steps = 1 + len(self.ext_resources) + len(self.sub_resources)
+        out = [f"[gd_scene load_steps={load_steps} format=3]\n"]
+        for path, type_, rid in self.ext_resources:
+            out.append(f'[ext_resource type="{type_}" path="{path}" id="{rid}"]\n')
+        for sid, type_, body in self.sub_resources:
+            out.append(f'[sub_resource type="{type_}" id="{sid}"]\n{body}\n')
+        for name, parent, type_, body in self.nodes:
+            if parent is None:
+                out.append(f'[node name="{name}" type="{type_}"]\n')
+            else:
+                out.append(f'[node name="{name}" type="{type_}" parent="{parent}"]\n')
+            if body:
+                out.append(body)
+                if not body.endswith("\n"):
+                    out.append("\n")
+        return "".join(out)
+
+
+# -----------------------------------------------------------------------
+# Helpers
+
+def vec(x: float, y: float, z: float) -> str:
+    return f"Vector3({x}, {y}, {z})"
+
+def xform_translate(x: float, y: float, z: float) -> str:
+    # Identity rotation + translation.
+    return f"Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, {x}, {y}, {z})"
+
+def emit_box(scene: Scene, parent: str, name: str,
+             pos: tuple[float, float, float],
+             size: tuple[float, float, float],
+             mat_id: str | None) -> None:
+    """Emit a solid box at `pos` with `size`. Includes StaticBody3D +
+    CollisionShape3D so the piece collides. Falls back to identity
+    material if mat_id is None."""
+    mesh_body = f"size = {vec(*size)}\n"
+    mesh_id = scene.sub("BoxMesh", mesh_body)
+    shape_body = f"size = {vec(*size)}\n"
+    shape_id = scene.sub("BoxShape3D", shape_body)
+
+    body_node_body = (
+        f'transform = {xform_translate(*pos)}\n'
+        f'collision_layer = 1\n'
+        f'collision_mask = 1\n'
+    )
+    scene.node(name, parent, "StaticBody3D", body_node_body)
+
+    mi_body = f'mesh = SubResource("{mesh_id}")\n'
+    if mat_id is not None:
+        mi_body += f'surface_material_override/0 = ExtResource("{mat_id}")\n'
+    scene.node("Mesh", f"{parent}/{name}" if parent else name,
+               "MeshInstance3D", mi_body)
+
+    col_body = f'shape = SubResource("{shape_id}")\n'
+    scene.node("Col", f"{parent}/{name}" if parent else name,
+               "CollisionShape3D", col_body)
+
+
+def emit_wall_with_openings(
+    scene: Scene,
+    parent: str,
+    prefix: str,
+    wall_origin: tuple[float, float, float],
+    wall_size: tuple[float, float, float],  # (length, height, thickness)
+    axis: str,                              # "x" or "z" — length axis in room-local
+    openings: list[dict],
+    mat_id: str | None,
+) -> None:
+    """Build ONE wall by splitting it into segments that frame each
+    opening. Opening rules:
+      - "door":   opens from floor up to `height`, from `x` to `x+width`
+                  → left jamb, right jamb, lintel above
+      - "window": opening from `sill` to `sill+height`, x range as door
+                  → left jamb, right jamb, lintel above, sill below
+    Wall segments outside the openings are full-height.
+
+    The length axis is `axis`. If axis=="x", size[0] is length along X.
+    The thickness is size[2] regardless of axis (we rotate the axes in
+    the caller).
+    """
+    length, height, thickness = wall_size
+    # Sort openings by x position so the segmenting is clean.
+    openings = sorted(openings, key=lambda o: o["x"])
+
+    segments: list[tuple[float, float, float, float]] = []
+    # Each entry: (x_start, x_end, y_start, y_end) in wall-local coords.
+    cursor_x = 0.0
+    for op in openings:
+        ox = float(op["x"])
+        ow = float(op["width"])
+        oh = float(op["height"])
+        sill = float(op.get("sill", 0.0))
+        # Full-height segment left of the opening.
+        if ox > cursor_x:
+            segments.append((cursor_x, ox, 0.0, height))
+        # Below-opening segment (a window's sill; for a door, sill is 0).
+        if sill > 0.0:
+            segments.append((ox, ox + ow, 0.0, sill))
+        # Above-opening segment (lintel).
+        lintel_bottom = sill + oh
+        if lintel_bottom < height:
+            segments.append((ox, ox + ow, lintel_bottom, height))
+        cursor_x = ox + ow
+    # Trailing wall segment right of the last opening.
+    if cursor_x < length:
+        segments.append((cursor_x, length, 0.0, height))
+    # If no openings at all, just emit the full wall as one piece.
+    if not openings:
+        segments = [(0.0, length, 0.0, height)]
+
+    wx, wy, wz = wall_origin
+    for idx, (x0, x1, y0, y1) in enumerate(segments):
+        seg_len = x1 - x0
+        seg_h = y1 - y0
+        if seg_len <= 0.001 or seg_h <= 0.001:
+            continue
+        center_x_local = (x0 + x1) * 0.5
+        center_y_local = (y0 + y1) * 0.5
+        if axis == "x":
+            pos = (wx + center_x_local, wy + center_y_local, wz)
+            size = (seg_len, seg_h, thickness)
+        else:  # axis == "z"
+            pos = (wx, wy + center_y_local, wz + center_x_local)
+            size = (thickness, seg_h, seg_len)
+        emit_box(scene, parent, f"{prefix}_seg{idx}", pos, size, mat_id)
+
+
+# -----------------------------------------------------------------------
+# Blueprint interpreter
+
+def build_scene(blueprint: dict, scene_name: str) -> Scene:
+    scene = Scene()
+    scene.node(scene_name, None, "Node3D")
+    mats = blueprint.get("materials", {})
+    mat_ids: dict[str, str] = {}
+    for name, path in mats.items():
+        mat_ids[name] = scene.ext_resource(path, "Material")
+
+    wall_t = float(blueprint.get("wall_thickness", 0.3))
+
+    for room in blueprint.get("rooms", []):
+        rname = room["name"]
+        ox, oy, oz = room["origin"]
+        sx, sy, sz = room["size"]
+        room_mat = mat_ids.get(room.get("material", ""))
+        floor_mat = mat_ids.get(room.get("floor_material", room.get("material", "")))
+
+        # Room root node for namespacing.
+        scene.node(rname, scene_name, "Node3D",
+                   f'transform = {xform_translate(ox, oy, oz)}\n')
+        room_parent = f"{scene_name}/{rname}"
+
+        # Floor slab — thin box under the room.
+        if room.get("floor", True):
+            emit_box(scene, room_parent, "Floor",
+                     (sx / 2.0, -0.1, sz / 2.0),
+                     (sx, 0.2, sz), floor_mat)
+        # Ceiling — thin box on top.
+        if room.get("ceiling", True):
+            emit_box(scene, room_parent, "Ceiling",
+                     (sx / 2.0, sy + 0.1, sz / 2.0),
+                     (sx, 0.2, sz), room_mat)
+
+        walls = room.get("walls", {})
+        # NORTH: at z = sz, length along X. Openings x=0..sx.
+        if "north" in walls:
+            emit_wall_with_openings(
+                scene, room_parent, "WallN",
+                (0.0, 0.0, sz),
+                (sx, sy, wall_t),
+                "x",
+                walls["north"].get("openings", []),
+                room_mat,
+            )
+        # SOUTH: at z = 0, length along X.
+        if "south" in walls:
+            emit_wall_with_openings(
+                scene, room_parent, "WallS",
+                (0.0, 0.0, 0.0),
+                (sx, sy, wall_t),
+                "x",
+                walls["south"].get("openings", []),
+                room_mat,
+            )
+        # EAST: at x = sx, length along Z.
+        if "east" in walls:
+            emit_wall_with_openings(
+                scene, room_parent, "WallE",
+                (sx, 0.0, 0.0),
+                (sz, sy, wall_t),
+                "z",
+                walls["east"].get("openings", []),
+                room_mat,
+            )
+        # WEST: at x = 0, length along Z.
+        if "west" in walls:
+            emit_wall_with_openings(
+                scene, room_parent, "WallW",
+                (0.0, 0.0, 0.0),
+                (sz, sy, wall_t),
+                "z",
+                walls["west"].get("openings", []),
+                room_mat,
+            )
+
+    # Extras: pillars, stairs, platforms, etc. — purely additive primitives.
+    for extra in blueprint.get("extras", []):
+        kind = extra.get("type")
+        px, py, pz = extra["pos"]
+        mat = mat_ids.get(extra.get("material", ""))
+        name = extra.get("name") or f"Extra_{kind}_{px}_{py}_{pz}"
+        if kind == "pillar":
+            r = float(extra.get("radius", 0.4))
+            h = float(extra.get("height", 4.0))
+            # Approximate a cylinder via a slim tall box for now.
+            emit_box(scene, scene_name, name,
+                     (px, py + h / 2.0, pz),
+                     (r * 2.0, h, r * 2.0), mat)
+        elif kind == "platform":
+            s = extra["size"]
+            emit_box(scene, scene_name, name,
+                     (px + s[0] / 2.0, py + s[1] / 2.0, pz + s[2] / 2.0),
+                     tuple(s), mat)
+        elif kind == "stair":
+            steps = int(extra.get("steps", 6))
+            rise = float(extra.get("rise", 0.4))
+            run = float(extra.get("run", 0.6))
+            width = float(extra.get("width", 2.0))
+            for i in range(steps):
+                emit_box(scene, scene_name, f"{name}_step{i}",
+                         (px + width / 2.0,
+                          py + rise * (i + 0.5),
+                          pz + run * (i + 0.5)),
+                         (width, rise, run),
+                         mat)
+
+    return scene
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("blueprint", help="path to the blueprint JSON")
+    ap.add_argument("output", help="where to write the .tscn")
+    ap.add_argument("--name", default="BuildingRoot",
+                    help="name for the scene root Node3D")
+    args = ap.parse_args()
+    with open(args.blueprint) as f:
+        blueprint = json.load(f)
+    scene = build_scene(blueprint, args.name)
+    with open(args.output, "w") as f:
+        f.write(scene.format())
+    print(f"wrote {args.output} — {len(scene.nodes)} nodes, "
+          f"{len(scene.sub_resources)} subresources, "
+          f"{len(scene.ext_resources)} ext resources")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
