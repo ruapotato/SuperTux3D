@@ -1,5 +1,5 @@
 {
-  "_doc": "Multi-story test: 3 floors connected by a straight stair + landing switchback, a spiral stair in a tower, and a call elevator. Stairs demonstrate the new 'direction' + 'landing' options. Elevator demonstrates meta-driven runtime movement.",
+  "_doc": "Multi-story test: 3 floors connected by 3 routes — straight stair, switchback, spiral, call-elevator. Each vertical extra declares `punch_through` so the converter auto-generates a matching hole in the upper floor AND the ceiling below. No manual hole/stair alignment.",
   "standalone_level": true,
   "spawn_point": [10, 1, 3],
   "materials": {
@@ -14,90 +14,59 @@
   "wall_thickness": 0.4,
   "rooms": [
     {
-      "_doc": "Ground floor — main hall with a floor-hole in the NE corner for the elevator shaft.",
       "name": "GroundHall",
       "origin": [0, 0, 0],
-      "size": [20, 5, 16],
+      "size": [22, 5, 18],
       "material": "brick",
       "floor_material": "floor",
-      "ceiling_holes": [
-        {"x": 14, "z": 2, "width": 5, "depth": 5}
-      ],
       "walls": {
         "south": {
           "openings": [
-            {"type": "door", "x": 9, "width": 3, "height": 4}
+            {"type": "door", "x": 10, "width": 3, "height": 4}
           ]
         },
         "east": {
           "openings": [
-            {"type": "window", "x": 2, "width": 1.5, "height": 2, "sill": 1.5},
-            {"type": "window", "x": 6, "width": 1.5, "height": 2, "sill": 1.5},
-            {"type": "window", "x": 10, "width": 1.5, "height": 2, "sill": 1.5},
-            {"type": "window", "x": 14, "width": 1.5, "height": 2, "sill": 1.5}
+            {"type": "window", "x": 3, "width": 1.5, "height": 2, "sill": 1.5},
+            {"type": "window", "x": 8, "width": 1.5, "height": 2, "sill": 1.5},
+            {"type": "window", "x": 13, "width": 1.5, "height": 2, "sill": 1.5}
           ]
         },
         "west": {
           "openings": [
             {"type": "window", "x": 4, "width": 1.5, "height": 2, "sill": 1.5},
-            {"type": "window", "x": 10, "width": 1.5, "height": 2, "sill": 1.5}
-          ]
-        },
-        "north": {
-          "openings": [
-            {"type": "door", "x": 2, "width": 2.5, "height": 3.5}
+            {"type": "window", "x": 11, "width": 1.5, "height": 2, "sill": 1.5}
           ]
         }
       }
     },
     {
-      "_doc": "Second floor at y=5 — a gallery overlooking the main hall through a floor hole, with its own room on the north side.",
       "name": "Gallery",
       "origin": [0, 5, 0],
-      "size": [20, 5, 16],
+      "size": [22, 5, 18],
       "material": "brick",
       "floor_material": "floor2",
-      "floor_holes": [
-        {"x": 14, "z": 2, "width": 5, "depth": 5}
-      ],
-      "ceiling_holes": [
-        {"x": 3, "z": 3, "width": 4, "depth": 4}
-      ],
       "walls": {
-        "south": {
-          "openings": [
-            {"type": "window", "x": 3, "width": 2, "height": 3, "sill": 1}
-          ]
-        },
-        "east": {
-          "openings": [
-            {"type": "window", "x": 3, "width": 2, "height": 3, "sill": 1},
-            {"type": "window", "x": 11, "width": 2, "height": 3, "sill": 1}
-          ]
-        },
-        "west": {
-          "openings": [
-            {"type": "window", "x": 3, "width": 2, "height": 3, "sill": 1},
-            {"type": "window", "x": 11, "width": 2, "height": 3, "sill": 1}
-          ]
-        },
-        "north": {
-          "openings": [
-            {"type": "door", "x": 8, "width": 2.5, "height": 3.5}
-          ]
-        }
+        "south": {"openings": [
+          {"type": "window", "x": 3, "width": 2, "height": 3, "sill": 1},
+          {"type": "window", "x": 17, "width": 2, "height": 3, "sill": 1}
+        ]},
+        "east": {"openings": [
+          {"type": "window", "x": 3, "width": 2, "height": 3, "sill": 1},
+          {"type": "window", "x": 13, "width": 2, "height": 3, "sill": 1}
+        ]},
+        "west": {"openings": [
+          {"type": "window", "x": 3, "width": 2, "height": 3, "sill": 1},
+          {"type": "window", "x": 13, "width": 2, "height": 3, "sill": 1}
+        ]}
       }
     },
     {
-      "_doc": "Top floor rooftop room — reached via the spiral stair through the NW corner's ceiling hole.",
       "name": "Tower",
-      "origin": [0, 10, 0],
+      "origin": [6, 10, 4],
       "size": [10, 6, 10],
       "material": "brick",
       "floor_material": "floor",
-      "floor_holes": [
-        {"x": 3, "z": 3, "width": 4, "depth": 4}
-      ],
       "walls": {
         "north": {"openings": []},
         "south": {"openings": [
@@ -112,53 +81,51 @@
       }
     }
   ],
-  "connectors": [
-    {"_doc": "Door from Ground to Gallery does NOT exist — you must take a stair or the elevator. The connector on the Gallery<->Tower north wall aligns too but there's no matching route up there.",
-     "room_a": "GroundHall", "side_a": "north", "room_b": "Gallery",
-     "x_a": 0, "x_b": 0, "type": "window", "width": 0, "height": 0}
-  ],
   "keys": [
-    {"pos": [8, 1.2, 8], "color": "silver", "name": "GroundKey"}
+    {"pos": [6, 1.2, 9], "color": "silver", "name": "GroundKey"}
   ],
-  "locks": [],
   "blocks": [
-    {"pos": [15, 0, 12], "size": [1.4, 1.4, 1.4], "material": "wood",
+    {"pos": [17, 0, 14], "size": [1.4, 1.4, 1.4], "material": "wood",
      "breakable": true, "reward": "coin_red", "name": "GroundStash"}
   ],
   "extras": [
-    {"_doc": "Straight stair from ground to gallery — sits against the west wall, climbs +x direction.",
+    {"_doc": "Straight stair against south wall, climbs +x. Rise×steps = 5.04 ≈ Gallery floor at y=5. punch_through=Gallery auto-adds a hole.",
      "type": "stair", "name": "MainStair",
-     "pos": [1, 0, 10.5],
+     "pos": [1, 0, 2],
      "steps": 12, "rise": 0.42, "run": 0.55, "width": 3,
-     "direction": "+x", "material": "floor"},
+     "direction": "+x", "material": "floor",
+     "punch_through": "Gallery"},
 
-    {"_doc": "Switchback stair at the south end: climbs +z, lands halfway, then climbs -x.",
+    {"_doc": "Switchback against the east wall: 8 steps +z, landing, 8 steps -x. Rise 0.325 → 16 steps × 0.325 = 5.2m reaches and slightly overshoots Gallery floor.",
      "type": "stair", "name": "SwitchbackStair",
-     "pos": [3, 0, 1],
-     "steps": 8, "rise": 0.3, "run": 0.5, "width": 2.5,
+     "pos": [19, 0, 1],
+     "steps": 8, "rise": 0.325, "run": 0.55, "width": 2.5,
      "direction": "+z",
      "landing": {"size": 2.5, "steps": 8, "direction": "-x"},
-     "material": "floor"},
+     "material": "floor",
+     "punch_through": "Gallery"},
 
-    {"_doc": "Spiral stair in the NW corner — goes from gallery floor (y=5) up through the ceiling hole into the tower room (y=10).",
+    {"_doc": "Spiral stair inside the Tower. Lives in the Gallery space at y=5, climbs to Tower floor at y=10. punch_through=Tower adds a hole in the Tower floor; also auto-punches Gallery ceiling since Tower's origin.y==Gallery's origin.y+Gallery.size.y.",
      "type": "spiral_stair", "name": "TowerSpiral",
-     "pos": [5, 5, 5],
-     "steps": 18, "rise": 0.3, "radius": 1.8, "width": 1.5, "depth": 0.6,
-     "angle": 0.45, "material": "floor"},
+     "pos": [11, 5, 9],
+     "steps": 17, "rise": 0.3, "radius": 2.0, "width": 1.6, "depth": 0.6,
+     "angle": 0.42, "material": "floor",
+     "punch_through": "Tower"},
 
-    {"_doc": "Call-mode elevator in the NE shaft. Rises from y=0 to y=5 while the player stands on it; returns when they step off.",
+    {"_doc": "Call-mode elevator in the NE shaft. Rises from y=0 to y=5 while the player stands on it; returns when they step off. punch_through=Gallery adds a hole.",
      "type": "elevator", "name": "MainElevator",
-     "pos": [16.5, 0, 4.5],
+     "pos": [18, 0, 4],
      "low_y": 0.2, "high_y": 5.2,
      "width": 3, "depth": 3, "thickness": 0.4,
-     "speed": 2.8, "mode": "call", "material": "metal"},
+     "speed": 2.8, "mode": "call", "material": "metal",
+     "punch_through": "Gallery"},
 
     {"type": "pillar", "name": "Pillar1", "pos": [6, 0, 6],  "radius": 0.3, "height": 5, "material": "wood"},
-    {"type": "pillar", "name": "Pillar2", "pos": [12, 0, 6], "radius": 0.3, "height": 5, "material": "wood"},
-    {"type": "pillar", "name": "Pillar3", "pos": [6, 0, 12], "radius": 0.3, "height": 5, "material": "wood"},
-    {"type": "pillar", "name": "Pillar4", "pos": [12, 0, 12], "radius": 0.3, "height": 5, "material": "wood"},
-    {"_doc": "Gold throne-like platform on the tower floor.",
+    {"type": "pillar", "name": "Pillar2", "pos": [13, 0, 6], "radius": 0.3, "height": 5, "material": "wood"},
+    {"type": "pillar", "name": "Pillar3", "pos": [6, 0, 13], "radius": 0.3, "height": 5, "material": "wood"},
+    {"type": "pillar", "name": "Pillar4", "pos": [13, 0, 13], "radius": 0.3, "height": 5, "material": "wood"},
+    {"_doc": "Gold platform on the tower floor.",
      "type": "platform", "name": "TowerDais",
-     "pos": [3, 10, 6], "size": [4, 0.4, 2], "material": "gold"}
+     "pos": [8, 10, 9], "size": [4, 0.4, 2], "material": "gold"}
   ]
 }

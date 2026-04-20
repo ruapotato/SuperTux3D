@@ -138,6 +138,65 @@ def xform_translate(x: float, y: float, z: float) -> str:
     # Identity rotation + translation.
     return f"Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, {x}, {y}, {z})"
 
+def _subtract_rect(rect: tuple[float, float, float, float],
+                   hole: tuple[float, float, float, float]
+                   ) -> list[tuple[float, float, float, float]]:
+    """Return up to 4 non-overlapping rectangles that tile
+    rect \\ hole. Each rect is (x0, z0, x1, z1). If no overlap,
+    returns [rect] unchanged. Clips the hole to rect first."""
+    rx0, rz0, rx1, rz1 = rect
+    hx0, hz0, hx1, hz1 = hole
+    # Clip hole to rect.
+    cx0 = max(rx0, hx0); cx1 = min(rx1, hx1)
+    cz0 = max(rz0, hz0); cz1 = min(rz1, hz1)
+    if cx0 >= cx1 or cz0 >= cz1:
+        return [rect]  # no overlap
+    out: list[tuple[float, float, float, float]] = []
+    # South slab (below the hole).
+    if rz0 < cz0:
+        out.append((rx0, rz0, rx1, cz0))
+    # North slab (above the hole).
+    if cz1 < rz1:
+        out.append((rx0, cz1, rx1, rz1))
+    # West slab (left of the hole, only within the hole's Z band).
+    if rx0 < cx0:
+        out.append((rx0, cz0, cx0, cz1))
+    # East slab (right of the hole, only within the hole's Z band).
+    if cx1 < rx1:
+        out.append((cx1, cz0, rx1, cz1))
+    return out
+
+
+def _emit_slab_with_holes(scene: Scene, parent: str, prefix: str,
+                          sx: float, sz: float,
+                          y_center: float, y_thickness: float,
+                          holes: list[dict],
+                          mat_id: str | None) -> None:
+    """Tile a floor/ceiling plate with N rectangular holes carved out.
+    Start with one rectangle = the full plate; subtract each hole by
+    splitting the rect into up to 4 pieces; repeat. Every surviving
+    rectangle becomes its own box slab."""
+    rects: list[tuple[float, float, float, float]] = [(0.0, 0.0, sx, sz)]
+    for hole in holes:
+        hx = float(hole["x"]); hz = float(hole["z"])
+        hw = float(hole["width"]); hd = float(hole["depth"])
+        hr = (hx, hz, hx + hw, hz + hd)
+        next_rects: list[tuple[float, float, float, float]] = []
+        for r in rects:
+            next_rects.extend(_subtract_rect(r, hr))
+        rects = next_rects
+    for idx, (x0, z0, x1, z1) in enumerate(rects):
+        w = x1 - x0
+        d = z1 - z0
+        if w <= 0.001 or d <= 0.001:
+            continue
+        cx = (x0 + x1) * 0.5
+        cz = (z0 + z1) * 0.5
+        emit_box(scene, parent, f"{prefix}_{idx}",
+                 (cx, y_center, cz),
+                 (w, y_thickness, d), mat_id)
+
+
 def emit_box(scene: Scene, parent: str, name: str,
              pos: tuple[float, float, float],
              size: tuple[float, float, float],
@@ -262,6 +321,132 @@ def _inject_opening(room: dict, side: str, opening: dict) -> None:
     openings.append(opening)
 
 
+def _inject_hole(room: dict, axis: str, hole: dict) -> None:
+    """Add a hole entry to either `floor_holes` or `ceiling_holes`.
+    Used by the stair/spiral/elevator auto-punch logic so stair exits
+    always have a matching hole in the upper floor."""
+    key = "floor_holes" if axis == "floor" else "ceiling_holes"
+    room.setdefault(key, []).append(hole)
+
+
+def _auto_punch_for_stair(blueprint: dict, extra: dict) -> None:
+    """When a stair/spiral_stair/elevator extra declares
+    `punch_through: "RoomName"`, compute a hole that covers its top
+    exit and add it to the target room's floor_holes AND to whichever
+    room is below (meaning any room whose origin.y + height crosses
+    the top_y). Padding is added so the opening is a bit larger than
+    the footprint."""
+    target = extra.get("punch_through")
+    if not target:
+        return
+    px, py, pz = extra["pos"]
+    pad = float(extra.get("punch_pad", 0.4))
+    kind = extra.get("type")
+    if kind == "stair":
+        direction = extra.get("direction", "+z")
+        steps = int(extra.get("steps", 6))
+        run = float(extra.get("run", 0.6))
+        width = float(extra.get("width", 2.0))
+        landing = extra.get("landing")
+        # The top of the stair is at (px + dx*run*steps, py + rise*steps,
+        # pz + dz*run*steps). If there's a landing + second flight,
+        # recompute with that.
+        if direction == "+z":
+            dx, dz = 0, 1
+        elif direction == "-z":
+            dx, dz = 0, -1
+        elif direction == "+x":
+            dx, dz = 1, 0
+        else:
+            dx, dz = -1, 0
+        tx = px + dx * run * steps
+        tz = pz + dz * run * steps
+        foot_x, foot_z = tx, tz  # default top-of-flight-1 exit
+        if landing:
+            # L-shape: exit is at end of second flight.
+            l_size = float(landing.get("size", width))
+            l_steps = int(landing.get("steps", steps))
+            l_dir = landing.get("direction", "+z")
+            if l_dir == "+z":
+                ddx, ddz = 0, 1
+            elif l_dir == "-z":
+                ddx, ddz = 0, -1
+            elif l_dir == "+x":
+                ddx, ddz = 1, 0
+            else:
+                ddx, ddz = -1, 0
+            land_cx = px + dx * (run * steps + l_size * 0.5)
+            land_cz = pz + dz * (run * steps + l_size * 0.5)
+            foot_x = land_cx + ddx * run * l_steps
+            foot_z = land_cz + ddz * run * l_steps
+            # Hole spans the landing + the full second flight.
+            if abs(ddx) > 0:
+                hx0 = min(land_cx, foot_x) - width * 0.5 - pad
+                hx1 = max(land_cx, foot_x) + width * 0.5 + pad
+                hz0 = land_cz - width * 0.5 - pad
+                hz1 = land_cz + width * 0.5 + pad
+            else:
+                hx0 = land_cx - width * 0.5 - pad
+                hx1 = land_cx + width * 0.5 + pad
+                hz0 = min(land_cz, foot_z) - width * 0.5 - pad
+                hz1 = max(land_cz, foot_z) + width * 0.5 + pad
+        else:
+            if abs(dx) > 0:
+                hx0 = tx - run * 2 - pad
+                hx1 = tx + run * 2 + pad
+                hz0 = pz - width * 0.5 - pad
+                hz1 = pz + width * 0.5 + pad
+            else:
+                hx0 = px - width * 0.5 - pad
+                hx1 = px + width * 0.5 + pad
+                hz0 = tz - run * 2 - pad
+                hz1 = tz + run * 2 + pad
+    elif kind == "spiral_stair":
+        radius = float(extra.get("radius", 1.6))
+        hx0 = px - radius - pad
+        hx1 = px + radius + pad
+        hz0 = pz - radius - pad
+        hz1 = pz + radius + pad
+    elif kind == "elevator":
+        w = float(extra.get("width", 2.4))
+        d = float(extra.get("depth", 2.4))
+        hx0 = px - w * 0.5 - pad
+        hx1 = px + w * 0.5 + pad
+        hz0 = pz - d * 0.5 - pad
+        hz1 = pz + d * 0.5 + pad
+    else:
+        return
+
+    target_room = _find_room(blueprint, target)
+    if target_room is None:
+        return
+    ty0, tsy = target_room["origin"][1], target_room["size"][1]
+    # Convert WORLD xz to target-room-local xz.
+    rx, _, rz = target_room["origin"]
+    local = {
+        "x": hx0 - rx,
+        "z": hz0 - rz,
+        "width": hx1 - hx0,
+        "depth": hz1 - hz0,
+    }
+    _inject_hole(target_room, "floor", local)
+    # Also punch the ceiling of any room whose ceiling is immediately
+    # below the target floor (origin.y + size.y == target origin.y).
+    for r in blueprint.get("rooms", []):
+        if r is target_room:
+            continue
+        bottom_of_target = target_room["origin"][1]
+        top_of_r = r["origin"][1] + r["size"][1]
+        if abs(top_of_r - bottom_of_target) < 0.05:
+            rx2, _, rz2 = r["origin"]
+            _inject_hole(r, "ceiling", {
+                "x": hx0 - rx2,
+                "z": hz0 - rz2,
+                "width": hx1 - hx0,
+                "depth": hz1 - hz0,
+            })
+
+
 def build_scene(blueprint: dict, scene_name: str) -> Scene:
     scene = Scene()
     root_body = ""
@@ -291,6 +476,12 @@ def build_scene(blueprint: dict, scene_name: str) -> Scene:
         mat_ids[name] = scene.ext_resource(path, "Material")
 
     wall_t = float(blueprint.get("wall_thickness", 0.3))
+
+    # Auto-punch holes in floors/ceilings for stairs/elevators that
+    # declare `punch_through`. Must run BEFORE rooms emit so the holes
+    # are baked into the slab partitioner.
+    for extra in blueprint.get("extras", []):
+        _auto_punch_for_stair(blueprint, extra)
 
     # Resolve connectors FIRST so rooms emit their walls with the
     # injected openings already in place. A connector links two
@@ -325,73 +516,22 @@ def build_scene(blueprint: dict, scene_name: str) -> Scene:
                    f'transform = {xform_translate(ox, oy, oz)}\n')
         room_parent = f"{scene_name}/{rname}"
 
-        # Floor slab. If `floor_holes` is defined, split the plate into
-        # four border strips around the hole so the hole is a real
-        # open shaft (not a CSG subtract that can drift). Multiple
-        # holes would need a proper partitioner; one hole covers
-        # atrium / stair shaft / elevator well cases.
+        # Floor + ceiling slabs. Both support multiple `holes`
+        # (rectangles in room-local xz) — we iteratively subtract each
+        # hole from the set of free rectangles, starting from the full
+        # plate. Every remaining rectangle becomes its own slab.
         if room.get("floor", True):
-            holes = room.get("floor_holes", [])
-            if not holes:
-                emit_box(scene, room_parent, "Floor",
-                         (sx / 2.0, -0.1, sz / 2.0),
-                         (sx, 0.2, sz), floor_mat)
-            else:
-                hole = holes[0]
-                hx0 = float(hole["x"])
-                hz0 = float(hole["z"])
-                hw = float(hole["width"])
-                hd = float(hole["depth"])
-                hx1 = hx0 + hw
-                hz1 = hz0 + hd
-                # South strip (z < hz0).
-                if hz0 > 0:
-                    emit_box(scene, room_parent, "Floor_S",
-                             (sx / 2.0, -0.1, hz0 / 2.0),
-                             (sx, 0.2, hz0), floor_mat)
-                # North strip (z > hz1).
-                if hz1 < sz:
-                    emit_box(scene, room_parent, "Floor_N",
-                             (sx / 2.0, -0.1, (hz1 + sz) / 2.0),
-                             (sx, 0.2, sz - hz1), floor_mat)
-                # West strip (x < hx0), Z only across the hole band.
-                if hx0 > 0:
-                    emit_box(scene, room_parent, "Floor_W",
-                             (hx0 / 2.0, -0.1, (hz0 + hz1) / 2.0),
-                             (hx0, 0.2, hz1 - hz0), floor_mat)
-                # East strip (x > hx1).
-                if hx1 < sx:
-                    emit_box(scene, room_parent, "Floor_E",
-                             ((hx1 + sx) / 2.0, -0.1, (hz0 + hz1) / 2.0),
-                             (sx - hx1, 0.2, hz1 - hz0), floor_mat)
-        # Ceiling — thin box on top. Same hole logic when requested.
+            _emit_slab_with_holes(
+                scene, room_parent, "Floor",
+                sx, sz, -0.1, 0.2,
+                room.get("floor_holes", []), floor_mat,
+            )
         if room.get("ceiling", True):
-            c_holes = room.get("ceiling_holes", [])
-            if not c_holes:
-                emit_box(scene, room_parent, "Ceiling",
-                         (sx / 2.0, sy + 0.1, sz / 2.0),
-                         (sx, 0.2, sz), room_mat)
-            else:
-                hole = c_holes[0]
-                hx0 = float(hole["x"]); hz0 = float(hole["z"])
-                hw = float(hole["width"]); hd = float(hole["depth"])
-                hx1 = hx0 + hw; hz1 = hz0 + hd
-                if hz0 > 0:
-                    emit_box(scene, room_parent, "Ceil_S",
-                             (sx / 2.0, sy + 0.1, hz0 / 2.0),
-                             (sx, 0.2, hz0), room_mat)
-                if hz1 < sz:
-                    emit_box(scene, room_parent, "Ceil_N",
-                             (sx / 2.0, sy + 0.1, (hz1 + sz) / 2.0),
-                             (sx, 0.2, sz - hz1), room_mat)
-                if hx0 > 0:
-                    emit_box(scene, room_parent, "Ceil_W",
-                             (hx0 / 2.0, sy + 0.1, (hz0 + hz1) / 2.0),
-                             (hx0, 0.2, hz1 - hz0), room_mat)
-                if hx1 < sx:
-                    emit_box(scene, room_parent, "Ceil_E",
-                             ((hx1 + sx) / 2.0, sy + 0.1, (hz0 + hz1) / 2.0),
-                             (sx - hx1, 0.2, hz1 - hz0), room_mat)
+            _emit_slab_with_holes(
+                scene, room_parent, "Ceiling",
+                sx, sz, sy + 0.1, 0.2,
+                room.get("ceiling_holes", []), room_mat,
+            )
 
         walls = room.get("walls", {})
         # NORTH: at z = sz, length along X. Openings x=0..sx.
