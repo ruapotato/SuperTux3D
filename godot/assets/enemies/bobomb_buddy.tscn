@@ -1,85 +1,76 @@
-[gd_scene load_steps=19 format=3 uid="uid://bbuddy004"]
+[gd_scene load_steps=16 format=3 uid="uid://bbuddy004"]
 
-; Clean-room Bob-omb Buddy. Bright pink chassis, cheerful closed eyes.
-; Added: blue scarf/tie, round cheek spots, happy eyebrows, lighter body color,
-; brass key, friendly idle sway animation.
-; Feet at y=0, faces -Z.
+; Clean-room friendly mossy stone (bobomb_buddy slot). Rock-ball chassis
+; wrapped in moss and leaves, happy eyes, holds a tiny pennant flag.
+; Base at y=0, faces +Z.
 
 [sub_resource type="SphereMesh" id="body_mesh"]
 radius = 0.25
 height = 0.5
-radial_segments = 16
-rings = 10
+radial_segments = 18
+rings = 12
 
 [sub_resource type="StandardMaterial3D" id="body_mat"]
-albedo_color = Color(1, 0.62, 0.78, 1)
+albedo_color = Color(0.55, 0.55, 0.56, 1)
 shading_mode = 0
 
-[sub_resource type="TorusMesh" id="smile_eye_mesh"]
-inner_radius = 0.03
-outer_radius = 0.06
+[sub_resource type="SphereMesh" id="moss_mesh"]
+radius = 0.26
+height = 0.22
+radial_segments = 18
+rings = 8
+is_hemisphere = true
 
-[sub_resource type="StandardMaterial3D" id="dark_mat"]
-albedo_color = Color(0.12, 0.08, 0.12, 1)
+[sub_resource type="StandardMaterial3D" id="moss_mat"]
+albedo_color = Color(0.35, 0.62, 0.25, 1)
 shading_mode = 0
 
-[sub_resource type="BoxMesh" id="brow_mesh"]
-size = Vector3(0.05, 0.012, 0.012)
-
-[sub_resource type="SphereMesh" id="cheek_mesh"]
-radius = 0.035
-height = 0.02
+[sub_resource type="SphereMesh" id="leaf_mesh"]
+radius = 0.07
+height = 0.05
 radial_segments = 10
 rings = 6
 
-[sub_resource type="StandardMaterial3D" id="cheek_mat"]
-albedo_color = Color(0.9, 0.32, 0.5, 1)
+[sub_resource type="StandardMaterial3D" id="leaf_mat"]
+albedo_color = Color(0.45, 0.75, 0.3, 1)
 shading_mode = 0
 
-[sub_resource type="BoxMesh" id="foot_mesh"]
-size = Vector3(0.09, 0.07, 0.14)
-
-[sub_resource type="StandardMaterial3D" id="foot_mat"]
-albedo_color = Color(0.92, 0.22, 0.22, 1)
-shading_mode = 0
-
-[sub_resource type="CylinderMesh" id="key_stem_mesh"]
-top_radius = 0.028
-bottom_radius = 0.028
+[sub_resource type="SphereMesh" id="eye_mesh"]
+radius = 0.045
 height = 0.09
 radial_segments = 10
+rings = 6
 
-[sub_resource type="StandardMaterial3D" id="key_mat"]
-albedo_color = Color(0.95, 0.82, 0.25, 1)
+[sub_resource type="StandardMaterial3D" id="eye_mat"]
+albedo_color = Color(0.05, 0.05, 0.08, 1)
 shading_mode = 0
-metallic = 0.75
-roughness = 0.3
 
-[sub_resource type="TorusMesh" id="key_ring_mesh"]
-inner_radius = 0.04
-outer_radius = 0.075
+[sub_resource type="BoxMesh" id="smile_mesh"]
+size = Vector3(0.12, 0.02, 0.02)
 
-[sub_resource type="CylinderMesh" id="fuse_mesh"]
-top_radius = 0.015
-bottom_radius = 0.015
-height = 0.06
+[sub_resource type="CylinderMesh" id="pole_mesh"]
+top_radius = 0.008
+bottom_radius = 0.008
+height = 0.28
 radial_segments = 6
 
-[sub_resource type="BoxMesh" id="scarf_mesh"]
-size = Vector3(0.44, 0.07, 0.06)
-
-[sub_resource type="StandardMaterial3D" id="scarf_mat"]
-albedo_color = Color(0.25, 0.55, 0.92, 1)
+[sub_resource type="StandardMaterial3D" id="pole_mat"]
+albedo_color = Color(0.45, 0.3, 0.18, 1)
 shading_mode = 0
 
-[sub_resource type="BoxMesh" id="scarf_tail_mesh"]
-size = Vector3(0.06, 0.12, 0.03)
+[sub_resource type="PrismMesh" id="flag_mesh"]
+size = Vector3(0.14, 0.08, 0.01)
+left_to_right = 1.0
+
+[sub_resource type="StandardMaterial3D" id="flag_mat"]
+albedo_color = Color(0.95, 0.8, 0.2, 1)
+shading_mode = 0
 
 [sub_resource type="Animation" id="idle_anim"]
 resource_name = "idle"
 length = 2.0
 loop_mode = 1
-step = 0.1
+step = 0.2
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -87,10 +78,10 @@ tracks/0/path = NodePath(".:rotation")
 tracks/0/interp = 2
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.5, 1, 1.5, 2),
+"times": PackedFloat32Array(0, 0.5, 1.0, 1.5, 2.0),
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1),
 "update": 0,
-"values": [Vector3(0, 0, 0), Vector3(0, 0, 0.04), Vector3(0, 0, 0), Vector3(0, 0, -0.04), Vector3(0, 0, 0)]
+"values": [Vector3(0, 0, 0), Vector3(0, 0.05, 0.02), Vector3(0, 0, 0), Vector3(0, -0.05, -0.02), Vector3(0, 0, 0)]
 }
 
 [sub_resource type="AnimationLibrary" id="anim_lib"]
@@ -101,79 +92,59 @@ _data = {
 [node name="EnemyVisual" type="Node3D"]
 
 [node name="Body" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.28, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
 mesh = SubResource("body_mesh")
 surface_material_override/0 = SubResource("body_mat")
 
-[node name="Scarf" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.18, 0.04)
-mesh = SubResource("scarf_mesh")
-surface_material_override/0 = SubResource("scarf_mat")
+[node name="MossCap" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+mesh = SubResource("moss_mesh")
+surface_material_override/0 = SubResource("moss_mat")
 
-[node name="ScarfTail" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.95, 0.3, 0, -0.3, 0.95, 0, 0, 0, 1, 0.05, 0.13, 0.2)
-mesh = SubResource("scarf_tail_mesh")
-surface_material_override/0 = SubResource("scarf_mat")
+[node name="Leaf1" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.9, 0.44, 0, -0.44, 0.9, 0, 0, 0, 1, -0.18, 0.42, 0.1)
+mesh = SubResource("leaf_mesh")
+surface_material_override/0 = SubResource("leaf_mat")
+
+[node name="Leaf2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.9, -0.44, 0, 0.44, 0.9, 0, 0, 0, 1, 0.18, 0.42, 0.1)
+mesh = SubResource("leaf_mesh")
+surface_material_override/0 = SubResource("leaf_mat")
+
+[node name="Leaf3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.02, 0.5, -0.1)
+mesh = SubResource("leaf_mesh")
+surface_material_override/0 = SubResource("leaf_mat")
 
 [node name="EyeL" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0, -0.55, 0, 0.55, 0, -0.09, 0.33, 0.22)
-mesh = SubResource("smile_eye_mesh")
-surface_material_override/0 = SubResource("dark_mat")
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -0.1, 0.3, 0.24)
+mesh = SubResource("eye_mesh")
+surface_material_override/0 = SubResource("eye_mat")
 
 [node name="EyeR" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0, -0.55, 0, 0.55, 0, 0.09, 0.33, 0.22)
-mesh = SubResource("smile_eye_mesh")
-surface_material_override/0 = SubResource("dark_mat")
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0.1, 0.3, 0.24)
+mesh = SubResource("eye_mesh")
+surface_material_override/0 = SubResource("eye_mat")
 
-[node name="BrowL" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.94, -0.34, 0, 0.34, 0.94, 0, 0, 0, 1, -0.09, 0.4, 0.24)
-mesh = SubResource("brow_mesh")
-surface_material_override/0 = SubResource("dark_mat")
+[node name="Smile" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.97, 0.17, 0, -0.17, 0.97, 0, 0, 0, 1, -0.04, 0.2, 0.25)
+mesh = SubResource("smile_mesh")
+surface_material_override/0 = SubResource("eye_mat")
 
-[node name="BrowR" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.94, 0.34, 0, -0.34, 0.94, 0, 0, 0, 1, 0.09, 0.4, 0.24)
-mesh = SubResource("brow_mesh")
-surface_material_override/0 = SubResource("dark_mat")
+[node name="SmileR" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.97, -0.17, 0, 0.17, 0.97, 0, 0, 0, 1, 0.04, 0.2, 0.25)
+mesh = SubResource("smile_mesh")
+surface_material_override/0 = SubResource("eye_mat")
 
-[node name="CheekL" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.16, 0.27, 0.18)
-mesh = SubResource("cheek_mesh")
-surface_material_override/0 = SubResource("cheek_mat")
+[node name="Pole" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.22, 0.4, -0.1)
+mesh = SubResource("pole_mesh")
+surface_material_override/0 = SubResource("pole_mat")
 
-[node name="CheekR" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.16, 0.27, 0.18)
-mesh = SubResource("cheek_mesh")
-surface_material_override/0 = SubResource("cheek_mat")
-
-[node name="FootL" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0.035, 0.02)
-mesh = SubResource("foot_mesh")
-surface_material_override/0 = SubResource("foot_mat")
-
-[node name="FootR" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0.035, 0.02)
-mesh = SubResource("foot_mesh")
-surface_material_override/0 = SubResource("foot_mat")
-
-[node name="KeyStem" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.57, 0)
-mesh = SubResource("key_stem_mesh")
-surface_material_override/0 = SubResource("key_mat")
-
-[node name="KeyRingL" type="MeshInstance3D" parent="."]
-transform = Transform3D(0, 0, 1, 1, 0, 0, 0, 1, 0, -0.055, 0.63, 0)
-mesh = SubResource("key_ring_mesh")
-surface_material_override/0 = SubResource("key_mat")
-
-[node name="KeyRingR" type="MeshInstance3D" parent="."]
-transform = Transform3D(0, 0, 1, 1, 0, 0, 0, 1, 0, 0.055, 0.63, 0)
-mesh = SubResource("key_ring_mesh")
-surface_material_override/0 = SubResource("key_mat")
-
-[node name="Fuse" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.56, -0.04)
-mesh = SubResource("fuse_mesh")
-surface_material_override/0 = SubResource("dark_mat")
+[node name="Flag" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, 0.5, -0.1)
+mesh = SubResource("flag_mesh")
+surface_material_override/0 = SubResource("flag_mat")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {

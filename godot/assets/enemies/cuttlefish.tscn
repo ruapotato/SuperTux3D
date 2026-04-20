@@ -1,0 +1,171 @@
+[gd_scene load_steps=16 format=3 uid="uid://bcuttle007"]
+
+; Clean-room cuttlefish-like aerial enemy. Elongated capsule body with side
+; fins, tentacles below, big top-eyes, fin-crest. Purplish-blue with lighter
+; underside, soft emission. Base at y=0, faces +Z. Subtle sway autoplays.
+
+[sub_resource type="CapsuleMesh" id="body_mesh"]
+radius = 0.18
+height = 0.9
+radial_segments = 16
+rings = 10
+
+[sub_resource type="StandardMaterial3D" id="body_mat"]
+albedo_color = Color(0.4, 0.35, 0.7, 1)
+emission_enabled = true
+emission = Color(0.3, 0.25, 0.65, 1)
+emission_energy_multiplier = 0.4
+shading_mode = 0
+
+[sub_resource type="CapsuleMesh" id="belly_mesh"]
+radius = 0.14
+height = 0.8
+radial_segments = 14
+rings = 8
+
+[sub_resource type="StandardMaterial3D" id="belly_mat"]
+albedo_color = Color(0.75, 0.7, 0.92, 1)
+emission_enabled = true
+emission = Color(0.55, 0.5, 0.85, 1)
+emission_energy_multiplier = 0.25
+shading_mode = 0
+
+[sub_resource type="BoxMesh" id="fin_mesh"]
+size = Vector3(0.02, 0.18, 0.7)
+
+[sub_resource type="StandardMaterial3D" id="fin_mat"]
+albedo_color = Color(0.55, 0.5, 0.85, 1)
+emission_enabled = true
+emission = Color(0.45, 0.4, 0.8, 1)
+emission_energy_multiplier = 0.3
+shading_mode = 0
+
+[sub_resource type="PrismMesh" id="crest_mesh"]
+size = Vector3(0.6, 0.12, 0.03)
+left_to_right = 0.5
+
+[sub_resource type="CapsuleMesh" id="tent_mesh"]
+radius = 0.03
+height = 0.26
+radial_segments = 10
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="tent_mat"]
+albedo_color = Color(0.45, 0.38, 0.78, 1)
+shading_mode = 0
+
+[sub_resource type="SphereMesh" id="eye_mesh"]
+radius = 0.07
+height = 0.14
+radial_segments = 12
+rings = 8
+
+[sub_resource type="StandardMaterial3D" id="eye_white_mat"]
+albedo_color = Color(0.98, 0.97, 0.95, 1)
+shading_mode = 0
+
+[sub_resource type="SphereMesh" id="pupil_mesh"]
+radius = 0.035
+height = 0.07
+radial_segments = 10
+rings = 6
+
+[sub_resource type="StandardMaterial3D" id="pupil_mat"]
+albedo_color = Color(0.05, 0.04, 0.1, 1)
+shading_mode = 0
+
+[sub_resource type="Animation" id="drift_anim"]
+resource_name = "drift"
+length = 2.8
+loop_mode = 1
+step = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:rotation")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.7, 1.4, 2.1, 2.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 0, 0.08), Vector3(0, 0, 0), Vector3(0, 0, -0.08), Vector3(0, 0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="anim_lib"]
+_data = {
+"drift": SubResource("drift_anim")
+}
+
+[node name="EnemyVisual" type="Node3D"]
+
+[node name="Body" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.5, 0)
+mesh = SubResource("body_mesh")
+surface_material_override/0 = SubResource("body_mat")
+
+[node name="Belly" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.42, 0.05)
+mesh = SubResource("belly_mesh")
+surface_material_override/0 = SubResource("belly_mat")
+
+[node name="FinL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0.5, 0)
+mesh = SubResource("fin_mesh")
+surface_material_override/0 = SubResource("fin_mat")
+
+[node name="FinR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0.5, 0)
+mesh = SubResource("fin_mesh")
+surface_material_override/0 = SubResource("fin_mat")
+
+[node name="Crest" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 0.72, 0)
+mesh = SubResource("crest_mesh")
+surface_material_override/0 = SubResource("fin_mat")
+
+[node name="Tent1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0.18, 0.2)
+mesh = SubResource("tent_mesh")
+surface_material_override/0 = SubResource("tent_mat")
+
+[node name="Tent2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0.18, 0.2)
+mesh = SubResource("tent_mesh")
+surface_material_override/0 = SubResource("tent_mat")
+
+[node name="Tent3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0.18, 0)
+mesh = SubResource("tent_mesh")
+surface_material_override/0 = SubResource("tent_mat")
+
+[node name="Tent4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0.18, 0)
+mesh = SubResource("tent_mesh")
+surface_material_override/0 = SubResource("tent_mat")
+
+[node name="EyeL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0.62, 0.3)
+mesh = SubResource("eye_mesh")
+surface_material_override/0 = SubResource("eye_white_mat")
+
+[node name="EyeR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0.62, 0.3)
+mesh = SubResource("eye_mesh")
+surface_material_override/0 = SubResource("eye_white_mat")
+
+[node name="PupilL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0.62, 0.36)
+mesh = SubResource("pupil_mesh")
+surface_material_override/0 = SubResource("pupil_mat")
+
+[node name="PupilR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0.62, 0.36)
+mesh = SubResource("pupil_mesh")
+surface_material_override/0 = SubResource("pupil_mat")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("anim_lib")
+}
+autoplay = "drift"

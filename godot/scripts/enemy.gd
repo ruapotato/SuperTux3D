@@ -19,6 +19,8 @@ const ENEMY_SCENES := {
     "bhvChuckya":                  "res://assets/enemies/bobomb.tscn",
     "bhvPiranhaPlant":             "res://assets/enemies/piranha_plant.tscn",
     "bhvChainChomp":               "res://assets/enemies/chain_chomp.tscn",
+    # Original aerial predator — glides toward the player at height.
+    "bhvCuttlefish":               "res://assets/enemies/cuttlefish.tscn",
 }
 
 @export var bhv_name: String = "bhvGoomba"
@@ -55,21 +57,24 @@ func _ready() -> void:
         "static":   speed = 0.0
         "pop":      speed = 0.0
         "friendly": speed = 0.0
+        "glide":    speed = 4.5  # aerial predator moves faster than ground walkers
 
 
 static func _mode_for_bhv(bhv: String) -> String:
     match bhv:
         "bhvBobomb":        return "bomb"
-        # Chuckya grabs Mario in the decomp; we don't have the grab
-        # animation ported so approximate with an aggressive chase.
+        # Chuckya grabs you in the decomp; we don't have that anim so
+        # approximate with an aggressive chase.
         "bhvChuckya":       return "chase"
-        # Koopas walk patrols in SM64 and only attack if bumped into —
-        # use a calm patrol, not chase.
+        # Shelled critter walks patrols and doesn't actively attack.
         "bhvKoopa":         return "patrol"
         "bhvPiranhaPlant":  return "pop"
         "bhvMrBlizzard", "bhvMrBlizzardHidden": return "static"
         "bhvSnufit", "bhvFlyGuy":               return "static"
-        # BobombBuddy is friendly — stand still, no hurt area.
+        # Aerial glider: hovers, drifts toward the player, periodically
+        # swoops. Separate mode because it needs to bypass gravity.
+        "bhvCuttlefish":    return "glide"
+        # The mossy-stone NPC is friendly — stand still, no hurt area.
         "bhvBobombBuddy", "bhvBobombBuddyOpensCannon": return "friendly"
         _:                  return "patrol"
 
@@ -207,6 +212,29 @@ func _physics_process(delta: float) -> void:
                 _fuse = max(_fuse - delta * 0.5, 0.0)
         "pop", "static", "friendly":
             pass  # no movement; hurt area still active (except friendly)
+        "glide":
+            # Cuttlefish-style aerial predator: floats at _center.y +
+            # hover_height, drifts toward the player with a sine bob,
+            # occasionally dives when close.
+            var hover_y: float = _center.y + 2.2
+            var target: Vector3 = _center
+            if mario != null:
+                target = mario.global_position
+                target.y = hover_y + sin(_time * 1.6) * 0.35
+                # Dive: every ~6s, if player is close, swoop downward
+                # briefly toward their actual height.
+                var dive_phase: float = fposmod(_time, 6.0)
+                if dive_phase < 0.6 and global_position.distance_to(mario.global_position) < 8.0:
+                    target.y = mario.global_position.y + 0.8
+            else:
+                target.y = hover_y + sin(_time * 1.6) * 0.35
+            var to_target: Vector3 = target - global_position
+            # Smooth approach — hover like it's swimming through the air.
+            var move_step: float = min(speed * delta, to_target.length())
+            if to_target.length() > 0.01:
+                global_position += to_target.normalized() * move_step
+                rotation.y = atan2(-to_target.x, -to_target.z)
+            return  # skip the ground-walker pipeline below
 
     dir.y = 0.0
     if dir.length() > 0.01:
