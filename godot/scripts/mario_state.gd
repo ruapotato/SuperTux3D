@@ -692,6 +692,19 @@ func _act_climbing_pole(delta: float) -> bool:
     return false
 
 
+const SWIM_MAX_DEPTH := 5.0   # how far below water_level_y the player can dive
+
+func _clamp_swim_depth() -> void:
+    # Hard floor for swim state so the world's safety floor + void-
+    # damage checks never fire while in water. Zeros downward velocity
+    # at the bottom so the player naturally hovers at max dive depth
+    # instead of fighting a constant "fall" accumulator.
+    var bottom: float = water_level_y - SWIM_MAX_DEPTH
+    if pos.y < bottom:
+        pos.y = bottom
+        vel.y = max(vel.y, 0.0)
+
+
 func _act_water_idle(delta: float) -> bool:
     # Exit swim the moment we're above the surface OR we've moved off
     # a water cell laterally (onto grass). Without the area check,
@@ -699,6 +712,7 @@ func _act_water_idle(delta: float) -> bool:
     # player stuck swimming.
     if pos.y > water_level_y + 0.5 or not in_water_area:
         return set_action(ACT_FREEFALL)
+    _clamp_swim_depth()
     _request_anim(MARIO_ANIM_SWIM_PART2, 0.6)
     if input_jump_pressed or input_stick.length() > 0.1 or input_attack_pressed:
         return set_action(ACT_SWIMMING)
@@ -712,6 +726,7 @@ func _act_water_idle(delta: float) -> bool:
 func _act_swimming(delta: float) -> bool:
     if pos.y > water_level_y + 0.5 or not in_water_area:
         return set_action(ACT_FREEFALL)
+    _clamp_swim_depth()
     _request_anim(MARIO_ANIM_FLUTTERKICK, 1.2)
     # Stroke impulse on jump press or attack press.
     if input_jump_pressed or input_attack_pressed:
