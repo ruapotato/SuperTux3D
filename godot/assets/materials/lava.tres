@@ -1,9 +1,12 @@
-[gd_resource type="StandardMaterial3D" format=3 uid="uid://ccd2f5f1f07db2335"]
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://ccd2f5f1f07db2335"]
+
+[ext_resource type="Shader" path="res://assets/shaders/lava.gdshader" id="1_shader"]
 
 [resource]
 resource_name = "lava"
-shading_mode = 0
-albedo_color = Color(1.0, 0.42, 0.1, 1.0)
-emission_enabled = true
-emission = Color(1.0, 0.48, 0.12, 1)
-emission_energy_multiplier = 2.2
+shader = ExtResource("1_shader")
+shader_parameter/hot = Color(1.0, 0.58, 0.10, 1)
+shader_parameter/cold = Color(0.50, 0.12, 0.05, 1)
+shader_parameter/flow_speed = 0.35
+shader_parameter/emission_energy = 2.4
+shader_parameter/crust_scale = 1.5

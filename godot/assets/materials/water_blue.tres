@@ -1,10 +1,14 @@
-[gd_resource type="StandardMaterial3D" format=3 uid="uid://cb6437fe0c2191879"]
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://cb6437fe0c2191879"]
+
+[ext_resource type="Shader" path="res://assets/shaders/water.gdshader" id="1_shader"]
 
 [resource]
 resource_name = "water_blue"
-shading_mode = 0
-albedo_color = Color(0.24, 0.54, 0.92, 0.75)
-transparency = 1
-emission_enabled = true
-emission = Color(0.18, 0.45, 0.78, 1)
-emission_energy_multiplier = 0.2
+shader = ExtResource("1_shader")
+shader_parameter/shallow = Color(0.42, 0.78, 0.92, 1)
+shader_parameter/deep = Color(0.08, 0.24, 0.55, 1)
+shader_parameter/alpha_min = 0.55
+shader_parameter/alpha_max = 0.92
+shader_parameter/ripple_scale = 2.2
+shader_parameter/ripple_speed = 0.6
+shader_parameter/foam_strength = 0.30

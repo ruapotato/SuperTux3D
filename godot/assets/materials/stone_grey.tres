@@ -1,7 +1,12 @@
-[gd_resource type="StandardMaterial3D" format=3 uid="uid://cff1c13311b4173dd"]
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://cff1c13311b4173dd"]
+
+[ext_resource type="Shader" path="res://assets/shaders/stone.gdshader" id="1_shader"]
 
 [resource]
 resource_name = "stone_grey"
-shading_mode = 0
-albedo_color = Color(0.58, 0.6, 0.62, 1.0)
-
+shader = ExtResource("1_shader")
+shader_parameter/base = Color(0.62, 0.64, 0.66, 1)
+shader_parameter/crack = Color(0.30, 0.30, 0.33, 1)
+shader_parameter/cell_size = 1.1
+shader_parameter/crack_width = 0.04
+shader_parameter/noise_strength = 0.4

@@ -1,7 +1,12 @@
-[gd_resource type="StandardMaterial3D" format=3 uid="uid://c6d3c397f4271c045"]
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://c6d3c397f4271c045"]
+
+[ext_resource type="Shader" path="res://assets/shaders/wood.gdshader" id="1_shader"]
 
 [resource]
 resource_name = "wood_planks"
-shading_mode = 0
-albedo_color = Color(0.62, 0.42, 0.24, 1.0)
-
+shader = ExtResource("1_shader")
+shader_parameter/light = Color(0.68, 0.46, 0.26, 1)
+shader_parameter/dark = Color(0.36, 0.22, 0.12, 1)
+shader_parameter/grain_dir = 1
+shader_parameter/grain_density = 15.0
+shader_parameter/knot_chance = 0.06

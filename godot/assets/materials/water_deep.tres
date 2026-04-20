@@ -1,7 +1,14 @@
-[gd_resource type="StandardMaterial3D" format=3 uid="uid://c3622ccc6e4c2af1f"]
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://c3622ccc6e4c2af1f"]
+
+[ext_resource type="Shader" path="res://assets/shaders/water.gdshader" id="1_shader"]
 
 [resource]
 resource_name = "water_deep"
-shading_mode = 0
-albedo_color = Color(0.1, 0.28, 0.55, 0.8)
-transparency = 1
+shader = ExtResource("1_shader")
+shader_parameter/shallow = Color(0.15, 0.40, 0.62, 1)
+shader_parameter/deep = Color(0.05, 0.12, 0.35, 1)
+shader_parameter/alpha_min = 0.72
+shader_parameter/alpha_max = 0.95
+shader_parameter/ripple_scale = 1.6
+shader_parameter/ripple_speed = 0.4
+shader_parameter/foam_strength = 0.05

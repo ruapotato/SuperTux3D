@@ -1,28 +1,32 @@
-[gd_scene load_steps=70 format=3]
+[gd_scene load_steps=145 format=3]
 
-; SAND — Sun-baked desert with a climbable pyramid, ruin courtyard, oasis,
-; hidden pyramid interior, and scarab easter egg. Player is ~1.5m penguin.
-; Landmarks: Dune field, Quicksand Pit, 4-tier Pyramid w/ interior chamber,
-;   Ruin Courtyard (8 columns), Oasis, Obelisk, Chameleon cave, Scarab shrine.
-; Tiers: dunes / pyramid mid-tiers / pyramid apex + obelisk.
-; Content: 13 enemies, 30 yellow coins, 8 red coins (one per ruin column),
-;   2 stars (apex + vault), 2 one-ups, 1 metal cap.
+; SAND — Expanded desert kingdom: dune field, Grand Pyramid with carved
+; multi-chamber interior (entrance hall, downward corridor, trap room,
+; treasury, burial chamber, secret tunnel to summit), Sphinx-analog,
+; obelisk plaza, 3-building ruin complex (Thoth temple, collapsed library,
+; Bastet shrine), oasis with tent and camel-analog, quicksand pit, tilted
+; broken tower, scattered artifacts, vultures. CSG SUBTRACTION carves
+; pyramid interior, obelisk hieroglyphs, ruin archways and windows.
+; Spawn: (0, 1, 30) facing north toward the pyramid silhouette.
 
 [ext_resource type="Material" uid="uid://sand_main" path="res://assets/materials/sand.tres" id="1_sand"]
 [ext_resource type="Material" uid="uid://sand_deep" path="res://assets/materials/sand_deep.tres" id="2_sand_deep"]
 [ext_resource type="Material" uid="uid://sandstone" path="res://assets/materials/sandstone.tres" id="3_sandstone"]
 [ext_resource type="Material" uid="uid://red_rock" path="res://assets/materials/red_rock.tres" id="4_red_rock"]
-[ext_resource type="Material" uid="uid://mud" path="res://assets/materials/mud.tres" id="5_mud"]
-[ext_resource type="Material" uid="uid://leaves_fall" path="res://assets/materials/leaves_fall.tres" id="6_leaves_fall"]
-[ext_resource type="Material" uid="uid://bark" path="res://assets/materials/bark.tres" id="7_bark"]
-[ext_resource type="Material" uid="uid://fabric_gold" path="res://assets/materials/fabric_gold.tres" id="8_fabric_gold"]
-[ext_resource type="Material" uid="uid://sky_dusk" path="res://assets/materials/sky_dusk.tres" id="9_sky_dusk"]
-[ext_resource type="Material" uid="uid://water_blue" path="res://assets/materials/water_blue.tres" id="10_water_blue"]
-[ext_resource type="Material" uid="uid://torch_flame" path="res://assets/materials/torch_flame.tres" id="11_torch_flame"]
-[ext_resource type="Material" uid="uid://gold" path="res://assets/materials/gold.tres" id="12_gold"]
+[ext_resource type="Material" uid="uid://stone_dark" path="res://assets/materials/stone_dark.tres" id="5_stone_dark"]
+[ext_resource type="Material" uid="uid://bark" path="res://assets/materials/bark.tres" id="6_bark"]
+[ext_resource type="Material" uid="uid://leaves_fall" path="res://assets/materials/leaves_fall.tres" id="7_leaves_fall"]
+[ext_resource type="Material" uid="uid://leaves_green" path="res://assets/materials/leaves_green.tres" id="8_leaves_green"]
+[ext_resource type="Material" uid="uid://water_blue" path="res://assets/materials/water_blue.tres" id="9_water_blue"]
+[ext_resource type="Material" uid="uid://gold" path="res://assets/materials/gold.tres" id="10_gold"]
+[ext_resource type="Material" uid="uid://fabric_gold" path="res://assets/materials/fabric_gold.tres" id="11_fabric_gold"]
+[ext_resource type="Material" uid="uid://fabric_red" path="res://assets/materials/fabric_red.tres" id="12_fabric_red"]
 [ext_resource type="Material" uid="uid://wood_dark" path="res://assets/materials/wood_dark.tres" id="13_wood_dark"]
 [ext_resource type="Material" uid="uid://plain_white" path="res://assets/materials/plain_white.tres" id="14_plain_white"]
 [ext_resource type="Material" uid="uid://emissive_cyan" path="res://assets/materials/emissive_cyan.tres" id="15_emissive_cyan"]
+[ext_resource type="Material" uid="uid://torch_flame" path="res://assets/materials/torch_flame.tres" id="16_torch_flame"]
+[ext_resource type="Material" uid="uid://ember" path="res://assets/materials/ember.tres" id="17_ember"]
+[ext_resource type="Material" uid="uid://emissive_gold" path="res://assets/materials/emissive_gold.tres" id="18_emissive_gold"]
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_1"]
 sky_top_color = Color(0.58, 0.55, 0.75, 1)
@@ -41,15 +45,16 @@ ambient_light_color = Color(0.98, 0.75, 0.55, 1)
 ambient_light_energy = 1.0
 fog_enabled = true
 fog_light_color = Color(0.95, 0.68, 0.45, 1)
-fog_density = 0.006
+fog_density = 0.005
 
-; Meshes - ground and dunes
+; ---- Shared meshes ----
+
 [sub_resource type="BoxMesh" id="Mesh_Ground"]
 material = ExtResource("1_sand")
-size = Vector3(140, 1, 140)
+size = Vector3(200, 1, 200)
 
 [sub_resource type="BoxShape3D" id="Shape_Ground"]
-size = Vector3(140, 1, 140)
+size = Vector3(200, 1, 200)
 
 [sub_resource type="SphereMesh" id="Mesh_Dune"]
 material = ExtResource("1_sand")
@@ -59,106 +64,353 @@ height = 3.0
 [sub_resource type="SphereShape3D" id="Shape_Dune"]
 radius = 4.0
 
+[sub_resource type="SphereMesh" id="Mesh_DuneSmall"]
+material = ExtResource("1_sand")
+radius = 2.5
+height = 2.0
+
+[sub_resource type="SphereShape3D" id="Shape_DuneSmall"]
+radius = 2.5
+
 [sub_resource type="BoxMesh" id="Mesh_Quicksand"]
 material = ExtResource("2_sand_deep")
-size = Vector3(10, 0.3, 10)
+size = Vector3(12, 0.3, 12)
 
 [sub_resource type="BoxShape3D" id="Shape_Quicksand"]
-size = Vector3(10, 0.3, 10)
+size = Vector3(12, 0.3, 12)
 
-; Pyramid tiers - 4 stepped sandstone boxes, each 4m tall, shrinking by 8m
+; Cactus body and arms
+[sub_resource type="CylinderMesh" id="Mesh_CactusBody"]
+material = ExtResource("8_leaves_green")
+top_radius = 0.35
+bottom_radius = 0.45
+height = 2.6
+
+[sub_resource type="CylinderShape3D" id="Shape_CactusBody"]
+radius = 0.45
+height = 2.6
+
+[sub_resource type="CylinderMesh" id="Mesh_CactusArm"]
+material = ExtResource("8_leaves_green")
+top_radius = 0.25
+bottom_radius = 0.25
+height = 1.3
+
+; Bones / skulls / pottery / scroll / chariot wheel
+[sub_resource type="SphereMesh" id="Mesh_Skull"]
+material = ExtResource("14_plain_white")
+radius = 0.4
+height = 0.8
+
+[sub_resource type="BoxMesh" id="Mesh_Bone"]
+material = ExtResource("14_plain_white")
+size = Vector3(0.2, 0.2, 1.2)
+
+[sub_resource type="SphereMesh" id="Mesh_PotShard"]
+material = ExtResource("4_red_rock")
+radius = 0.5
+height = 0.55
+
+[sub_resource type="CylinderMesh" id="Mesh_Scroll"]
+material = ExtResource("7_leaves_fall")
+top_radius = 0.15
+bottom_radius = 0.15
+height = 0.8
+
+[sub_resource type="CylinderMesh" id="Mesh_WheelRim"]
+material = ExtResource("13_wood_dark")
+top_radius = 0.9
+bottom_radius = 0.9
+height = 0.15
+
+[sub_resource type="CylinderMesh" id="Mesh_WheelHub"]
+material = ExtResource("13_wood_dark")
+top_radius = 0.2
+bottom_radius = 0.2
+height = 0.2
+
+; Pyramid tiers
 [sub_resource type="BoxMesh" id="Mesh_PyrT1"]
 material = ExtResource("3_sandstone")
-size = Vector3(32, 4, 32)
+size = Vector3(44, 6, 44)
 
 [sub_resource type="BoxShape3D" id="Shape_PyrT1"]
-size = Vector3(32, 4, 32)
+size = Vector3(44, 6, 44)
 
 [sub_resource type="BoxMesh" id="Mesh_PyrT2"]
 material = ExtResource("3_sandstone")
-size = Vector3(24, 4, 24)
+size = Vector3(34, 6, 34)
 
 [sub_resource type="BoxShape3D" id="Shape_PyrT2"]
-size = Vector3(24, 4, 24)
+size = Vector3(34, 6, 34)
 
 [sub_resource type="BoxMesh" id="Mesh_PyrT3"]
 material = ExtResource("3_sandstone")
-size = Vector3(16, 4, 16)
+size = Vector3(22, 6, 22)
 
 [sub_resource type="BoxShape3D" id="Shape_PyrT3"]
-size = Vector3(16, 4, 16)
+size = Vector3(22, 6, 22)
 
 [sub_resource type="BoxMesh" id="Mesh_PyrT4"]
 material = ExtResource("3_sandstone")
-size = Vector3(8, 4, 8)
+size = Vector3(10, 6, 10)
 
 [sub_resource type="BoxShape3D" id="Shape_PyrT4"]
-size = Vector3(8, 4, 8)
+size = Vector3(10, 6, 10)
 
-; Interior chamber - hollow pyramid entrance on north face
-[sub_resource type="BoxMesh" id="Mesh_ChamberFloor"]
+; Spiral climb ramp segments (4 short sloped ramps)
+[sub_resource type="BoxMesh" id="Mesh_Ramp"]
 material = ExtResource("4_red_rock")
-size = Vector3(18, 0.4, 18)
+size = Vector3(3.5, 0.4, 14)
 
-[sub_resource type="BoxShape3D" id="Shape_ChamberFloor"]
-size = Vector3(18, 0.4, 18)
+[sub_resource type="BoxShape3D" id="Shape_Ramp"]
+size = Vector3(3.5, 0.4, 14)
 
-[sub_resource type="BoxMesh" id="Mesh_ChamberWall"]
+; Pyramid interior: red-rock floors and sandstone walls
+[sub_resource type="BoxMesh" id="Mesh_FloorEntrance"]
+material = ExtResource("4_red_rock")
+size = Vector3(20, 0.4, 14)
+
+[sub_resource type="BoxShape3D" id="Shape_FloorEntrance"]
+size = Vector3(20, 0.4, 14)
+
+[sub_resource type="BoxMesh" id="Mesh_FloorTrap"]
+material = ExtResource("4_red_rock")
+size = Vector3(14, 0.4, 14)
+
+[sub_resource type="BoxShape3D" id="Shape_FloorTrap"]
+size = Vector3(14, 0.4, 14)
+
+[sub_resource type="BoxMesh" id="Mesh_FloorTreasury"]
+material = ExtResource("4_red_rock")
+size = Vector3(18, 0.4, 14)
+
+[sub_resource type="BoxShape3D" id="Shape_FloorTreasury"]
+size = Vector3(18, 0.4, 14)
+
+[sub_resource type="BoxMesh" id="Mesh_FloorBurial"]
+material = ExtResource("5_stone_dark")
+size = Vector3(16, 0.4, 16)
+
+[sub_resource type="BoxShape3D" id="Shape_FloorBurial"]
+size = Vector3(16, 0.4, 16)
+
+; Trap-room checker tiles (alternating sandstone and red_rock)
+[sub_resource type="BoxMesh" id="Mesh_TileSand"]
 material = ExtResource("3_sandstone")
-size = Vector3(18, 4, 0.5)
+size = Vector3(2, 0.1, 2)
 
-[sub_resource type="BoxShape3D" id="Shape_ChamberWall"]
-size = Vector3(18, 4, 0.5)
+[sub_resource type="BoxMesh" id="Mesh_TileRed"]
+material = ExtResource("4_red_rock")
+size = Vector3(2, 0.1, 2)
 
-[sub_resource type="BoxMesh" id="Mesh_ChamberSideWall"]
-material = ExtResource("3_sandstone")
-size = Vector3(0.5, 4, 18)
+; Thin carved wall panels (for CSG subtraction)
+[sub_resource type="BoxShape3D" id="Shape_WallPanel_20x6"]
+size = Vector3(20, 6, 0.6)
 
-[sub_resource type="BoxShape3D" id="Shape_ChamberSideWall"]
-size = Vector3(0.5, 4, 18)
+[sub_resource type="BoxShape3D" id="Shape_WallPanel_14x6"]
+size = Vector3(14, 6, 0.6)
 
-; Sarcophagus - wooden box with gold trim
-[sub_resource type="BoxMesh" id="Mesh_Sarcoph"]
-material = ExtResource("13_wood_dark")
-size = Vector3(3, 1.4, 1.6)
+[sub_resource type="BoxShape3D" id="Shape_WallPanel_16x8"]
+size = Vector3(16, 8, 0.6)
 
-[sub_resource type="BoxShape3D" id="Shape_Sarcoph"]
-size = Vector3(3, 1.4, 1.6)
+[sub_resource type="BoxShape3D" id="Shape_WallPanel_18x6"]
+size = Vector3(18, 6, 0.6)
 
-[sub_resource type="BoxMesh" id="Mesh_SarcophTrim"]
-material = ExtResource("8_fabric_gold")
-size = Vector3(3.2, 0.2, 1.8)
+[sub_resource type="BoxShape3D" id="Shape_WallPanel_6x6"]
+size = Vector3(0.6, 6, 14)
 
-; Torch sconce
+[sub_resource type="BoxShape3D" id="Shape_WallPanel_6x14"]
+size = Vector3(0.6, 6, 14)
+
+[sub_resource type="BoxShape3D" id="Shape_WallPanel_6x16"]
+size = Vector3(0.6, 8, 16)
+
+[sub_resource type="BoxShape3D" id="Shape_WallPanel_6x18"]
+size = Vector3(0.6, 6, 18)
+
+; Sloped corridor ramp (downward)
+[sub_resource type="BoxMesh" id="Mesh_CorridorRamp"]
+material = ExtResource("4_red_rock")
+size = Vector3(5, 0.4, 18)
+
+[sub_resource type="BoxShape3D" id="Shape_CorridorRamp"]
+size = Vector3(5, 0.4, 18)
+
+; Torches (wood handle + ember sphere)
 [sub_resource type="CylinderMesh" id="Mesh_TorchBase"]
 material = ExtResource("13_wood_dark")
-top_radius = 0.1
-bottom_radius = 0.1
-height = 0.8
+top_radius = 0.08
+bottom_radius = 0.08
+height = 0.9
 
 [sub_resource type="SphereMesh" id="Mesh_TorchFlame"]
-material = ExtResource("11_torch_flame")
-radius = 0.35
+material = ExtResource("16_torch_flame")
+radius = 0.28
+height = 0.55
+
+[sub_resource type="SphereMesh" id="Mesh_Ember"]
+material = ExtResource("17_ember")
+radius = 0.18
+height = 0.35
+
+; Guardian statue parts (prism base + body + sphere head)
+[sub_resource type="BoxMesh" id="Mesh_StatuePlinth"]
+material = ExtResource("5_stone_dark")
+size = Vector3(1.6, 0.6, 1.6)
+
+[sub_resource type="BoxShape3D" id="Shape_StatuePlinth"]
+size = Vector3(1.6, 0.6, 1.6)
+
+[sub_resource type="BoxMesh" id="Mesh_StatueBody"]
+material = ExtResource("3_sandstone")
+size = Vector3(1.2, 3.0, 1.0)
+
+[sub_resource type="BoxShape3D" id="Shape_StatueBody"]
+size = Vector3(1.2, 3.0, 1.0)
+
+[sub_resource type="SphereMesh" id="Mesh_StatueHead"]
+material = ExtResource("3_sandstone")
+radius = 0.7
+height = 1.4
+
+; Spear (thin vertical cylinder + tip)
+[sub_resource type="CylinderMesh" id="Mesh_SpearShaft"]
+material = ExtResource("13_wood_dark")
+top_radius = 0.05
+bottom_radius = 0.05
+height = 2.4
+
+[sub_resource type="BoxMesh" id="Mesh_SpearTip"]
+material = ExtResource("14_plain_white")
+size = Vector3(0.15, 0.4, 0.15)
+
+; Pendulum chain + weight
+[sub_resource type="CylinderMesh" id="Mesh_Chain"]
+material = ExtResource("13_wood_dark")
+top_radius = 0.06
+bottom_radius = 0.06
+height = 3.0
+
+[sub_resource type="CylinderMesh" id="Mesh_Pendulum"]
+material = ExtResource("5_stone_dark")
+top_radius = 0.5
+bottom_radius = 0.5
+height = 1.4
+
+; Gold pile (small sphere)
+[sub_resource type="SphereMesh" id="Mesh_GoldCoin"]
+material = ExtResource("10_gold")
+radius = 0.3
 height = 0.6
 
-; Vault branch chamber
-[sub_resource type="BoxMesh" id="Mesh_VaultFloor"]
+; Sarcophagus body + gold cross lid
+[sub_resource type="BoxMesh" id="Mesh_Sarcoph"]
+material = ExtResource("3_sandstone")
+size = Vector3(2.6, 1.0, 1.2)
+
+[sub_resource type="BoxShape3D" id="Shape_Sarcoph"]
+size = Vector3(2.6, 1.0, 1.2)
+
+[sub_resource type="BoxMesh" id="Mesh_SarcophLid"]
+material = ExtResource("10_gold")
+size = Vector3(2.8, 0.15, 1.3)
+
+[sub_resource type="BoxMesh" id="Mesh_CrossLong"]
+material = ExtResource("11_fabric_gold")
+size = Vector3(0.25, 0.08, 1.0)
+
+[sub_resource type="BoxMesh" id="Mesh_CrossShort"]
+material = ExtResource("11_fabric_gold")
+size = Vector3(0.8, 0.08, 0.25)
+
+; Throne
+[sub_resource type="BoxMesh" id="Mesh_ThroneSeat"]
+material = ExtResource("10_gold")
+size = Vector3(1.8, 0.4, 1.8)
+
+[sub_resource type="BoxShape3D" id="Shape_ThroneSeat"]
+size = Vector3(1.8, 0.4, 1.8)
+
+[sub_resource type="BoxMesh" id="Mesh_ThroneBack"]
+material = ExtResource("10_gold")
+size = Vector3(1.8, 2.8, 0.3)
+
+[sub_resource type="BoxShape3D" id="Shape_ThroneBack"]
+size = Vector3(1.8, 2.8, 0.3)
+
+; Canopic jar
+[sub_resource type="CylinderMesh" id="Mesh_Canopic"]
+material = ExtResource("3_sandstone")
+top_radius = 0.35
+bottom_radius = 0.4
+height = 1.2
+
+[sub_resource type="CylinderShape3D" id="Shape_Canopic"]
+radius = 0.4
+height = 1.2
+
+[sub_resource type="SphereMesh" id="Mesh_CanopicLid"]
+material = ExtResource("10_gold")
+radius = 0.38
+height = 0.6
+
+; Crystal cluster (emissive cyan cone-like box)
+[sub_resource type="BoxMesh" id="Mesh_Crystal"]
+material = ExtResource("15_emissive_cyan")
+size = Vector3(0.4, 1.4, 0.4)
+
+; Obelisk prism (tall square sandstone)
+[sub_resource type="BoxMesh" id="Mesh_Obelisk"]
+material = ExtResource("3_sandstone")
+size = Vector3(1.6, 12, 1.6)
+
+[sub_resource type="BoxShape3D" id="Shape_Obelisk"]
+size = Vector3(1.6, 12, 1.6)
+
+; Obelisk pyramidion (small top)
+[sub_resource type="BoxMesh" id="Mesh_ObTop"]
+material = ExtResource("10_gold")
+size = Vector3(1.2, 0.9, 1.2)
+
+; Plaza altar
+[sub_resource type="BoxMesh" id="Mesh_PlazaAltar"]
 material = ExtResource("4_red_rock")
-size = Vector3(6, 0.4, 6)
+size = Vector3(3.2, 1.2, 3.2)
 
-[sub_resource type="BoxShape3D" id="Shape_VaultFloor"]
-size = Vector3(6, 0.4, 6)
+[sub_resource type="BoxShape3D" id="Shape_PlazaAltar"]
+size = Vector3(3.2, 1.2, 3.2)
 
-; Ruin columns (tall sandstone cylinder) - 8 total
+; Ruin columns
 [sub_resource type="CylinderMesh" id="Mesh_Column"]
 material = ExtResource("3_sandstone")
-top_radius = 0.9
-bottom_radius = 1.0
+top_radius = 0.8
+bottom_radius = 0.9
 height = 6.0
 
 [sub_resource type="CylinderShape3D" id="Shape_Column"]
-radius = 1.0
+radius = 0.9
 height = 6.0
+
+[sub_resource type="CylinderMesh" id="Mesh_ColumnBroken"]
+material = ExtResource("3_sandstone")
+top_radius = 0.9
+bottom_radius = 0.9
+height = 2.4
+
+[sub_resource type="CylinderShape3D" id="Shape_ColumnBroken"]
+radius = 0.9
+height = 2.4
+
+[sub_resource type="CylinderMesh" id="Mesh_ColumnFallen"]
+material = ExtResource("3_sandstone")
+top_radius = 0.85
+bottom_radius = 0.9
+height = 5.5
+
+[sub_resource type="CylinderShape3D" id="Shape_ColumnFallen"]
+radius = 0.9
+height = 5.5
 
 [sub_resource type="BoxMesh" id="Mesh_RoofBeam"]
 material = ExtResource("3_sandstone")
@@ -167,104 +419,165 @@ size = Vector3(6, 0.6, 1.2)
 [sub_resource type="BoxShape3D" id="Shape_RoofBeam"]
 size = Vector3(6, 0.6, 1.2)
 
-; Broken statue torsos (headless, sandstone) - box for body
-[sub_resource type="BoxMesh" id="Mesh_Statue"]
+; Ruin wall block (carved out by CSG for windows)
+[sub_resource type="BoxShape3D" id="Shape_RuinWall"]
+size = Vector3(10, 5, 0.6)
+
+; Shrine walls (Bastet) small enclosed block
+[sub_resource type="BoxShape3D" id="Shape_ShrineWall"]
+size = Vector3(6, 4, 0.6)
+
+[sub_resource type="BoxShape3D" id="Shape_ShrineSide"]
+size = Vector3(0.6, 4, 6)
+
+; Collapsed library fallen blocks
+[sub_resource type="BoxMesh" id="Mesh_FallenBlock"]
 material = ExtResource("3_sandstone")
-size = Vector3(1.0, 2.0, 0.8)
+size = Vector3(2.4, 1.0, 1.6)
 
-[sub_resource type="BoxShape3D" id="Shape_Statue"]
-size = Vector3(1.0, 2.0, 0.8)
+[sub_resource type="BoxShape3D" id="Shape_FallenBlock"]
+size = Vector3(2.4, 1.0, 1.6)
 
-; Altar center
-[sub_resource type="BoxMesh" id="Mesh_Altar"]
-material = ExtResource("4_red_rock")
-size = Vector3(2.4, 1.2, 2.4)
+; Sphinx-analog parts
+[sub_resource type="BoxMesh" id="Mesh_SphinxBody"]
+material = ExtResource("3_sandstone")
+size = Vector3(14, 5, 6)
 
-[sub_resource type="BoxShape3D" id="Shape_Altar"]
-size = Vector3(2.4, 1.2, 2.4)
+[sub_resource type="BoxShape3D" id="Shape_SphinxBody"]
+size = Vector3(14, 5, 6)
 
-[sub_resource type="SphereMesh" id="Mesh_AltarGem"]
-material = ExtResource("8_fabric_gold")
-radius = 0.35
-height = 0.7
+[sub_resource type="BoxMesh" id="Mesh_SphinxChest"]
+material = ExtResource("3_sandstone")
+size = Vector3(6, 5, 6)
 
-; Oasis water plane
+[sub_resource type="BoxShape3D" id="Shape_SphinxChest"]
+size = Vector3(6, 5, 6)
+
+[sub_resource type="BoxMesh" id="Mesh_SphinxPaw"]
+material = ExtResource("3_sandstone")
+size = Vector3(1.6, 2, 4)
+
+[sub_resource type="BoxShape3D" id="Shape_SphinxPaw"]
+size = Vector3(1.6, 2, 4)
+
+[sub_resource type="SphereMesh" id="Mesh_SphinxHead"]
+material = ExtResource("3_sandstone")
+radius = 2.2
+height = 4.4
+
+[sub_resource type="SphereShape3D" id="Shape_SphinxHead"]
+radius = 2.2
+
+; Tower blocks (broken, tilted)
+[sub_resource type="BoxMesh" id="Mesh_TowerStory"]
+material = ExtResource("3_sandstone")
+size = Vector3(6, 4, 6)
+
+[sub_resource type="BoxShape3D" id="Shape_TowerStory"]
+size = Vector3(6, 4, 6)
+
+; Oasis
 [sub_resource type="BoxMesh" id="Mesh_Pond"]
-material = ExtResource("10_water_blue")
-size = Vector3(8, 0.2, 8)
+material = ExtResource("9_water_blue")
+size = Vector3(12, 0.2, 12)
 
-; Palm trunk (bark)
 [sub_resource type="CylinderMesh" id="Mesh_PalmTrunk"]
-material = ExtResource("7_bark")
-top_radius = 0.3
-bottom_radius = 0.4
-height = 4.5
+material = ExtResource("6_bark")
+top_radius = 0.28
+bottom_radius = 0.38
+height = 5.0
 
 [sub_resource type="CylinderShape3D" id="Shape_PalmTrunk"]
 radius = 0.35
-height = 4.5
+height = 5.0
 
-; Palm fronds (leaves_fall orange)
 [sub_resource type="SphereMesh" id="Mesh_PalmFronds"]
-material = ExtResource("6_leaves_fall")
+material = ExtResource("7_leaves_fall")
 radius = 1.8
 height = 1.6
 
-; Cactus body (mud colored)
-[sub_resource type="CylinderMesh" id="Mesh_CactusBody"]
-material = ExtResource("5_mud")
-top_radius = 0.4
-bottom_radius = 0.5
-height = 2.6
+; Tent (fabric_red triangular prism over wooden poles)
+[sub_resource type="BoxMesh" id="Mesh_TentRoofA"]
+material = ExtResource("12_fabric_red")
+size = Vector3(4, 0.1, 3.2)
 
-[sub_resource type="CylinderShape3D" id="Shape_CactusBody"]
-radius = 0.5
-height = 2.6
+[sub_resource type="BoxMesh" id="Mesh_TentPole"]
+material = ExtResource("13_wood_dark")
+top_radius = 0.06
+bottom_radius = 0.06
+height = 2.4
 
-; Cactus arm (horizontal)
-[sub_resource type="CylinderMesh" id="Mesh_CactusArm"]
-material = ExtResource("5_mud")
-top_radius = 0.3
-bottom_radius = 0.3
-height = 1.4
+[sub_resource type="CylinderMesh" id="Mesh_TentPoleCyl"]
+material = ExtResource("13_wood_dark")
+top_radius = 0.06
+bottom_radius = 0.06
+height = 2.4
 
-; Skull (white sphere)
-[sub_resource type="SphereMesh" id="Mesh_Skull"]
-material = ExtResource("14_plain_white")
+[sub_resource type="BoxShape3D" id="Shape_TentPole"]
+size = Vector3(0.12, 2.4, 0.12)
+
+; Camel-analog body/hump/head/legs
+[sub_resource type="BoxMesh" id="Mesh_CamelBody"]
+material = ExtResource("7_leaves_fall")
+size = Vector3(2.4, 1.0, 1.0)
+
+[sub_resource type="BoxShape3D" id="Shape_CamelBody"]
+size = Vector3(2.4, 1.0, 1.0)
+
+[sub_resource type="SphereMesh" id="Mesh_CamelHump"]
+material = ExtResource("7_leaves_fall")
+radius = 0.55
+height = 0.9
+
+[sub_resource type="SphereMesh" id="Mesh_CamelHead"]
+material = ExtResource("7_leaves_fall")
 radius = 0.4
 height = 0.8
 
-; Bone (white box)
-[sub_resource type="BoxMesh" id="Mesh_Bone"]
-material = ExtResource("14_plain_white")
-size = Vector3(0.2, 0.2, 1.2)
+[sub_resource type="BoxMesh" id="Mesh_CamelNeck"]
+material = ExtResource("7_leaves_fall")
+size = Vector3(0.4, 1.0, 0.4)
 
-; Obelisk - tall thin sandstone prism
-[sub_resource type="BoxMesh" id="Mesh_Obelisk"]
-material = ExtResource("3_sandstone")
-size = Vector3(1.4, 12, 1.4)
+[sub_resource type="CylinderMesh" id="Mesh_CamelLeg"]
+material = ExtResource("7_leaves_fall")
+top_radius = 0.15
+bottom_radius = 0.15
+height = 1.2
 
-[sub_resource type="BoxShape3D" id="Shape_Obelisk"]
-size = Vector3(1.4, 12, 1.4)
+; Cat idol (Bastet) - abstract box + sphere head + triangular ears
+[sub_resource type="BoxMesh" id="Mesh_CatBody"]
+material = ExtResource("5_stone_dark")
+size = Vector3(0.8, 1.8, 0.7)
 
-; Scarab shrine base
-[sub_resource type="BoxMesh" id="Mesh_ShrineBase"]
-material = ExtResource("4_red_rock")
-size = Vector3(2.0, 0.8, 2.0)
+[sub_resource type="SphereMesh" id="Mesh_CatHead"]
+material = ExtResource("5_stone_dark")
+radius = 0.45
+height = 0.9
 
-[sub_resource type="BoxShape3D" id="Shape_ShrineBase"]
-size = Vector3(2.0, 0.8, 2.0)
+[sub_resource type="BoxMesh" id="Mesh_CatEar"]
+material = ExtResource("5_stone_dark")
+size = Vector3(0.2, 0.4, 0.2)
 
-[sub_resource type="SphereMesh" id="Mesh_Scarab"]
-material = ExtResource("12_gold")
-radius = 0.5
-height = 1.0
+; Scroll rack / spear rack board
+[sub_resource type="BoxMesh" id="Mesh_RackBoard"]
+material = ExtResource("13_wood_dark")
+size = Vector3(4, 0.2, 0.4)
 
-; Chameleon spot (emissive cyan)
-[sub_resource type="SphereMesh" id="Mesh_ChamSpot"]
-material = ExtResource("15_emissive_cyan")
-radius = 0.25
-height = 0.5
+[sub_resource type="BoxShape3D" id="Shape_RackBoard"]
+size = Vector3(4, 0.2, 0.4)
+
+; Hidden hatch on pyramid summit (gold square marking secret exit)
+[sub_resource type="BoxMesh" id="Mesh_Hatch"]
+material = ExtResource("18_emissive_gold")
+size = Vector3(1.6, 0.1, 1.6)
+
+; Scrub bush (small leaves_fall sphere on dirt)
+[sub_resource type="SphereMesh" id="Mesh_Bush"]
+material = ExtResource("7_leaves_fall")
+radius = 0.7
+height = 0.8
+
+; ---- Scene tree ----
 
 [node name="LevelRoot" type="Node3D"]
 
@@ -276,7 +589,7 @@ transform = Transform3D(0.9, -0.2, 0.4, 0, 0.9, 0.45, -0.45, -0.4, 0.8, 0, 40, 0
 light_color = Color(1.0, 0.85, 0.6, 1)
 light_energy = 1.4
 
-; Ground
+; ========== GROUND ==========
 [node name="GroundMesh" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
 mesh = SubResource("Mesh_Ground")
@@ -284,100 +597,275 @@ mesh = SubResource("Mesh_Ground")
 [node name="GroundBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
-
 [node name="Col" type="CollisionShape3D" parent="GroundBody"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
 shape = SubResource("Shape_Ground")
 
-; --- Dune field (rolling low sand spheres scattered around) ---
-[node name="Dune1" type="MeshInstance3D" parent="."]
-transform = Transform3D(1.2, 0, 0, 0, 0.4, 0, 0, 0, 1.2, 18, 0, 26)
-mesh = SubResource("Mesh_Dune")
+; ========== SPAWN ==========
+[node name="SpawnArea" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 0
+metadata/spawn_point = Vector3(0, 1, 30)
 
-[node name="Dune1Body" type="StaticBody3D" parent="."]
+
+; ========== DUNE FIELD (20+ rolling hills) ==========
+[node name="Dune01" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.2, 0, 0, 0, 0.4, 0, 0, 0, 1.2, 22, 0, 34)
+mesh = SubResource("Mesh_Dune")
+[node name="Dune01Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="Dune1Body"]
-transform = Transform3D(1.2, 0, 0, 0, 0.4, 0, 0, 0, 1.2, 18, 0, 26)
+[node name="Col" type="CollisionShape3D" parent="Dune01Body"]
+transform = Transform3D(1.2, 0, 0, 0, 0.4, 0, 0, 0, 1.2, 22, 0, 34)
 shape = SubResource("Shape_Dune")
 
-[node name="Dune2" type="MeshInstance3D" parent="."]
-transform = Transform3D(1.0, 0, 0, 0, 0.5, 0, 0, 0, 1.4, -22, 0, 30)
+[node name="Dune02" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.0, 0, 0, 0, 0.5, 0, 0, 0, 1.4, -26, 0, 38)
 mesh = SubResource("Mesh_Dune")
-
-[node name="Dune2Body" type="StaticBody3D" parent="."]
+[node name="Dune02Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="Dune2Body"]
-transform = Transform3D(1.0, 0, 0, 0, 0.5, 0, 0, 0, 1.4, -22, 0, 30)
+[node name="Col" type="CollisionShape3D" parent="Dune02Body"]
+transform = Transform3D(1.0, 0, 0, 0, 0.5, 0, 0, 0, 1.4, -26, 0, 38)
 shape = SubResource("Shape_Dune")
 
-[node name="Dune3" type="MeshInstance3D" parent="."]
-transform = Transform3D(1.4, 0, 0, 0, 0.45, 0, 0, 0, 1.0, 30, 0, -12)
+[node name="Dune03" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.4, 0, 0, 0, 0.45, 0, 0, 0, 1.0, 36, 0, -14)
 mesh = SubResource("Mesh_Dune")
-
-[node name="Dune3Body" type="StaticBody3D" parent="."]
+[node name="Dune03Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="Dune3Body"]
-transform = Transform3D(1.4, 0, 0, 0, 0.45, 0, 0, 0, 1.0, 30, 0, -12)
+[node name="Col" type="CollisionShape3D" parent="Dune03Body"]
+transform = Transform3D(1.4, 0, 0, 0, 0.45, 0, 0, 0, 1.0, 36, 0, -14)
 shape = SubResource("Shape_Dune")
 
-[node name="Dune4" type="MeshInstance3D" parent="."]
-transform = Transform3D(1.1, 0, 0, 0, 0.4, 0, 0, 0, 1.3, -30, 0, -4)
+[node name="Dune04" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.1, 0, 0, 0, 0.4, 0, 0, 0, 1.3, -34, 0, -6)
 mesh = SubResource("Mesh_Dune")
-
-[node name="Dune4Body" type="StaticBody3D" parent="."]
+[node name="Dune04Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="Dune4Body"]
-transform = Transform3D(1.1, 0, 0, 0, 0.4, 0, 0, 0, 1.3, -30, 0, -4)
+[node name="Col" type="CollisionShape3D" parent="Dune04Body"]
+transform = Transform3D(1.1, 0, 0, 0, 0.4, 0, 0, 0, 1.3, -34, 0, -6)
 shape = SubResource("Shape_Dune")
 
-[node name="Dune5" type="MeshInstance3D" parent="."]
-transform = Transform3D(1.3, 0, 0, 0, 0.5, 0, 0, 0, 1.1, 46, 0, 14)
+[node name="Dune05" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.3, 0, 0, 0, 0.5, 0, 0, 0, 1.1, 54, 0, 18)
 mesh = SubResource("Mesh_Dune")
-
-[node name="Dune5Body" type="StaticBody3D" parent="."]
+[node name="Dune05Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="Dune5Body"]
-transform = Transform3D(1.3, 0, 0, 0, 0.5, 0, 0, 0, 1.1, 46, 0, 14)
+[node name="Col" type="CollisionShape3D" parent="Dune05Body"]
+transform = Transform3D(1.3, 0, 0, 0, 0.5, 0, 0, 0, 1.1, 54, 0, 18)
 shape = SubResource("Shape_Dune")
 
-; Cacti scattered in dunes
+[node name="Dune06" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.5, 0, 0, 0, 0.42, 0, 0, 0, 1.2, 60, 0, -26)
+mesh = SubResource("Mesh_Dune")
+[node name="Dune06Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Dune06Body"]
+transform = Transform3D(1.5, 0, 0, 0, 0.42, 0, 0, 0, 1.2, 60, 0, -26)
+shape = SubResource("Shape_Dune")
+
+[node name="Dune07" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.1, 0, 0, 0, 0.55, 0, 0, 0, 1.4, -54, 0, 24)
+mesh = SubResource("Mesh_Dune")
+[node name="Dune07Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Dune07Body"]
+transform = Transform3D(1.1, 0, 0, 0, 0.55, 0, 0, 0, 1.4, -54, 0, 24)
+shape = SubResource("Shape_Dune")
+
+[node name="Dune08" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.2, 0, 0, 0, 0.38, 0, 0, 0, 1.1, 72, 0, 6)
+mesh = SubResource("Mesh_Dune")
+[node name="Dune08Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Dune08Body"]
+transform = Transform3D(1.2, 0, 0, 0, 0.38, 0, 0, 0, 1.1, 72, 0, 6)
+shape = SubResource("Shape_Dune")
+
+[node name="Dune09" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.0, 0, 0, 0, 0.4, 0, 0, 0, 0.9, 18, 0, 56)
+mesh = SubResource("Mesh_DuneSmall")
+[node name="Dune09Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Dune09Body"]
+transform = Transform3D(1.0, 0, 0, 0, 0.4, 0, 0, 0, 0.9, 18, 0, 56)
+shape = SubResource("Shape_DuneSmall")
+
+[node name="Dune10" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.3, 0, 0, 0, 0.5, 0, 0, 0, 1.3, -12, 0, 64)
+mesh = SubResource("Mesh_DuneSmall")
+[node name="Dune10Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Dune10Body"]
+transform = Transform3D(1.3, 0, 0, 0, 0.5, 0, 0, 0, 1.3, -12, 0, 64)
+shape = SubResource("Shape_DuneSmall")
+
+[node name="Dune11" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.1, 0, 0, 0, 0.45, 0, 0, 0, 1.1, 40, 0, 56)
+mesh = SubResource("Mesh_DuneSmall")
+[node name="Dune11Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Dune11Body"]
+transform = Transform3D(1.1, 0, 0, 0, 0.45, 0, 0, 0, 1.1, 40, 0, 56)
+shape = SubResource("Shape_DuneSmall")
+
+[node name="Dune12" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.4, 0, 0, 0, 0.48, 0, 0, 0, 1.2, -40, 0, 54)
+mesh = SubResource("Mesh_DuneSmall")
+[node name="Dune12Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Dune12Body"]
+transform = Transform3D(1.4, 0, 0, 0, 0.48, 0, 0, 0, 1.2, -40, 0, 54)
+shape = SubResource("Shape_DuneSmall")
+
+[node name="Dune13" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.2, 0, 0, 0, 0.42, 0, 0, 0, 1.3, 50, 0, -46)
+mesh = SubResource("Mesh_Dune")
+[node name="Dune13Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Dune13Body"]
+transform = Transform3D(1.2, 0, 0, 0, 0.42, 0, 0, 0, 1.3, 50, 0, -46)
+shape = SubResource("Shape_Dune")
+
+[node name="Dune14" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.0, 0, 0, 0, 0.35, 0, 0, 0, 1.1, -60, 0, -42)
+mesh = SubResource("Mesh_Dune")
+[node name="Dune14Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Dune14Body"]
+transform = Transform3D(1.0, 0, 0, 0, 0.35, 0, 0, 0, 1.1, -60, 0, -42)
+shape = SubResource("Shape_Dune")
+
+[node name="Dune15" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.3, 0, 0, 0, 0.4, 0, 0, 0, 1.3, -72, 0, 10)
+mesh = SubResource("Mesh_Dune")
+[node name="Dune15Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Dune15Body"]
+transform = Transform3D(1.3, 0, 0, 0, 0.4, 0, 0, 0, 1.3, -72, 0, 10)
+shape = SubResource("Shape_Dune")
+
+[node name="Dune16" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.1, 0, 0, 0, 0.45, 0, 0, 0, 1.0, 82, 0, 34)
+mesh = SubResource("Mesh_DuneSmall")
+[node name="Dune16Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Dune16Body"]
+transform = Transform3D(1.1, 0, 0, 0, 0.45, 0, 0, 0, 1.0, 82, 0, 34)
+shape = SubResource("Shape_DuneSmall")
+
+[node name="Dune17" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.4, 0, 0, 0, 0.4, 0, 0, 0, 1.3, 10, 0, 72)
+mesh = SubResource("Mesh_DuneSmall")
+[node name="Dune17Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Dune17Body"]
+transform = Transform3D(1.4, 0, 0, 0, 0.4, 0, 0, 0, 1.3, 10, 0, 72)
+shape = SubResource("Shape_DuneSmall")
+
+[node name="Dune18" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.2, 0, 0, 0, 0.38, 0, 0, 0, 1.4, -6, 0, -56)
+mesh = SubResource("Mesh_DuneSmall")
+[node name="Dune18Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Dune18Body"]
+transform = Transform3D(1.2, 0, 0, 0, 0.38, 0, 0, 0, 1.4, -6, 0, -56)
+shape = SubResource("Shape_DuneSmall")
+
+[node name="Dune19" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.2, 0, 0, 0, 0.5, 0, 0, 0, 1.2, 66, 0, 52)
+mesh = SubResource("Mesh_Dune")
+[node name="Dune19Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Dune19Body"]
+transform = Transform3D(1.2, 0, 0, 0, 0.5, 0, 0, 0, 1.2, 66, 0, 52)
+shape = SubResource("Shape_Dune")
+
+[node name="Dune20" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.3, 0, 0, 0, 0.48, 0, 0, 0, 1.1, -46, 0, -60)
+mesh = SubResource("Mesh_Dune")
+[node name="Dune20Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Dune20Body"]
+transform = Transform3D(1.3, 0, 0, 0, 0.48, 0, 0, 0, 1.1, -46, 0, -60)
+shape = SubResource("Shape_Dune")
+
+[node name="Dune21" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.0, 0, 0, 0, 0.35, 0, 0, 0, 1.0, 28, 0, -46)
+mesh = SubResource("Mesh_DuneSmall")
+[node name="Dune21Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Dune21Body"]
+transform = Transform3D(1.0, 0, 0, 0, 0.35, 0, 0, 0, 1.0, 28, 0, -46)
+shape = SubResource("Shape_DuneSmall")
+
+[node name="Dune22" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.1, 0, 0, 0, 0.42, 0, 0, 0, 1.3, -22, 0, -30)
+mesh = SubResource("Mesh_DuneSmall")
+[node name="Dune22Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Dune22Body"]
+transform = Transform3D(1.1, 0, 0, 0, 0.42, 0, 0, 0, 1.3, -22, 0, -30)
+shape = SubResource("Shape_DuneSmall")
+
+; ========== CACTI ==========
 [node name="Cactus1Body" type="StaticBody3D" parent="."]
 collision_layer = 1
 [node name="Mesh" type="MeshInstance3D" parent="Cactus1Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 1.3, 18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 1.3, 22)
 mesh = SubResource("Mesh_CactusBody")
 [node name="Col" type="CollisionShape3D" parent="Cactus1Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 1.3, 18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 1.3, 22)
 shape = SubResource("Shape_CactusBody")
 [node name="Arm" type="MeshInstance3D" parent="Cactus1Body"]
-transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 14.8, 1.8, 18)
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 14.8, 1.8, 22)
 mesh = SubResource("Mesh_CactusArm")
 
 [node name="Cactus2Body" type="StaticBody3D" parent="."]
 collision_layer = 1
 [node name="Mesh" type="MeshInstance3D" parent="Cactus2Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18, 1.3, 12)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18, 1.3, 16)
 mesh = SubResource("Mesh_CactusBody")
 [node name="Col" type="CollisionShape3D" parent="Cactus2Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18, 1.3, 12)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18, 1.3, 16)
 shape = SubResource("Shape_CactusBody")
 [node name="Arm" type="MeshInstance3D" parent="Cactus2Body"]
-transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, -18.8, 1.8, 12)
+transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, -18.8, 1.8, 16)
 mesh = SubResource("Mesh_CactusArm")
 
 [node name="Cactus3Body" type="StaticBody3D" parent="."]
 collision_layer = 1
 [node name="Mesh" type="MeshInstance3D" parent="Cactus3Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 1.3, -20)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 1.3, -22)
 mesh = SubResource("Mesh_CactusBody")
 [node name="Col" type="CollisionShape3D" parent="Cactus3Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 1.3, -20)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 1.3, -22)
 shape = SubResource("Shape_CactusBody")
 [node name="Arm" type="MeshInstance3D" parent="Cactus3Body"]
-transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 36.8, 1.8, -20)
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 36.8, 1.8, -22)
 mesh = SubResource("Mesh_CactusArm")
 
-; Bones & skulls scattered (visual drama)
+[node name="Cactus4Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="Cactus4Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 1.3, -10)
+mesh = SubResource("Mesh_CactusBody")
+[node name="Col" type="CollisionShape3D" parent="Cactus4Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 1.3, -10)
+shape = SubResource("Shape_CactusBody")
+
+[node name="Cactus5Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="Cactus5Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48, 1.3, -20)
+mesh = SubResource("Mesh_CactusBody")
+[node name="Col" type="CollisionShape3D" parent="Cactus5Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48, 1.3, -20)
+shape = SubResource("Shape_CactusBody")
+[node name="Arm" type="MeshInstance3D" parent="Cactus5Body"]
+transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, -48.8, 1.8, -20)
+mesh = SubResource("Mesh_CactusArm")
+
+; ========== BONES & SKULLS ==========
 [node name="Skull1" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0.4, 20)
 mesh = SubResource("Mesh_Skull")
@@ -387,614 +875,1776 @@ mesh = SubResource("Mesh_Bone")
 [node name="Bone2" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.5, 0, 0.87, 0, 1, 0, -0.87, 0, 0.5, 10.3, 0.2, 20.8)
 mesh = SubResource("Mesh_Bone")
-
 [node name="Skull2" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28, 0.4, 14)
 mesh = SubResource("Mesh_Skull")
 [node name="Bone3" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27, 0.2, 14.5)
 mesh = SubResource("Mesh_Bone")
-
 [node name="Skull3" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0.4, -24)
 mesh = SubResource("Mesh_Skull")
+[node name="Bone4" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.7, 0, 0.7, 0, 1, 0, -0.7, 0, 0.7, 33, 0.2, -24.5)
+mesh = SubResource("Mesh_Bone")
+[node name="Skull4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 62, 0.4, -38)
+mesh = SubResource("Mesh_Skull")
+[node name="Bone5" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.4, 0, 0.9, 0, 1, 0, -0.9, 0, 0.4, 61, 0.2, -37)
+mesh = SubResource("Mesh_Bone")
+[node name="Skull5" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48, 0.4, 42)
+mesh = SubResource("Mesh_Skull")
 
-; --- Quicksand pit (south-east corner, obvious darker sand) ---
+; ========== POTTERY SHARDS ==========
+[node name="Pot1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.3, 0, 0, 0, 1, 16, 0.2, 26)
+mesh = SubResource("Mesh_PotShard")
+[node name="Pot2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.7, 0, 0, 0, 0.3, 0, 0, 0, 0.7, 17, 0.2, 27)
+mesh = SubResource("Mesh_PotShard")
+[node name="Pot3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.3, 0, 0, 0, 1, -20, 0.2, -10)
+mesh = SubResource("Mesh_PotShard")
+[node name="Pot4" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.6, 0, 0, 0, 0.3, 0, 0, 0, 0.6, -20.8, 0.2, -10.6)
+mesh = SubResource("Mesh_PotShard")
+[node name="Pot5" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.3, 0, 0, 0, 1, 42, 0.2, 40)
+mesh = SubResource("Mesh_PotShard")
+[node name="Pot6" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.3, 0, 0, 0, 1, -52, 0.2, 20)
+mesh = SubResource("Mesh_PotShard")
+
+; ========== CHARIOT WHEELS (half-buried) ==========
+[node name="ChariotWheel1" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 1, 0, 0, 0, 1, 0, 24, 0.3, -8)
+mesh = SubResource("Mesh_WheelRim")
+[node name="ChariotWheelHub1" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 1, 0, 0, 0, 1, 0, 24, 0.3, -8)
+mesh = SubResource("Mesh_WheelHub")
+[node name="ChariotWheel2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 0.9, 0.9, 0, 0, 0, 1, 0, -34, 0.3, 26)
+mesh = SubResource("Mesh_WheelRim")
+[node name="ChariotWheel3" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 1, 0, 0, 0, 1, 0, 70, 0.3, 20)
+mesh = SubResource("Mesh_WheelRim")
+
+; ========== SCRUB BUSHES ==========
+[node name="Bush1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.3, 28)
+mesh = SubResource("Mesh_Bush")
+[node name="Bush2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.7, 0, 0, 0, 0.7, 0, 0, 0, 0.7, 4, 0.2, 32)
+mesh = SubResource("Mesh_Bush")
+[node name="Bush3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18, 0.3, 22)
+mesh = SubResource("Mesh_Bush")
+[node name="Bush4" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 32, 0.3, 28)
+mesh = SubResource("Mesh_Bush")
+[node name="Bush5" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, 0.3, -36)
+mesh = SubResource("Mesh_Bush")
+[node name="Bush6" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.9, 0, 0, 0, 0.9, 0, 0, 0, 0.9, -38, 0.3, -32)
+mesh = SubResource("Mesh_Bush")
+[node name="Bush7" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58, 0.3, 44)
+mesh = SubResource("Mesh_Bush")
+
+; ========== QUICKSAND PIT ==========
 [node name="QuicksandMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -0.15, 32)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, -0.15, 40)
 mesh = SubResource("Mesh_Quicksand")
 
 [node name="QuicksandBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 collision_mask = 1
 metadata/surface_kind = "deep_quicksand"
-
 [node name="Col" type="CollisionShape3D" parent="QuicksandBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -0.15, 32)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, -0.15, 40)
 shape = SubResource("Shape_Quicksand")
 
-; --- Pyramid (4-tier stepped stack at origin) ---
-; Tier 1 (32x32, top at y=4)
-[node name="PyrT1Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
-mesh = SubResource("Mesh_PyrT1")
 
+; ========== GRAND PYRAMID (centered at (0, 0, -30)) ==========
+; 4-tier stepped exterior. Each tier is 6m tall. Summit at y=24.
+; Collision bodies below each tier + hidden hatch at summit.
+[node name="PyrT1Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -30)
+mesh = SubResource("Mesh_PyrT1")
 [node name="PyrT1Body" type="StaticBody3D" parent="."]
 collision_layer = 1
 [node name="Col" type="CollisionShape3D" parent="PyrT1Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -30)
 shape = SubResource("Shape_PyrT1")
 
-; Tier 2 (24x24, top at y=8)
 [node name="PyrT2Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9, -30)
 mesh = SubResource("Mesh_PyrT2")
-
 [node name="PyrT2Body" type="StaticBody3D" parent="."]
 collision_layer = 1
 [node name="Col" type="CollisionShape3D" parent="PyrT2Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9, -30)
 shape = SubResource("Shape_PyrT2")
 
-; Tier 3 (16x16, top at y=12)
 [node name="PyrT3Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 15, -30)
 mesh = SubResource("Mesh_PyrT3")
-
 [node name="PyrT3Body" type="StaticBody3D" parent="."]
 collision_layer = 1
 [node name="Col" type="CollisionShape3D" parent="PyrT3Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 15, -30)
 shape = SubResource("Shape_PyrT3")
 
-; Tier 4 (8x8, top at y=16 - summit)
 [node name="PyrT4Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 14, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 21, -30)
 mesh = SubResource("Mesh_PyrT4")
-
 [node name="PyrT4Body" type="StaticBody3D" parent="."]
 collision_layer = 1
 [node name="Col" type="CollisionShape3D" parent="PyrT4Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 14, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 21, -30)
 shape = SubResource("Shape_PyrT4")
 
-; --- Pyramid interior: chamber floor sits at y=0 under tier 1 center
-; Chamber is 18x18, tucked inside the tier-1 footprint (hollow suggestion).
-; North face entrance: gap in north wall so player walks in from z = -16.
-[node name="ChamberFloorMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
-mesh = SubResource("Mesh_ChamberFloor")
+; Summit hidden hatch (gold-glowing square — this is where secret tunnel emerges)
+[node name="PyramidHatch" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 24.1, -30)
+mesh = SubResource("Mesh_Hatch")
 
-[node name="ChamberFloorBody" type="StaticBody3D" parent="."]
+; --- Spiral climb ramp (4 segments wrapping around pyramid exterior) ---
+; Ramp 1: south face of tier 1, sloped from ground up to y=6
+[node name="Ramp1Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.95, 0.3, 0, -0.3, 0.95, 0, 3, -10)
+mesh = SubResource("Mesh_Ramp")
+[node name="Ramp1Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="ChamberFloorBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
-shape = SubResource("Shape_ChamberFloor")
+[node name="Col" type="CollisionShape3D" parent="Ramp1Body"]
+transform = Transform3D(1, 0, 0, 0, 0.95, 0.3, 0, -0.3, 0.95, 0, 3, -10)
+shape = SubResource("Shape_Ramp")
 
-; South wall (solid)
-[node name="ChamberWallS" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 9)
-mesh = SubResource("Mesh_ChamberWall")
-[node name="ChamberWallSBody" type="StaticBody3D" parent="."]
+; Ramp 2: east face of tier 2, sloped from y=6 to y=12
+[node name="Ramp2Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, -0.3, 0.95, 0, -0.95, -0.3, 0, 18, 9, -30)
+mesh = SubResource("Mesh_Ramp")
+[node name="Ramp2Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="ChamberWallSBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 9)
-shape = SubResource("Shape_ChamberWall")
+[node name="Col" type="CollisionShape3D" parent="Ramp2Body"]
+transform = Transform3D(0, 0, 1, -0.3, 0.95, 0, -0.95, -0.3, 0, 18, 9, -30)
+shape = SubResource("Shape_Ramp")
 
-; East wall
-[node name="ChamberWallE" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 2.3, 0)
-mesh = SubResource("Mesh_ChamberSideWall")
-[node name="ChamberWallEBody" type="StaticBody3D" parent="."]
+; Ramp 3: north face of tier 3, sloped from y=12 to y=18
+[node name="Ramp3Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 0.95, -0.3, 0, -0.3, -0.95, 0, 15, -48)
+mesh = SubResource("Mesh_Ramp")
+[node name="Ramp3Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="ChamberWallEBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 2.3, 0)
-shape = SubResource("Shape_ChamberSideWall")
+[node name="Col" type="CollisionShape3D" parent="Ramp3Body"]
+transform = Transform3D(-1, 0, 0, 0, 0.95, -0.3, 0, -0.3, -0.95, 0, 15, -48)
+shape = SubResource("Shape_Ramp")
 
-; West wall
-[node name="ChamberWallW" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 2.3, 0)
-mesh = SubResource("Mesh_ChamberSideWall")
-[node name="ChamberWallWBody" type="StaticBody3D" parent="."]
+; Ramp 4: west face of tier 4, sloped from y=18 to y=24
+[node name="Ramp4Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, -1, 0.3, 0.95, 0, 0.95, -0.3, 0, -10, 21, -30)
+mesh = SubResource("Mesh_Ramp")
+[node name="Ramp4Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="ChamberWallWBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 2.3, 0)
-shape = SubResource("Shape_ChamberSideWall")
+[node name="Col" type="CollisionShape3D" parent="Ramp4Body"]
+transform = Transform3D(0, 0, -1, 0.3, 0.95, 0, 0.95, -0.3, 0, -10, 21, -30)
+shape = SubResource("Shape_Ramp")
 
-; Sarcophagus (center of chamber, raised)
-[node name="SarcophMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+
+; ========== PYRAMID INTERIOR (CSG-carved chambers) ==========
+; Layout plan (player enters from south door in tier 1, at around z=-10, y=0):
+;   Entrance chamber: center approx (0, 0, -30), 20x14, y=0..6
+;   Main corridor: ramp dropping from entrance south end down to y=-6,
+;                  tunneling east-west underground
+;   Trap room: east of corridor end, at y=-6, 14x14
+;   Treasury: further south, at y=-6, 18x14
+;   Burial chamber: deepest, at y=-12, 16x16
+;   Secret tunnel: narrow shaft climbing from burial chamber up to hatch
+
+; --- Entrance Chamber (CSG-CARVED hieroglyph wall via SUBTRACTION) ---
+; The chamber is a CSGCombiner3D: a big sandstone box with cut-outs.
+[node name="EntranceChamber" type="CSGCombiner3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -30)
+use_collision = true
+collision_layer = 1
+collision_mask = 1
+
+; Solid shell box for the chamber
+[node name="Shell" type="CSGBox3D" parent="EntranceChamber"]
+size = Vector3(24, 6, 18)
+material = ExtResource("3_sandstone")
+
+; Subtract interior hollow (leaves floor, walls, ceiling)
+[node name="Hollow" type="CSGBox3D" parent="EntranceChamber"]
+operation = 2
+size = Vector3(20, 5.4, 14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+
+; Subtract north doorway (to corridor)
+[node name="DoorwayN" type="CSGBox3D" parent="EntranceChamber"]
+operation = 2
+size = Vector3(4, 4, 6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.7, -9)
+
+; Subtract south entrance (from outside)
+[node name="DoorwayS" type="CSGBox3D" parent="EntranceChamber"]
+operation = 2
+size = Vector3(4, 4, 6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.7, 9)
+
+; Hieroglyph recesses on east wall (5 rectangles)
+[node name="GlyphE1" type="CSGBox3D" parent="EntranceChamber"]
+operation = 2
+size = Vector3(0.3, 0.9, 0.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.9, 1, -4)
+[node name="GlyphE2" type="CSGBox3D" parent="EntranceChamber"]
+operation = 2
+size = Vector3(0.3, 0.6, 0.8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.9, 0.5, -2)
+[node name="GlyphE3" type="CSGBox3D" parent="EntranceChamber"]
+operation = 2
+size = Vector3(0.3, 1.0, 0.4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.9, 1.2, 0)
+[node name="GlyphE4" type="CSGBox3D" parent="EntranceChamber"]
+operation = 2
+size = Vector3(0.3, 0.5, 0.7)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.9, 0.5, 2)
+[node name="GlyphE5" type="CSGBox3D" parent="EntranceChamber"]
+operation = 2
+size = Vector3(0.3, 0.8, 0.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.9, 1, 4)
+
+; Hieroglyph recesses on west wall
+[node name="GlyphW1" type="CSGBox3D" parent="EntranceChamber"]
+operation = 2
+size = Vector3(0.3, 0.9, 0.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.9, 1, -4)
+[node name="GlyphW2" type="CSGBox3D" parent="EntranceChamber"]
+operation = 2
+size = Vector3(0.3, 0.6, 0.8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.9, 0.5, -2)
+[node name="GlyphW3" type="CSGBox3D" parent="EntranceChamber"]
+operation = 2
+size = Vector3(0.3, 1.0, 0.4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.9, 1.2, 0)
+[node name="GlyphW4" type="CSGBox3D" parent="EntranceChamber"]
+operation = 2
+size = Vector3(0.3, 0.5, 0.7)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.9, 0.5, 2)
+[node name="GlyphW5" type="CSGBox3D" parent="EntranceChamber"]
+operation = 2
+size = Vector3(0.3, 0.8, 0.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.9, 1, 4)
+
+; --- Guardian statues flanking the north doorway ---
+[node name="GuardianE_Plinth" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="GuardianE_Plinth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.3, -38)
+mesh = SubResource("Mesh_StatuePlinth")
+[node name="Col" type="CollisionShape3D" parent="GuardianE_Plinth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.3, -38)
+shape = SubResource("Shape_StatuePlinth")
+
+[node name="GuardianE_Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="GuardianE_Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 2.1, -38)
+mesh = SubResource("Mesh_StatueBody")
+[node name="Col" type="CollisionShape3D" parent="GuardianE_Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 2.1, -38)
+shape = SubResource("Shape_StatueBody")
+[node name="Head" type="MeshInstance3D" parent="GuardianE_Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 4.2, -38)
+mesh = SubResource("Mesh_StatueHead")
+
+[node name="GuardianW_Plinth" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="GuardianW_Plinth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.3, -38)
+mesh = SubResource("Mesh_StatuePlinth")
+[node name="Col" type="CollisionShape3D" parent="GuardianW_Plinth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.3, -38)
+shape = SubResource("Shape_StatuePlinth")
+
+[node name="GuardianW_Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="GuardianW_Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 2.1, -38)
+mesh = SubResource("Mesh_StatueBody")
+[node name="Col" type="CollisionShape3D" parent="GuardianW_Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 2.1, -38)
+shape = SubResource("Shape_StatueBody")
+[node name="Head" type="MeshInstance3D" parent="GuardianW_Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 4.2, -38)
+mesh = SubResource("Mesh_StatueHead")
+
+; --- Main Corridor (sloped ramp dropping from entrance y=0 down to y=-6 at trap room) ---
+[node name="Corridor" type="CSGCombiner3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3, -46)
+use_collision = true
+collision_layer = 1
+collision_mask = 1
+
+[node name="CorridorShell" type="CSGBox3D" parent="Corridor"]
+size = Vector3(8, 8, 14)
+material = ExtResource("3_sandstone")
+
+[node name="CorridorHollow" type="CSGBox3D" parent="Corridor"]
+operation = 2
+size = Vector3(5, 5, 16)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+
+; Connection doorway back to entrance chamber (north wall of entrance / south of corridor)
+[node name="CorridorDoorN" type="CSGBox3D" parent="Corridor"]
+operation = 2
+size = Vector3(4, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 8)
+
+; Sloped floor (separate static body inside corridor hollow for player traversal)
+[node name="CorridorRampMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.95, 0.3, 0, -0.3, 0.95, 0, -3.5, -46)
+mesh = SubResource("Mesh_CorridorRamp")
+[node name="CorridorRampBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="CorridorRampBody"]
+transform = Transform3D(1, 0, 0, 0, 0.95, 0.3, 0, -0.3, 0.95, 0, -3.5, -46)
+shape = SubResource("Shape_CorridorRamp")
+
+; Torches along corridor walls
+[node name="CorrTorch1_Base" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.2, -1.5, -42)
+mesh = SubResource("Mesh_TorchBase")
+[node name="CorrTorch1_Flame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.2, -0.6, -42)
+mesh = SubResource("Mesh_TorchFlame")
+
+[node name="CorrTorch2_Base" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.2, -2.5, -46)
+mesh = SubResource("Mesh_TorchBase")
+[node name="CorrTorch2_Flame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.2, -1.6, -46)
+mesh = SubResource("Mesh_TorchFlame")
+
+[node name="CorrTorch3_Base" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.2, -3.5, -50)
+mesh = SubResource("Mesh_TorchBase")
+[node name="CorrTorch3_Flame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.2, -2.6, -50)
+mesh = SubResource("Mesh_TorchFlame")
+
+
+; --- Trap Room (CSG chamber with checker floor, spear rack, pendulum) ---
+[node name="TrapRoom" type="CSGCombiner3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3, -62)
+use_collision = true
+collision_layer = 1
+collision_mask = 1
+
+[node name="Shell" type="CSGBox3D" parent="TrapRoom"]
+size = Vector3(18, 8, 18)
+material = ExtResource("3_sandstone")
+
+[node name="Hollow" type="CSGBox3D" parent="TrapRoom"]
+operation = 2
+size = Vector3(14, 6.5, 14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+
+; Corridor entrance (north side)
+[node name="DoorN" type="CSGBox3D" parent="TrapRoom"]
+operation = 2
+size = Vector3(4, 4, 5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 8)
+
+; Doorway to treasury (south)
+[node name="DoorS" type="CSGBox3D" parent="TrapRoom"]
+operation = 2
+size = Vector3(4, 4, 5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, -8)
+
+; Checker floor tiles (7x7 pattern = 49 tiles) — alternating sandstone/red
+[node name="ChkTile_0_0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -6.15, -68)
+mesh = SubResource("Mesh_TileSand")
+[node name="ChkTile_1_0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, -6.15, -68)
+mesh = SubResource("Mesh_TileRed")
+[node name="ChkTile_2_0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, -6.15, -68)
+mesh = SubResource("Mesh_TileSand")
+[node name="ChkTile_3_0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.15, -68)
+mesh = SubResource("Mesh_TileRed")
+[node name="ChkTile_4_0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, -6.15, -68)
+mesh = SubResource("Mesh_TileSand")
+[node name="ChkTile_5_0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, -6.15, -68)
+mesh = SubResource("Mesh_TileRed")
+[node name="ChkTile_6_0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -6.15, -68)
+mesh = SubResource("Mesh_TileSand")
+[node name="ChkTile_0_1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -6.15, -66)
+mesh = SubResource("Mesh_TileRed")
+[node name="ChkTile_1_1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, -6.15, -66)
+mesh = SubResource("Mesh_TileSand")
+[node name="ChkTile_2_1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, -6.15, -66)
+mesh = SubResource("Mesh_TileRed")
+[node name="ChkTile_3_1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.15, -66)
+mesh = SubResource("Mesh_TileSand")
+[node name="ChkTile_4_1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, -6.15, -66)
+mesh = SubResource("Mesh_TileRed")
+[node name="ChkTile_5_1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, -6.15, -66)
+mesh = SubResource("Mesh_TileSand")
+[node name="ChkTile_6_1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -6.15, -66)
+mesh = SubResource("Mesh_TileRed")
+[node name="ChkTile_0_2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -6.15, -64)
+mesh = SubResource("Mesh_TileSand")
+[node name="ChkTile_1_2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, -6.15, -64)
+mesh = SubResource("Mesh_TileRed")
+[node name="ChkTile_2_2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, -6.15, -64)
+mesh = SubResource("Mesh_TileSand")
+[node name="ChkTile_3_2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.15, -64)
+mesh = SubResource("Mesh_TileRed")
+[node name="ChkTile_4_2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, -6.15, -64)
+mesh = SubResource("Mesh_TileSand")
+[node name="ChkTile_5_2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, -6.15, -64)
+mesh = SubResource("Mesh_TileRed")
+[node name="ChkTile_6_2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -6.15, -64)
+mesh = SubResource("Mesh_TileSand")
+[node name="ChkTile_0_3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -6.15, -62)
+mesh = SubResource("Mesh_TileRed")
+[node name="ChkTile_3_3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.15, -62)
+mesh = SubResource("Mesh_TileRed")
+[node name="ChkTile_6_3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -6.15, -62)
+mesh = SubResource("Mesh_TileRed")
+[node name="ChkTile_0_4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -6.15, -60)
+mesh = SubResource("Mesh_TileSand")
+[node name="ChkTile_3_4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.15, -60)
+mesh = SubResource("Mesh_TileSand")
+[node name="ChkTile_6_4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -6.15, -60)
+mesh = SubResource("Mesh_TileSand")
+[node name="ChkTile_0_5" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -6.15, -58)
+mesh = SubResource("Mesh_TileRed")
+[node name="ChkTile_3_5" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.15, -58)
+mesh = SubResource("Mesh_TileRed")
+[node name="ChkTile_6_5" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -6.15, -58)
+mesh = SubResource("Mesh_TileRed")
+[node name="ChkTile_0_6" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -6.15, -56)
+mesh = SubResource("Mesh_TileSand")
+[node name="ChkTile_3_6" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.15, -56)
+mesh = SubResource("Mesh_TileSand")
+[node name="ChkTile_6_6" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -6.15, -56)
+mesh = SubResource("Mesh_TileSand")
+
+; Spear rack (on east wall) — board + 4 spears
+[node name="SpearRackBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="SpearRackBody"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 6.5, -4.5, -62)
+mesh = SubResource("Mesh_RackBoard")
+[node name="Col" type="CollisionShape3D" parent="SpearRackBody"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 6.5, -4.5, -62)
+shape = SubResource("Shape_RackBoard")
+
+[node name="Spear1Shaft" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.7, -5.3, -64)
+mesh = SubResource("Mesh_SpearShaft")
+[node name="Spear1Tip" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.7, -4, -64)
+mesh = SubResource("Mesh_SpearTip")
+[node name="Spear2Shaft" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.7, -5.3, -62.5)
+mesh = SubResource("Mesh_SpearShaft")
+[node name="Spear2Tip" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.7, -4, -62.5)
+mesh = SubResource("Mesh_SpearTip")
+[node name="Spear3Shaft" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.7, -5.3, -61)
+mesh = SubResource("Mesh_SpearShaft")
+[node name="Spear3Tip" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.7, -4, -61)
+mesh = SubResource("Mesh_SpearTip")
+[node name="Spear4Shaft" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.7, -5.3, -59.5)
+mesh = SubResource("Mesh_SpearShaft")
+[node name="Spear4Tip" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.7, -4, -59.5)
+mesh = SubResource("Mesh_SpearTip")
+
+; Chained pendulum (hanging from ceiling center)
+[node name="PendulumChain" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.5, -62)
+mesh = SubResource("Mesh_Chain")
+[node name="PendulumWeight" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.7, -62)
+mesh = SubResource("Mesh_Pendulum")
+
+
+; --- Treasury (south of trap room, at y=-6) ---
+[node name="Treasury" type="CSGCombiner3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3, -80)
+use_collision = true
+collision_layer = 1
+collision_mask = 1
+
+[node name="Shell" type="CSGBox3D" parent="Treasury"]
+size = Vector3(22, 8, 18)
+material = ExtResource("3_sandstone")
+
+[node name="Hollow" type="CSGBox3D" parent="Treasury"]
+operation = 2
+size = Vector3(18, 6.5, 14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+
+; Doorway from trap room (north)
+[node name="DoorN" type="CSGBox3D" parent="Treasury"]
+operation = 2
+size = Vector3(4, 4, 5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 8)
+
+; Doorway down to burial chamber (south, leads to a drop shaft)
+[node name="DoorS" type="CSGBox3D" parent="Treasury"]
+operation = 2
+size = Vector3(4, 4, 5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, -8)
+
+; --- Gold piles in the treasury ---
+[node name="GoldPile1a" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -6, -78)
+mesh = SubResource("Mesh_GoldCoin")
+[node name="GoldPile1b" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, -6, -78.3)
+mesh = SubResource("Mesh_GoldCoin")
+[node name="GoldPile1c" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.7, -5.6, -78.4)
+mesh = SubResource("Mesh_GoldCoin")
+[node name="GoldPile1d" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.1, -5.4, -77.6)
+mesh = SubResource("Mesh_GoldCoin")
+[node name="GoldPile2a" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -6, -78)
+mesh = SubResource("Mesh_GoldCoin")
+[node name="GoldPile2b" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, -6, -77.5)
+mesh = SubResource("Mesh_GoldCoin")
+[node name="GoldPile2c" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -5.6, -77.7)
+mesh = SubResource("Mesh_GoldCoin")
+[node name="GoldPile2d" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.2, -5.4, -78.3)
+mesh = SubResource("Mesh_GoldCoin")
+[node name="GoldPile3a" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -6, -82)
+mesh = SubResource("Mesh_GoldCoin")
+[node name="GoldPile3b" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.6, -5.6, -82.3)
+mesh = SubResource("Mesh_GoldCoin")
+[node name="GoldPile4a" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -6, -82)
+mesh = SubResource("Mesh_GoldCoin")
+[node name="GoldPile4b" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.3, -5.5, -82.2)
+mesh = SubResource("Mesh_GoldCoin")
+
+; --- Sarcophagi (2, with gold cross lids) ---
+[node name="Sarc1Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="Sarc1Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, -5.5, -80)
 mesh = SubResource("Mesh_Sarcoph")
-[node name="SarcophBody" type="StaticBody3D" parent="."]
-collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="SarcophBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+[node name="Col" type="CollisionShape3D" parent="Sarc1Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, -5.5, -80)
 shape = SubResource("Shape_Sarcoph")
-[node name="SarcophTrim" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
-mesh = SubResource("Mesh_SarcophTrim")
+[node name="Lid" type="MeshInstance3D" parent="Sarc1Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, -4.9, -80)
+mesh = SubResource("Mesh_SarcophLid")
+[node name="CrossLong" type="MeshInstance3D" parent="Sarc1Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, -4.8, -80)
+mesh = SubResource("Mesh_CrossLong")
+[node name="CrossShort" type="MeshInstance3D" parent="Sarc1Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, -4.8, -80)
+mesh = SubResource("Mesh_CrossShort")
 
-; Torch sconces (4 corners of chamber)
-[node name="TorchNE_Base" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 1, -7)
+[node name="Sarc2Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="Sarc2Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, -5.5, -80)
+mesh = SubResource("Mesh_Sarcoph")
+[node name="Col" type="CollisionShape3D" parent="Sarc2Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, -5.5, -80)
+shape = SubResource("Shape_Sarcoph")
+[node name="Lid" type="MeshInstance3D" parent="Sarc2Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, -4.9, -80)
+mesh = SubResource("Mesh_SarcophLid")
+[node name="CrossLong" type="MeshInstance3D" parent="Sarc2Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, -4.8, -80)
+mesh = SubResource("Mesh_CrossLong")
+[node name="CrossShort" type="MeshInstance3D" parent="Sarc2Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, -4.8, -80)
+mesh = SubResource("Mesh_CrossShort")
+
+; Throne (central, facing north)
+[node name="ThroneSeatBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="ThroneSeatBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.8, -83)
+mesh = SubResource("Mesh_ThroneSeat")
+[node name="Col" type="CollisionShape3D" parent="ThroneSeatBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.8, -83)
+shape = SubResource("Shape_ThroneSeat")
+[node name="ThroneBackBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="ThroneBackBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.4, -83.8)
+mesh = SubResource("Mesh_ThroneBack")
+[node name="Col" type="CollisionShape3D" parent="ThroneBackBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.4, -83.8)
+shape = SubResource("Shape_ThroneBack")
+
+; Torches
+[node name="TreasTorch1_Base" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, -5.5, -76)
 mesh = SubResource("Mesh_TorchBase")
-[node name="TorchNE_Flame" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 1.6, -7)
+[node name="TreasTorch1_Flame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, -4.6, -76)
+mesh = SubResource("Mesh_TorchFlame")
+[node name="TreasTorch2_Base" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, -5.5, -76)
+mesh = SubResource("Mesh_TorchBase")
+[node name="TreasTorch2_Flame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, -4.6, -76)
+mesh = SubResource("Mesh_TorchFlame")
+[node name="TreasTorch3_Base" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, -5.5, -84)
+mesh = SubResource("Mesh_TorchBase")
+[node name="TreasTorch3_Flame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, -4.6, -84)
+mesh = SubResource("Mesh_TorchFlame")
+[node name="TreasTorch4_Base" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, -5.5, -84)
+mesh = SubResource("Mesh_TorchBase")
+[node name="TreasTorch4_Flame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, -4.6, -84)
 mesh = SubResource("Mesh_TorchFlame")
 
-[node name="TorchNW_Base" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 1, -7)
-mesh = SubResource("Mesh_TorchBase")
-[node name="TorchNW_Flame" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 1.6, -7)
-mesh = SubResource("Mesh_TorchFlame")
-
-[node name="TorchSE_Base" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 1, 7)
-mesh = SubResource("Mesh_TorchBase")
-[node name="TorchSE_Flame" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 1.6, 7)
-mesh = SubResource("Mesh_TorchFlame")
-
-[node name="TorchSW_Base" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 1, 7)
-mesh = SubResource("Mesh_TorchBase")
-[node name="TorchSW_Flame" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 1.6, 7)
-mesh = SubResource("Mesh_TorchFlame")
-
-; --- Hidden treasure vault (branch west of chamber) ---
-[node name="VaultFloorMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 0.1, 4)
-mesh = SubResource("Mesh_VaultFloor")
-
-[node name="VaultFloorBody" type="StaticBody3D" parent="."]
+; --- Burial Chamber (deepest room, at y=-12) ---
+; Drop shaft from treasury south door drops you here
+[node name="BurialChamber" type="CSGCombiner3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -10, -98)
+use_collision = true
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="VaultFloorBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 0.1, 4)
-shape = SubResource("Shape_VaultFloor")
+collision_mask = 1
 
-; --- Ruin courtyard (west side) - 8 sandstone columns in a circle ---
-; Circle radius ~8 centered at (-42, 0, -18)
-[node name="Column1Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34, 3, -18)
+[node name="Shell" type="CSGBox3D" parent="BurialChamber"]
+size = Vector3(20, 8, 20)
+material = ExtResource("5_stone_dark")
+
+[node name="Hollow" type="CSGBox3D" parent="BurialChamber"]
+operation = 2
+size = Vector3(16, 6.5, 16)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+
+; Drop shaft entrance (on north top)
+[node name="DropShaft" type="CSGBox3D" parent="BurialChamber"]
+operation = 2
+size = Vector3(4, 6, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 9)
+
+; Secret tunnel shaft going UP from ceiling (to pyramid summit)
+[node name="SecretShaft" type="CSGBox3D" parent="BurialChamber"]
+operation = 2
+size = Vector3(2.5, 6, 2.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 2, -7)
+
+; Drop shaft collider - hollow sandstone tube from y=-6 (treasury floor) down to y=-12
+; Via CSG combiner
+[node name="DropTube" type="CSGCombiner3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -7, -91)
+use_collision = true
+collision_layer = 1
+collision_mask = 1
+
+[node name="Shell" type="CSGBox3D" parent="DropTube"]
+size = Vector3(6, 6, 4)
+material = ExtResource("5_stone_dark")
+
+[node name="Hollow" type="CSGBox3D" parent="DropTube"]
+operation = 2
+size = Vector3(3.5, 6.2, 3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+; Central sarcophagus (with star reward)
+[node name="BurialSarcBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="BurialSarcBody"]
+transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, 0, -11.5, -98)
+mesh = SubResource("Mesh_Sarcoph")
+[node name="Col" type="CollisionShape3D" parent="BurialSarcBody"]
+transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, 0, -11.5, -98)
+shape = SubResource("Shape_Sarcoph")
+[node name="Lid" type="MeshInstance3D" parent="BurialSarcBody"]
+transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, 0, -10.7, -98)
+mesh = SubResource("Mesh_SarcophLid")
+[node name="CrossLong" type="MeshInstance3D" parent="BurialSarcBody"]
+transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, 0, -10.6, -98)
+mesh = SubResource("Mesh_CrossLong")
+[node name="CrossShort" type="MeshInstance3D" parent="BurialSarcBody"]
+transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, 0, -10.6, -98)
+mesh = SubResource("Mesh_CrossShort")
+
+; Canopic jars (4 corners)
+[node name="CanopicNEBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="CanopicNEBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -11.4, -92)
+mesh = SubResource("Mesh_Canopic")
+[node name="Col" type="CollisionShape3D" parent="CanopicNEBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -11.4, -92)
+shape = SubResource("Shape_Canopic")
+[node name="Lid" type="MeshInstance3D" parent="CanopicNEBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -10.6, -92)
+mesh = SubResource("Mesh_CanopicLid")
+
+[node name="CanopicNWBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="CanopicNWBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -11.4, -92)
+mesh = SubResource("Mesh_Canopic")
+[node name="Col" type="CollisionShape3D" parent="CanopicNWBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -11.4, -92)
+shape = SubResource("Shape_Canopic")
+[node name="Lid" type="MeshInstance3D" parent="CanopicNWBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -10.6, -92)
+mesh = SubResource("Mesh_CanopicLid")
+
+[node name="CanopicSEBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="CanopicSEBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -11.4, -104)
+mesh = SubResource("Mesh_Canopic")
+[node name="Col" type="CollisionShape3D" parent="CanopicSEBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -11.4, -104)
+shape = SubResource("Shape_Canopic")
+[node name="Lid" type="MeshInstance3D" parent="CanopicSEBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -10.6, -104)
+mesh = SubResource("Mesh_CanopicLid")
+
+[node name="CanopicSWBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="CanopicSWBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -11.4, -104)
+mesh = SubResource("Mesh_Canopic")
+[node name="Col" type="CollisionShape3D" parent="CanopicSWBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -11.4, -104)
+shape = SubResource("Shape_Canopic")
+[node name="Lid" type="MeshInstance3D" parent="CanopicSWBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -10.6, -104)
+mesh = SubResource("Mesh_CanopicLid")
+
+; Cyan crystal clusters (emissive light)
+[node name="Crystal1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -10, -98)
+mesh = SubResource("Mesh_Crystal")
+[node name="Crystal2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.8, 0.3, 0, -0.3, 0.8, 0, 0, 0, 1, -5.3, -10.2, -98.5)
+mesh = SubResource("Mesh_Crystal")
+[node name="Crystal3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -10, -98)
+mesh = SubResource("Mesh_Crystal")
+[node name="Crystal4" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.7, -0.3, 0, 0.3, 0.7, 0, 0, 0, 1, 6.5, -10.2, -97.6)
+mesh = SubResource("Mesh_Crystal")
+[node name="Crystal5" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -10, -105)
+mesh = SubResource("Mesh_Crystal")
+[node name="Crystal6" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 0.7, -10.3, -104.6)
+mesh = SubResource("Mesh_Crystal")
+
+; Crystal point light in burial chamber
+[node name="CrystalLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -9, -98)
+light_color = Color(0.5, 0.9, 1.0, 1)
+light_energy = 2.0
+omni_range = 18
+
+; --- Secret tunnel (vertical shaft from burial chamber up through pyramid to hatch) ---
+; Stacked CSG hollow segments climbing y=-10 to y=24 at (-7, *, -105)
+[node name="SecretTunnel" type="CSGCombiner3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 7, -30)
+use_collision = true
+collision_layer = 1
+collision_mask = 1
+
+[node name="Shell" type="CSGBox3D" parent="SecretTunnel"]
+size = Vector3(4, 34, 4)
+material = ExtResource("3_sandstone")
+
+[node name="Hollow" type="CSGBox3D" parent="SecretTunnel"]
+operation = 2
+size = Vector3(2.2, 34.2, 2.2)
+
+; Ladder-steps inside the secret tunnel (small box rungs the player can climb)
+[node name="Rung1" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.9, 0, 0, 0, 0.2, 0, 0, 0, 0.9, 2, -8, -30)
+mesh = SubResource("Mesh_TileSand")
+[node name="Rung1Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Rung1Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, -8, -30)
+shape = SubResource("Shape_FallenBlock")
+[node name="Rung2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.9, 0, 0, 0, 0.2, 0, 0, 0, 0.9, 2, -4, -30)
+mesh = SubResource("Mesh_TileSand")
+[node name="Rung2Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Rung2Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, -4, -30)
+shape = SubResource("Shape_FallenBlock")
+[node name="Rung3" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.9, 0, 0, 0, 0.2, 0, 0, 0, 0.9, 2, 0, -30)
+mesh = SubResource("Mesh_TileSand")
+[node name="Rung3Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Rung3Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, -30)
+shape = SubResource("Shape_FallenBlock")
+[node name="Rung4" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.9, 0, 0, 0, 0.2, 0, 0, 0, 0.9, 2, 4, -30)
+mesh = SubResource("Mesh_TileSand")
+[node name="Rung4Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Rung4Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 4, -30)
+shape = SubResource("Shape_FallenBlock")
+[node name="Rung5" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.9, 0, 0, 0, 0.2, 0, 0, 0, 0.9, 2, 8, -30)
+mesh = SubResource("Mesh_TileSand")
+[node name="Rung5Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Rung5Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 8, -30)
+shape = SubResource("Shape_FallenBlock")
+[node name="Rung6" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.9, 0, 0, 0, 0.2, 0, 0, 0, 0.9, 2, 12, -30)
+mesh = SubResource("Mesh_TileSand")
+[node name="Rung6Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Rung6Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 12, -30)
+shape = SubResource("Shape_FallenBlock")
+[node name="Rung7" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.9, 0, 0, 0, 0.2, 0, 0, 0, 0.9, 2, 16, -30)
+mesh = SubResource("Mesh_TileSand")
+[node name="Rung7Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Rung7Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 16, -30)
+shape = SubResource("Shape_FallenBlock")
+[node name="Rung8" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.9, 0, 0, 0, 0.2, 0, 0, 0, 0.9, 2, 20, -30)
+mesh = SubResource("Mesh_TileSand")
+[node name="Rung8Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Col" type="CollisionShape3D" parent="Rung8Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 20, -30)
+shape = SubResource("Shape_FallenBlock")
+
+
+; ========== SPHINX-ANALOG (seated guardian, east of pyramid) ==========
+; Reclining body + chest + paws + sphere head
+[node name="SphinxBodyBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="SphinxBodyBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 2.5, -18)
+mesh = SubResource("Mesh_SphinxBody")
+[node name="Col" type="CollisionShape3D" parent="SphinxBodyBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 2.5, -18)
+shape = SubResource("Shape_SphinxBody")
+
+[node name="SphinxChestBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="SphinxChestBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 2.5, -18)
+mesh = SubResource("Mesh_SphinxChest")
+[node name="Col" type="CollisionShape3D" parent="SphinxChestBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 2.5, -18)
+shape = SubResource("Shape_SphinxChest")
+
+[node name="SphinxPaw1Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="SphinxPaw1Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 1, -16)
+mesh = SubResource("Mesh_SphinxPaw")
+[node name="Col" type="CollisionShape3D" parent="SphinxPaw1Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 1, -16)
+shape = SubResource("Shape_SphinxPaw")
+
+[node name="SphinxPaw2Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="SphinxPaw2Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 1, -20)
+mesh = SubResource("Mesh_SphinxPaw")
+[node name="Col" type="CollisionShape3D" parent="SphinxPaw2Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 1, -20)
+shape = SubResource("Shape_SphinxPaw")
+
+[node name="SphinxHeadBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="SphinxHeadBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 7, -18)
+mesh = SubResource("Mesh_SphinxHead")
+[node name="Col" type="CollisionShape3D" parent="SphinxHeadBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 7, -18)
+shape = SubResource("Shape_SphinxHead")
+
+; ========== OBELISK PLAZA (south of pyramid entrance) ==========
+; 3 obelisks + central altar. Obelisks are CSGCombiner3D with recessed glyphs.
+[node name="Obelisk1" type="CSGCombiner3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 6, 18)
+use_collision = true
+collision_layer = 1
+collision_mask = 1
+
+[node name="Core" type="CSGBox3D" parent="Obelisk1"]
+size = Vector3(1.6, 12, 1.6)
+material = ExtResource("3_sandstone")
+
+[node name="Glyph1" type="CSGBox3D" parent="Obelisk1"]
+operation = 2
+size = Vector3(0.5, 0.8, 0.3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0.8)
+[node name="Glyph2" type="CSGBox3D" parent="Obelisk1"]
+operation = 2
+size = Vector3(0.7, 0.5, 0.3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0.8)
+[node name="Glyph3" type="CSGBox3D" parent="Obelisk1"]
+operation = 2
+size = Vector3(0.4, 1, 0.3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.5, 0.8)
+[node name="Glyph4" type="CSGBox3D" parent="Obelisk1"]
+operation = 2
+size = Vector3(0.3, 0.8, 0.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 2.5, 0)
+[node name="Glyph5" type="CSGBox3D" parent="Obelisk1"]
+operation = 2
+size = Vector3(0.3, 0.5, 0.6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0, 0)
+[node name="Glyph6" type="CSGBox3D" parent="Obelisk1"]
+operation = 2
+size = Vector3(0.3, 1.0, 0.4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, -2.5, 0)
+
+[node name="Obelisk1Top" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 12.4, 18)
+mesh = SubResource("Mesh_ObTop")
+
+[node name="Obelisk2" type="CSGCombiner3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 6, 18)
+use_collision = true
+collision_layer = 1
+collision_mask = 1
+
+[node name="Core" type="CSGBox3D" parent="Obelisk2"]
+size = Vector3(1.6, 12, 1.6)
+material = ExtResource("3_sandstone")
+[node name="Glyph1" type="CSGBox3D" parent="Obelisk2"]
+operation = 2
+size = Vector3(0.3, 0.9, 0.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 3, 0)
+[node name="Glyph2" type="CSGBox3D" parent="Obelisk2"]
+operation = 2
+size = Vector3(0.3, 0.4, 0.7)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 1, 0)
+[node name="Glyph3" type="CSGBox3D" parent="Obelisk2"]
+operation = 2
+size = Vector3(0.3, 0.6, 0.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, -1.5, 0)
+[node name="Glyph4" type="CSGBox3D" parent="Obelisk2"]
+operation = 2
+size = Vector3(0.5, 0.9, 0.3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0.8)
+[node name="Glyph5" type="CSGBox3D" parent="Obelisk2"]
+operation = 2
+size = Vector3(0.7, 0.5, 0.3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.8)
+
+[node name="Obelisk2Top" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 12.4, 18)
+mesh = SubResource("Mesh_ObTop")
+
+[node name="Obelisk3" type="CSGCombiner3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, 4)
+use_collision = true
+collision_layer = 1
+collision_mask = 1
+
+[node name="Core" type="CSGBox3D" parent="Obelisk3"]
+size = Vector3(1.6, 12, 1.6)
+material = ExtResource("3_sandstone")
+[node name="Glyph1" type="CSGBox3D" parent="Obelisk3"]
+operation = 2
+size = Vector3(0.3, 0.8, 0.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 2.5, 0)
+[node name="Glyph2" type="CSGBox3D" parent="Obelisk3"]
+operation = 2
+size = Vector3(0.3, 1.0, 0.4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0, 0)
+[node name="Glyph3" type="CSGBox3D" parent="Obelisk3"]
+operation = 2
+size = Vector3(0.3, 0.6, 0.6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, -2.5, 0)
+[node name="Glyph4" type="CSGBox3D" parent="Obelisk3"]
+operation = 2
+size = Vector3(0.5, 0.7, 0.3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0.8)
+[node name="Glyph5" type="CSGBox3D" parent="Obelisk3"]
+operation = 2
+size = Vector3(0.6, 0.9, 0.3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0.8)
+
+[node name="Obelisk3Top" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12.4, 4)
+mesh = SubResource("Mesh_ObTop")
+
+; Plaza altar (center of obelisks)
+[node name="PlazaAltarBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="PlazaAltarBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 14)
+mesh = SubResource("Mesh_PlazaAltar")
+[node name="Col" type="CollisionShape3D" parent="PlazaAltarBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 14)
+shape = SubResource("Shape_PlazaAltar")
+
+
+; ========== RUIN COMPLEX (3 buildings, west of pyramid) ==========
+
+; --- 1) Temple of Thoth (8 columns + floating-star altar) ---
+[node name="ThothCol1Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 3, -4)
 mesh = SubResource("Mesh_Column")
-[node name="Column1Body" type="StaticBody3D" parent="."]
+[node name="ThothCol1Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="Column1Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34, 3, -18)
+[node name="Col" type="CollisionShape3D" parent="ThothCol1Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 3, -4)
 shape = SubResource("Shape_Column")
 
-[node name="Column2Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36, 3, -11.4)
+[node name="ThothCol2Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38, 3, -8)
 mesh = SubResource("Mesh_Column")
-[node name="Column2Body" type="StaticBody3D" parent="."]
+[node name="ThothCol2Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="Column2Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36, 3, -11.4)
+[node name="Col" type="CollisionShape3D" parent="ThothCol2Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38, 3, -8)
 shape = SubResource("Shape_Column")
 
-[node name="Column3Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 3, -10)
+[node name="ThothCol3Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 3, -14)
 mesh = SubResource("Mesh_Column")
-[node name="Column3Body" type="StaticBody3D" parent="."]
+[node name="ThothCol3Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="Column3Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 3, -10)
+[node name="Col" type="CollisionShape3D" parent="ThothCol3Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 3, -14)
 shape = SubResource("Shape_Column")
 
-[node name="Column4Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48, 3, -11.4)
+[node name="ThothCol4Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -46, 3, -12)
 mesh = SubResource("Mesh_Column")
-[node name="Column4Body" type="StaticBody3D" parent="."]
+[node name="ThothCol4Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="Column4Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48, 3, -11.4)
+[node name="Col" type="CollisionShape3D" parent="ThothCol4Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -46, 3, -12)
 shape = SubResource("Shape_Column")
 
-[node name="Column5Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 3, -18)
+[node name="ThothCol5Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -46, 3, -6)
 mesh = SubResource("Mesh_Column")
-[node name="Column5Body" type="StaticBody3D" parent="."]
+[node name="ThothCol5Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="Column5Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 3, -18)
+[node name="Col" type="CollisionShape3D" parent="ThothCol5Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -46, 3, -6)
 shape = SubResource("Shape_Column")
 
-[node name="Column6Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48, 3, -24.6)
+[node name="ThothCol6Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38, 3, -12)
 mesh = SubResource("Mesh_Column")
-[node name="Column6Body" type="StaticBody3D" parent="."]
+[node name="ThothCol6Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="Column6Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48, 3, -24.6)
+[node name="Col" type="CollisionShape3D" parent="ThothCol6Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38, 3, -12)
 shape = SubResource("Shape_Column")
 
-[node name="Column7Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 3, -26)
-mesh = SubResource("Mesh_Column")
-[node name="Column7Body" type="StaticBody3D" parent="."]
+[node name="ThothCol7Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 3, -6)
+mesh = SubResource("Mesh_ColumnBroken")
+[node name="ThothCol7Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="Column7Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 3, -26)
-shape = SubResource("Shape_Column")
+[node name="Col" type="CollisionShape3D" parent="ThothCol7Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 1.2, -6)
+shape = SubResource("Shape_ColumnBroken")
 
-[node name="Column8Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36, 3, -24.6)
-mesh = SubResource("Mesh_Column")
-[node name="Column8Body" type="StaticBody3D" parent="."]
+[node name="ThothCol8Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 1.2, -10)
+mesh = SubResource("Mesh_ColumnBroken")
+[node name="ThothCol8Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="Column8Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36, 3, -24.6)
-shape = SubResource("Shape_Column")
+[node name="Col" type="CollisionShape3D" parent="ThothCol8Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 1.2, -10)
+shape = SubResource("Shape_ColumnBroken")
 
-; Partial roof beams spanning between columns (N-S axis)
-[node name="RoofBeam1" type="MeshInstance3D" parent="."]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -42, 6.3, -13.7)
+; Thoth roof beams (partial)
+[node name="ThothBeam1" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -42, 6.3, -7.5)
 mesh = SubResource("Mesh_RoofBeam")
-[node name="RoofBeam1Body" type="StaticBody3D" parent="."]
+[node name="ThothBeam1Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="RoofBeam1Body"]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -42, 6.3, -13.7)
+[node name="Col" type="CollisionShape3D" parent="ThothBeam1Body"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -42, 6.3, -7.5)
 shape = SubResource("Shape_RoofBeam")
 
-[node name="RoofBeam2" type="MeshInstance3D" parent="."]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -42, 6.3, -22.3)
+[node name="ThothBeam2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -42, 6.3, -11)
 mesh = SubResource("Mesh_RoofBeam")
-[node name="RoofBeam2Body" type="StaticBody3D" parent="."]
+[node name="ThothBeam2Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="RoofBeam2Body"]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -42, 6.3, -22.3)
+[node name="Col" type="CollisionShape3D" parent="ThothBeam2Body"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -42, 6.3, -11)
 shape = SubResource("Shape_RoofBeam")
 
-; Broken statues (headless torsos around courtyard)
-[node name="Statue1Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, 1, -15)
-mesh = SubResource("Mesh_Statue")
-[node name="Statue1Body" type="StaticBody3D" parent="."]
+; Central altar with floating star pedestal
+[node name="ThothAltarBody" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="Statue1Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, 1, -15)
-shape = SubResource("Shape_Statue")
+[node name="Mesh" type="MeshInstance3D" parent="ThothAltarBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 0.6, -9)
+mesh = SubResource("Mesh_PlazaAltar")
+[node name="Col" type="CollisionShape3D" parent="ThothAltarBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 0.6, -9)
+shape = SubResource("Shape_PlazaAltar")
 
-[node name="Statue2Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.7, 0, 0.7, 0, 1, 0, -0.7, 0, 0.7, -45, 1, -20)
-mesh = SubResource("Mesh_Statue")
-[node name="Statue2Body" type="StaticBody3D" parent="."]
+; --- 2) Collapsed library (south-west, fallen columns & blocks & scrolls) ---
+; Horizontal fallen columns (lying on side)
+[node name="LibFallen1Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -36, 0.9, -26)
+mesh = SubResource("Mesh_ColumnFallen")
+[node name="LibFallen1Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="Statue2Body"]
-transform = Transform3D(0.7, 0, 0.7, 0, 1, 0, -0.7, 0, 0.7, -45, 1, -20)
-shape = SubResource("Shape_Statue")
+[node name="Col" type="CollisionShape3D" parent="LibFallen1Body"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -36, 0.9, -26)
+shape = SubResource("Shape_ColumnFallen")
 
-[node name="Statue3Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -39, 1, -22)
-mesh = SubResource("Mesh_Statue")
-[node name="Statue3Body" type="StaticBody3D" parent="."]
+[node name="LibFallen2Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -36, 0.9, -30)
+mesh = SubResource("Mesh_ColumnFallen")
+[node name="LibFallen2Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="Statue3Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -39, 1, -22)
-shape = SubResource("Shape_Statue")
+[node name="Col" type="CollisionShape3D" parent="LibFallen2Body"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -36, 0.9, -30)
+shape = SubResource("Shape_ColumnFallen")
 
-; Central altar
-[node name="AltarMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 0.6, -18)
-mesh = SubResource("Mesh_Altar")
-[node name="AltarBody" type="StaticBody3D" parent="."]
+[node name="LibFallen3Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.71, 0, 0.71, 0, 1, 0, -0.71, 0, 0.71, -44, 0.9, -30)
+mesh = SubResource("Mesh_ColumnFallen")
+[node name="LibFallen3Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="AltarBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 0.6, -18)
-shape = SubResource("Shape_Altar")
-[node name="AltarGem" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 1.5, -18)
-mesh = SubResource("Mesh_AltarGem")
+[node name="Col" type="CollisionShape3D" parent="LibFallen3Body"]
+transform = Transform3D(0.71, 0, 0.71, 0, 1, 0, -0.71, 0, 0.71, -44, 0.9, -30)
+shape = SubResource("Shape_ColumnFallen")
 
-; --- Oasis (north-west, healing vibe) ---
+; Fallen blocks
+[node name="LibBlock1Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="LibBlock1Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38, 0.5, -25)
+mesh = SubResource("Mesh_FallenBlock")
+[node name="Col" type="CollisionShape3D" parent="LibBlock1Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38, 0.5, -25)
+shape = SubResource("Shape_FallenBlock")
+
+[node name="LibBlock2Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="LibBlock2Body"]
+transform = Transform3D(0.9, 0, 0, 0, 1, 0, 0, 0, 0.9, -40, 0.5, -27)
+mesh = SubResource("Mesh_FallenBlock")
+[node name="Col" type="CollisionShape3D" parent="LibBlock2Body"]
+transform = Transform3D(0.9, 0, 0, 0, 1, 0, 0, 0, 0.9, -40, 0.5, -27)
+shape = SubResource("Shape_FallenBlock")
+
+[node name="LibBlock3Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="LibBlock3Body"]
+transform = Transform3D(0.71, 0, 0.71, 0, 1, 0, -0.71, 0, 0.71, -42, 0.5, -28)
+mesh = SubResource("Mesh_FallenBlock")
+[node name="Col" type="CollisionShape3D" parent="LibBlock3Body"]
+transform = Transform3D(0.71, 0, 0.71, 0, 1, 0, -0.71, 0, 0.71, -42, 0.5, -28)
+shape = SubResource("Shape_FallenBlock")
+
+[node name="LibBlock4Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="LibBlock4Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -45, 1.5, -25)
+mesh = SubResource("Mesh_FallenBlock")
+[node name="Col" type="CollisionShape3D" parent="LibBlock4Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -45, 1.5, -25)
+shape = SubResource("Shape_FallenBlock")
+
+; Scattered scrolls
+[node name="Scroll1" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -37, 0.2, -24)
+mesh = SubResource("Mesh_Scroll")
+[node name="Scroll2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -39, 0.2, -29)
+mesh = SubResource("Mesh_Scroll")
+[node name="Scroll3" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -41, 0.2, -26)
+mesh = SubResource("Mesh_Scroll")
+[node name="Scroll4" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.71, 0, 0.71, 0, 1, 0, -0.71, 0, 0.71, -43, 0.2, -31)
+mesh = SubResource("Mesh_Scroll")
+[node name="Scroll5" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -46, 0.2, -28)
+mesh = SubResource("Mesh_Scroll")
+
+; --- 3) Shrine to Bastet (small enclosed room, CSG walls with window) ---
+[node name="BastetShrine" type="CSGCombiner3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -60, 2, -10)
+use_collision = true
+collision_layer = 1
+collision_mask = 1
+
+[node name="Shell" type="CSGBox3D" parent="BastetShrine"]
+size = Vector3(8, 4, 8)
+material = ExtResource("3_sandstone")
+
+[node name="Hollow" type="CSGBox3D" parent="BastetShrine"]
+operation = 2
+size = Vector3(6, 3.5, 6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+
+; Front door (east)
+[node name="Door" type="CSGBox3D" parent="BastetShrine"]
+operation = 2
+size = Vector3(5, 3, 2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, -0.3, 0)
+
+; Two rear windows (west wall)
+[node name="Win1" type="CSGBox3D" parent="BastetShrine"]
+operation = 2
+size = Vector3(3, 1, 1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.5, 0.8, -2)
+[node name="Win2" type="CSGBox3D" parent="BastetShrine"]
+operation = 2
+size = Vector3(3, 1, 1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.5, 0.8, 2)
+
+; Cat idol inside
+[node name="CatBody" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -60, 1.4, -10)
+mesh = SubResource("Mesh_CatBody")
+[node name="CatHead" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -60, 2.6, -10)
+mesh = SubResource("Mesh_CatHead")
+[node name="CatEarL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -60.25, 3.2, -10)
+mesh = SubResource("Mesh_CatEar")
+[node name="CatEarR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -59.75, 3.2, -10)
+mesh = SubResource("Mesh_CatEar")
+
+
+; ========== OASIS (north-west, with pond, palms, tent, camel) ==========
 [node name="OasisPond" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, 0.1, 34)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -44, 0.1, 40)
 mesh = SubResource("Mesh_Pond")
 
 [node name="Palm1Trunk" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -45, 2.2, 30)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 2.4, 36)
 mesh = SubResource("Mesh_PalmTrunk")
 [node name="Palm1TrunkBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 [node name="Col" type="CollisionShape3D" parent="Palm1TrunkBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -45, 2.2, 30)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 2.4, 36)
 shape = SubResource("Shape_PalmTrunk")
 [node name="Palm1Fronds" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -45, 4.7, 30)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 5.2, 36)
 mesh = SubResource("Mesh_PalmFronds")
 
 [node name="Palm2Trunk" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 2.2, 38)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38, 2.4, 44)
 mesh = SubResource("Mesh_PalmTrunk")
 [node name="Palm2TrunkBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 [node name="Col" type="CollisionShape3D" parent="Palm2TrunkBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 2.2, 38)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38, 2.4, 44)
 shape = SubResource("Shape_PalmTrunk")
 [node name="Palm2Fronds" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 4.7, 38)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38, 5.2, 44)
 mesh = SubResource("Mesh_PalmFronds")
 
 [node name="Palm3Trunk" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -46, 2.2, 40)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -52, 2.4, 46)
 mesh = SubResource("Mesh_PalmTrunk")
 [node name="Palm3TrunkBody" type="StaticBody3D" parent="."]
 collision_layer = 1
 [node name="Col" type="CollisionShape3D" parent="Palm3TrunkBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -46, 2.2, 40)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -52, 2.4, 46)
 shape = SubResource("Shape_PalmTrunk")
 [node name="Palm3Fronds" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -46, 4.7, 40)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -52, 5.2, 46)
 mesh = SubResource("Mesh_PalmFronds")
 
-; --- Obelisk (east landmark, climb for vista) ---
-[node name="ObeliskMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 6, 8)
-mesh = SubResource("Mesh_Obelisk")
-
-[node name="ObeliskBody" type="StaticBody3D" parent="."]
+[node name="Palm4Trunk" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36, 2.4, 34)
+mesh = SubResource("Mesh_PalmTrunk")
+[node name="Palm4TrunkBody" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="ObeliskBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 6, 8)
-shape = SubResource("Shape_Obelisk")
+[node name="Col" type="CollisionShape3D" parent="Palm4TrunkBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36, 2.4, 34)
+shape = SubResource("Shape_PalmTrunk")
+[node name="Palm4Fronds" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36, 5.2, 34)
+mesh = SubResource("Mesh_PalmFronds")
 
-; --- Scarab shrine (south side easter egg) ---
-[node name="ShrineBaseMesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0.4, 40)
-mesh = SubResource("Mesh_ShrineBase")
-[node name="ShrineBaseBody" type="StaticBody3D" parent="."]
+; Tent (fabric_red roof over 4 wood poles)
+[node name="TentPole1Body" type="StaticBody3D" parent="."]
 collision_layer = 1
-[node name="Col" type="CollisionShape3D" parent="ShrineBaseBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0.4, 40)
-shape = SubResource("Shape_ShrineBase")
-[node name="ShrineScarab" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 1.3, 40)
-mesh = SubResource("Mesh_Scarab")
+[node name="Mesh" type="MeshInstance3D" parent="TentPole1Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -56, 1.2, 30)
+mesh = SubResource("Mesh_TentPoleCyl")
+[node name="Col" type="CollisionShape3D" parent="TentPole1Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -56, 1.2, 30)
+shape = SubResource("Shape_TentPole")
+[node name="TentPole2Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="TentPole2Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -52, 1.2, 30)
+mesh = SubResource("Mesh_TentPoleCyl")
+[node name="Col" type="CollisionShape3D" parent="TentPole2Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -52, 1.2, 30)
+shape = SubResource("Shape_TentPole")
+[node name="TentPole3Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="TentPole3Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -56, 1.2, 33)
+mesh = SubResource("Mesh_TentPoleCyl")
+[node name="Col" type="CollisionShape3D" parent="TentPole3Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -56, 1.2, 33)
+shape = SubResource("Shape_TentPole")
+[node name="TentPole4Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="TentPole4Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -52, 1.2, 33)
+mesh = SubResource("Mesh_TentPoleCyl")
+[node name="Col" type="CollisionShape3D" parent="TentPole4Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -52, 1.2, 33)
+shape = SubResource("Shape_TentPole")
 
-; --- Chameleon cave (behind ruins, west far corner) ---
-[node name="ChamSpot1" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -58, 1.2, -30)
-mesh = SubResource("Mesh_ChamSpot")
-[node name="ChamSpot2" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -60, 1.6, -32)
-mesh = SubResource("Mesh_ChamSpot")
-[node name="ChamSpot3" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -56, 0.9, -34)
-mesh = SubResource("Mesh_ChamSpot")
-[node name="ChamSpot4" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -62, 1.0, -28)
-mesh = SubResource("Mesh_ChamSpot")
+; Peaked roof (two sloped fabric panels)
+[node name="TentRoofA" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.87, 0.5, 0, -0.5, 0.87, -55, 2.8, 31.5)
+mesh = SubResource("Mesh_TentRoofA")
+[node name="TentRoofB" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.87, -0.5, 0, 0.5, 0.87, -53, 2.8, 31.5)
+mesh = SubResource("Mesh_TentRoofA")
 
-; --- Spawn ---
-[node name="SpawnArea" type="Area3D" parent="."]
-collision_layer = 0
-collision_mask = 0
-metadata/spawn_point = Vector3(0, 1, 22)
+; Camel-analog (body + hump + head + 4 legs)
+[node name="CamelBodyBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="CamelBodyBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, 1.7, 46)
+mesh = SubResource("Mesh_CamelBody")
+[node name="Col" type="CollisionShape3D" parent="CamelBodyBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, 1.7, 46)
+shape = SubResource("Shape_CamelBody")
+[node name="Hump" type="MeshInstance3D" parent="CamelBodyBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, 2.4, 46)
+mesh = SubResource("Mesh_CamelHump")
+[node name="Neck" type="MeshInstance3D" parent="CamelBodyBody"]
+transform = Transform3D(0.96, 0.29, 0, -0.29, 0.96, 0, 0, 0, 1, -28.8, 2.5, 46)
+mesh = SubResource("Mesh_CamelNeck")
+[node name="Head" type="MeshInstance3D" parent="CamelBodyBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28.2, 3.3, 46)
+mesh = SubResource("Mesh_CamelHead")
+[node name="LegFL" type="MeshInstance3D" parent="CamelBodyBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29, 0.6, 46.4)
+mesh = SubResource("Mesh_CamelLeg")
+[node name="LegFR" type="MeshInstance3D" parent="CamelBodyBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29, 0.6, 45.6)
+mesh = SubResource("Mesh_CamelLeg")
+[node name="LegBL" type="MeshInstance3D" parent="CamelBodyBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -31, 0.6, 46.4)
+mesh = SubResource("Mesh_CamelLeg")
+[node name="LegBR" type="MeshInstance3D" parent="CamelBodyBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -31, 0.6, 45.6)
+mesh = SubResource("Mesh_CamelLeg")
 
-; --- Enemies ---
-[node name="Goomba_D1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1, 22)
+; ========== TILTED BROKEN TOWER (far north-east, 2 stories, leaning) ==========
+[node name="TowerBaseBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="TowerBaseBody"]
+transform = Transform3D(0.98, 0, 0.17, 0, 1, 0, -0.17, 0, 0.98, 54, 2, -48)
+mesh = SubResource("Mesh_TowerStory")
+[node name="Col" type="CollisionShape3D" parent="TowerBaseBody"]
+transform = Transform3D(0.98, 0, 0.17, 0, 1, 0, -0.17, 0, 0.98, 54, 2, -48)
+shape = SubResource("Shape_TowerStory")
+
+[node name="TowerSecondBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="TowerSecondBody"]
+transform = Transform3D(0.98, 0, 0.17, 0, 1, 0, -0.17, 0, 0.98, 55, 6, -48)
+mesh = SubResource("Mesh_TowerStory")
+[node name="Col" type="CollisionShape3D" parent="TowerSecondBody"]
+transform = Transform3D(0.98, 0, 0.17, 0, 1, 0, -0.17, 0, 0.98, 55, 6, -48)
+shape = SubResource("Shape_TowerStory")
+
+; Collapsed top (broken column on top)
+[node name="TowerTopBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="TowerTopBody"]
+transform = Transform3D(0.98, 0, 0.17, 0, 1, 0, -0.17, 0, 0.98, 55.5, 9, -47)
+mesh = SubResource("Mesh_ColumnBroken")
+[node name="Col" type="CollisionShape3D" parent="TowerTopBody"]
+transform = Transform3D(0.98, 0, 0.17, 0, 1, 0, -0.17, 0, 0.98, 55.5, 9, -47)
+shape = SubResource("Shape_ColumnBroken")
+
+; Fallen chunks around tower base
+[node name="TowerFallen1Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="TowerFallen1Body"]
+transform = Transform3D(0.71, 0, 0.71, 0, 1, 0, -0.71, 0, 0.71, 50, 0.5, -46)
+mesh = SubResource("Mesh_FallenBlock")
+[node name="Col" type="CollisionShape3D" parent="TowerFallen1Body"]
+transform = Transform3D(0.71, 0, 0.71, 0, 1, 0, -0.71, 0, 0.71, 50, 0.5, -46)
+shape = SubResource("Shape_FallenBlock")
+[node name="TowerFallen2Body" type="StaticBody3D" parent="."]
+collision_layer = 1
+[node name="Mesh" type="MeshInstance3D" parent="TowerFallen2Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58, 0.5, -50)
+mesh = SubResource("Mesh_FallenBlock")
+[node name="Col" type="CollisionShape3D" parent="TowerFallen2Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58, 0.5, -50)
+shape = SubResource("Shape_FallenBlock")
+
+
+; ========== CONTENT MARKERS ==========
+
+; ---- Enemies ----
+; Goombas x 6 (dune field)
+[node name="Goomba1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 1, 24)
+metadata/enemy_bhv = "bhvGoomba"
+[node name="Goomba2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18, 1, 26)
+metadata/enemy_bhv = "bhvGoomba"
+[node name="Goomba3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 1, 8)
+metadata/enemy_bhv = "bhvGoomba"
+[node name="Goomba4" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28, 1, 4)
+metadata/enemy_bhv = "bhvGoomba"
+[node name="Goomba5" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 1, -16)
+metadata/enemy_bhv = "bhvGoomba"
+[node name="Goomba6" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1, -28)
 metadata/enemy_bhv = "bhvGoomba"
 
-[node name="Goomba_D2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 1, 24)
-metadata/enemy_bhv = "bhvGoomba"
-
-[node name="Goomba_D3" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 1, -8)
-metadata/enemy_bhv = "bhvGoomba"
-
-[node name="Goomba_D4" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24, 1, 8)
-metadata/enemy_bhv = "bhvGoomba"
-
-[node name="Goomba_D5" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 1, 22)
-metadata/enemy_bhv = "bhvGoomba"
-
-[node name="Koopa_Pyr1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.7, 4)
+; Koopas x 4 (tomb sentinels, various chambers)
+[node name="Koopa_Entrance" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.7, -30)
+metadata/enemy_bhv = "bhvKoopa"
+[node name="Koopa_Corridor" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, -46)
+metadata/enemy_bhv = "bhvKoopa"
+[node name="Koopa_Trap" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, -5.8, -62)
+metadata/enemy_bhv = "bhvKoopa"
+[node name="Koopa_Treasury" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, -5.8, -78)
 metadata/enemy_bhv = "bhvKoopa"
 
-[node name="Koopa_Pyr2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.7, 4)
-metadata/enemy_bhv = "bhvKoopa"
-
-[node name="Koopa_Pyr3" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, -4)
-metadata/enemy_bhv = "bhvKoopa"
-
-[node name="ChainChomp_Pyr" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -20)
+; Chain Chomps x 2 (pyramid guards)
+[node name="ChainChomp_Entrance" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -44)
+metadata/enemy_bhv = "bhvChainChomp"
+[node name="ChainChomp_Treasury" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.5, -76)
 metadata/enemy_bhv = "bhvChainChomp"
 
-[node name="ChainChomp_Ruin" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 1, -14)
-metadata/enemy_bhv = "bhvChainChomp"
-
+; Bobombs x 2
 [node name="Bobomb_Oasis" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 1, 36)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -44, 1, 46)
+metadata/enemy_bhv = "bhvBobomb"
+[node name="Bobomb_Ruins" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, 1, -24)
 metadata/enemy_bhv = "bhvBobomb"
 
-[node name="PiranhaPlant_D1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1, 14)
+; Piranha Plants x 3
+[node name="Piranha1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1, 20)
+metadata/enemy_bhv = "bhvPiranhaPlant"
+[node name="Piranha2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 1, 12)
+metadata/enemy_bhv = "bhvPiranhaPlant"
+[node name="Piranha3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 1, 42)
 metadata/enemy_bhv = "bhvPiranhaPlant"
 
-[node name="PiranhaPlant_D2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 1, -10)
-metadata/enemy_bhv = "bhvPiranhaPlant"
-
-[node name="Cuttlefish_Vulture1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 8, 20)
+; Cuttlefish x 3 (vultures circling)
+[node name="Vulture1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 18, 20)
+metadata/enemy_bhv = "bhvCuttlefish"
+[node name="Vulture2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 20, -20)
+metadata/enemy_bhv = "bhvCuttlefish"
+[node name="Vulture3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 22, -30)
 metadata/enemy_bhv = "bhvCuttlefish"
 
-[node name="Cuttlefish_Vulture2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 8, -20)
-metadata/enemy_bhv = "bhvCuttlefish"
-
+; Bobomb Buddy x 1 (oasis traveler)
 [node name="BobombBuddy_Oasis" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38, 1, 30)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 1, 32)
 metadata/enemy_bhv = "bhvBobombBuddy"
 
-; --- Yellow coins (30 total) ---
-; Dune trails from spawn
-[node name="CoinD1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1.5, 18)
+; ---- Yellow Coins (45) ----
+; Dune trail leaving spawn (5)
+[node name="CoinY01" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1.5, 24)
 metadata/pickup_kind = "coin_yellow"
-[node name="CoinD2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1.5, 14)
+[node name="CoinY02" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1.5, 18)
 metadata/pickup_kind = "coin_yellow"
-[node name="CoinD3" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1.5, 14)
+[node name="CoinY03" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1.5, 18)
 metadata/pickup_kind = "coin_yellow"
-[node name="CoinD4" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.5, 18)
+[node name="CoinY04" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.5, 24)
 metadata/pickup_kind = "coin_yellow"
-[node name="CoinD5" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1.5, 8)
-metadata/pickup_kind = "coin_yellow"
-[node name="CoinD6" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 1.5, 8)
-metadata/pickup_kind = "coin_yellow"
-[node name="CoinD7" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 1.5, -4)
-metadata/pickup_kind = "coin_yellow"
-[node name="CoinD8" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26, 1.5, -4)
+[node name="CoinY05" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 14)
 metadata/pickup_kind = "coin_yellow"
 
-; Pyramid tier 1 top coins
-[node name="CoinP1_1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 4.5, 14)
+; Obelisk plaza + altar path (6)
+[node name="CoinY06" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 1.5, 18)
 metadata/pickup_kind = "coin_yellow"
-[node name="CoinP1_2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 4.5, 14)
+[node name="CoinY07" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1.5, 18)
 metadata/pickup_kind = "coin_yellow"
-[node name="CoinP1_3" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 4.5, -14)
+[node name="CoinY08" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 4)
 metadata/pickup_kind = "coin_yellow"
-[node name="CoinP1_4" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 4.5, -14)
+[node name="CoinY09" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2.0, 14)
 metadata/pickup_kind = "coin_yellow"
-
-; Pyramid tier 2 top coins
-[node name="CoinP2_1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 8.5, 0)
+[node name="CoinY10" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2.0, 14)
 metadata/pickup_kind = "coin_yellow"
-[node name="CoinP2_2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 8.5, 0)
-metadata/pickup_kind = "coin_yellow"
-[node name="CoinP2_3" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.5, 10)
-metadata/pickup_kind = "coin_yellow"
-[node name="CoinP2_4" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.5, -10)
+[node name="CoinY11" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, 10)
 metadata/pickup_kind = "coin_yellow"
 
-; Pyramid tier 3 top coins
-[node name="CoinP3_1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 12.5, 0)
+; Pyramid spiral ramp tier coins (6)
+[node name="CoinY12" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 7, -14)
 metadata/pickup_kind = "coin_yellow"
-[node name="CoinP3_2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 12.5, 0)
+[node name="CoinY13" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 7, -14)
 metadata/pickup_kind = "coin_yellow"
-[node name="CoinP3_3" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12.5, 6)
+[node name="CoinY14" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 13, -30)
 metadata/pickup_kind = "coin_yellow"
-
-; Chamber interior coins (around sarcophagus reward)
-[node name="CoinS1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1.8, 2)
+[node name="CoinY15" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 13, -30)
 metadata/pickup_kind = "coin_yellow"
-[node name="CoinS2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1.8, 2)
+[node name="CoinY16" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 19, -30)
 metadata/pickup_kind = "coin_yellow"
-[node name="CoinS3" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1.8, -2)
-metadata/pickup_kind = "coin_yellow"
-[node name="CoinS4" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1.8, -2)
+[node name="CoinY17" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 19, -30)
 metadata/pickup_kind = "coin_yellow"
 
-; Vault coins (4)
-[node name="CoinV1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 1, 3)
+; Entrance chamber interior (5)
+[node name="CoinY18" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1.5, -30)
 metadata/pickup_kind = "coin_yellow"
-[node name="CoinV2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 1, 3)
+[node name="CoinY19" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.5, -30)
 metadata/pickup_kind = "coin_yellow"
-[node name="CoinV3" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 1, 5)
+[node name="CoinY20" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1.5, -34)
 metadata/pickup_kind = "coin_yellow"
-[node name="CoinV4" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 1, 5)
+[node name="CoinY21" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.5, -34)
 metadata/pickup_kind = "coin_yellow"
-
-; Oasis coins
-[node name="CoinO1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, 1.2, 32)
-metadata/pickup_kind = "coin_yellow"
-[node name="CoinO2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38, 1.2, 36)
-metadata/pickup_kind = "coin_yellow"
-[node name="CoinO3" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 1.2, 36)
+[node name="CoinY22" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -26)
 metadata/pickup_kind = "coin_yellow"
 
-; --- Red coins (8 — one atop each ruin column) ---
-[node name="RedCoin1" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34, 6.5, -18)
+; Corridor coins (3)
+[node name="CoinY23" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, -42)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinY24" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.8, -46)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinY25" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3, -50)
+metadata/pickup_kind = "coin_yellow"
+
+; Trap room (4)
+[node name="CoinY26" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, -5, -66)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinY27" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, -5, -66)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinY28" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, -5, -58)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinY29" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, -5, -58)
+metadata/pickup_kind = "coin_yellow"
+
+; Treasury (5)
+[node name="CoinY30" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -5, -76)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinY31" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -5, -76)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinY32" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -5, -84)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinY33" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -5, -84)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinY34" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5, -80)
+metadata/pickup_kind = "coin_yellow"
+
+; Burial chamber (4)
+[node name="CoinY35" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, -11, -95)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinY36" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, -11, -95)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinY37" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, -11, -101)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinY38" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, -11, -101)
+metadata/pickup_kind = "coin_yellow"
+
+; Oasis + camel area (4)
+[node name="CoinY39" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, 1.2, 38)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinY40" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48, 1.2, 40)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinY41" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -44, 1.2, 44)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinY42" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -54, 1.2, 31.5)
+metadata/pickup_kind = "coin_yellow"
+
+; Sphinx back (3)
+[node name="CoinY43" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 5.5, -18)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinY44" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, 5.5, -16)
+metadata/pickup_kind = "coin_yellow"
+[node name="CoinY45" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, 5.5, -20)
+metadata/pickup_kind = "coin_yellow"
+
+; ---- Red Coins (8) ----
+; Spread: 3 in pyramid interior, 3 in ruins, 2 in oasis
+[node name="RedCoin1_Entrance" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 4, -30)
+metadata/pickup_kind = "coin_red"
+[node name="RedCoin2_TrapRoom" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5, -62)
+metadata/pickup_kind = "coin_red"
+[node name="RedCoin3_TreasuryThrone" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.5, -83)
+metadata/pickup_kind = "coin_red"
+[node name="RedCoin4_ThothColumn" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 6.5, -4)
+metadata/pickup_kind = "coin_red"
+[node name="RedCoin5_Library" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -41, 2, -28)
+metadata/pickup_kind = "coin_red"
+[node name="RedCoin6_Bastet" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -60, 3.5, -10)
+metadata/pickup_kind = "coin_red"
+[node name="RedCoin7_OasisPalm" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 5.2, 36)
+metadata/pickup_kind = "coin_red"
+[node name="RedCoin8_OasisTent" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -54, 3.2, 31.5)
 metadata/pickup_kind = "coin_red"
 
-[node name="RedCoin2" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36, 6.5, -11.4)
-metadata/pickup_kind = "coin_red"
-
-[node name="RedCoin3" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 6.5, -10)
-metadata/pickup_kind = "coin_red"
-
-[node name="RedCoin4" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48, 6.5, -11.4)
-metadata/pickup_kind = "coin_red"
-
-[node name="RedCoin5" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 6.5, -18)
-metadata/pickup_kind = "coin_red"
-
-[node name="RedCoin6" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48, 6.5, -24.6)
-metadata/pickup_kind = "coin_red"
-
-[node name="RedCoin7" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 6.5, -26)
-metadata/pickup_kind = "coin_red"
-
-[node name="RedCoin8" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36, 6.5, -24.6)
-metadata/pickup_kind = "coin_red"
-
-; --- Stars ---
-[node name="Star_PyramidApex" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 17.5, 0)
+; ---- Stars (3) ----
+[node name="Star_BurialChamber" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -9.5, -98)
+metadata/pickup_kind = "star"
+[node name="Star_ThothFloating" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42, 2.5, -9)
+metadata/pickup_kind = "star"
+[node name="Star_TowerTip" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55.5, 11, -47)
 metadata/pickup_kind = "star"
 
-[node name="Star_Vault" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 1.5, 4)
-metadata/pickup_kind = "star"
-
-; --- One-ups ---
-[node name="OneUp_Oasis" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, 1.5, 34)
+; ---- One-ups (4) ----
+[node name="OneUp_OasisHidden" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -54, 1.5, 31.5)
+metadata/pickup_kind = "oneup"
+[node name="OneUp_SphinxBack" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 5.5, -18)
+metadata/pickup_kind = "oneup"
+[node name="OneUp_SecretTunnel" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 14, -30)
+metadata/pickup_kind = "oneup"
+[node name="OneUp_BastetShrine" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -58, 3.5, -10)
 metadata/pickup_kind = "oneup"
 
-[node name="OneUp_ChameleonCave" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -60, 1.5, -31)
-metadata/pickup_kind = "oneup"
-
-; --- Metal cap (in vault) ---
-[node name="MetalCap_Vault" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 1.5, 6)
+; ---- Metal cap (deep in treasury) ----
+[node name="MetalCap_Treasury" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.2, -78)
 metadata/pickup_kind = "cap_metal"

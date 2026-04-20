@@ -1,7 +1,12 @@
-[gd_resource type="StandardMaterial3D" format=3 uid="uid://c7c97ce2798329767"]
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://c7c97ce2798329767"]
+
+[ext_resource type="Shader" path="res://assets/shaders/terrain.gdshader" id="1_shader"]
 
 [resource]
 resource_name = "dirt"
-shading_mode = 0
-albedo_color = Color(0.45, 0.3, 0.18, 1.0)
-
+shader = ExtResource("1_shader")
+shader_parameter/base = Color(0.48, 0.32, 0.18, 1)
+shader_parameter/accent = Color(0.26, 0.16, 0.08, 1)
+shader_parameter/noise_scale = 3.5
+shader_parameter/noise_strength = 0.5
+shader_parameter/edge_darken = 0.3

@@ -1,7 +1,12 @@
-[gd_resource type="StandardMaterial3D" format=3 uid="uid://c42625bfecef1fbf9"]
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://c42625bfecef1fbf9"]
+
+[ext_resource type="Shader" path="res://assets/shaders/terrain.gdshader" id="1_shader"]
 
 [resource]
 resource_name = "sand"
-shading_mode = 0
-albedo_color = Color(0.9, 0.78, 0.5, 1.0)
-
+shader = ExtResource("1_shader")
+shader_parameter/base = Color(0.95, 0.82, 0.55, 1)
+shader_parameter/accent = Color(0.78, 0.62, 0.35, 1)
+shader_parameter/noise_scale = 5.0
+shader_parameter/noise_strength = 0.4
+shader_parameter/edge_darken = 0.2

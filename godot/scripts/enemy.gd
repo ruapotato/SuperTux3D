@@ -58,6 +58,7 @@ func _ready() -> void:
         "pop":      speed = 0.0
         "friendly": speed = 0.0
         "glide":    speed = 4.5  # aerial predator moves faster than ground walkers
+        "chomp":    speed = 5.5  # bursts forward when lunging
 
 
 static func _mode_for_bhv(bhv: String) -> String:
@@ -74,6 +75,9 @@ static func _mode_for_bhv(bhv: String) -> String:
         # Aerial glider: hovers, drifts toward the player, periodically
         # swoops. Separate mode because it needs to bypass gravity.
         "bhvCuttlefish":    return "glide"
+        # Chain chomp sits at its spawn (tethered) and lunges toward
+        # the player when they wander within leash range.
+        "bhvChainChomp":    return "chomp"
         # The mossy-stone NPC is friendly — stand still, no hurt area.
         "bhvBobombBuddy", "bhvBobombBuddyOpensCannon": return "friendly"
         _:                  return "patrol"
@@ -197,6 +201,22 @@ func _physics_process(delta: float) -> void:
             var target := _center + Vector3(
                 sin(angle) * patrol_radius, 0, cos(angle) * patrol_radius)
             dir = target - global_position
+            # Ledge check: cast a short ray forward+down from ~0.4m
+            # ahead. If there's no floor there, reverse direction by
+            # shifting _time so the sine orbit flips phase. Prevents the
+            # goomba from marching off the edge of a platform.
+            if dir.length() > 0.01:
+                var ahead: Vector3 = dir.normalized() * 0.8
+                var ray_from: Vector3 = global_position + ahead + Vector3(0, 0.3, 0)
+                var ray_to: Vector3 = ray_from + Vector3(0, -1.5, 0)
+                var space := get_world_3d().direct_space_state
+                var params := PhysicsRayQueryParameters3D.create(
+                    ray_from, ray_to, 1)
+                params.exclude = [self]
+                var hit := space.intersect_ray(params)
+                if hit.is_empty():
+                    _time += PI  # flip orbit phase → walk back
+                    dir = -dir
         "chase":
             if mario != null and global_position.distance_to(mario.global_position) < 12.0:
                 dir = mario.global_position - global_position
@@ -209,9 +229,11 @@ func _physics_process(delta: float) -> void:
             if mario != null and global_position.distance_to(mario.global_position) < 6.0:
                 dir = mario.global_position - global_position
                 _fuse += delta
-                # Pulse scale as the fuse ticks (visual warning).
+                # Pulse scale + wobble as the fuse ticks. Scale tightens
+                # visibly as the bomb nears detonation.
                 if _mesh != null:
-                    var puls: float = 1.0 + sin(_time * 12.0) * (_fuse * 0.25)
+                    var flash_hz: float = clamp(3.0 + _fuse * 12.0, 3.0, 30.0)
+                    var puls: float = 1.0 + sin(_time * flash_hz) * (_fuse * 0.28)
                     _mesh.scale = Vector3(puls, puls, puls)
                 if _fuse > 3.0 or global_position.distance_to(mario.global_position) < 1.0:
                     _explode(mario)
@@ -220,25 +242,70 @@ func _physics_process(delta: float) -> void:
                 _fuse = max(_fuse - delta * 0.5, 0.0)
         "pop", "static", "friendly":
             pass  # no movement; hurt area still active (except friendly)
+        "chomp":
+            # Chained guardian: stays near _center within a leash of
+            # ~6m. Lunges toward the player when they enter the leash;
+            # returns to anchor when player is out of range or after
+            # a brief recovery. Tether is enforced hard — if lunging
+            # would exceed the leash, the chomp snaps back.
+            var leash: float = 6.0
+            var to_anchor: Vector3 = _center - global_position
+            to_anchor.y = 0.0
+            if mario != null:
+                var to_mario: Vector3 = mario.global_position - global_position
+                to_mario.y = 0.0
+                var player_dist: float = to_mario.length()
+                var from_anchor: float = (global_position - _center).length()
+                if player_dist < leash + 2.0 and from_anchor < leash:
+                    # Player is in range — lunge.
+                    dir = to_mario
+                elif from_anchor > leash:
+                    # Leash snapped — pull back to anchor.
+                    dir = to_anchor
+                else:
+                    # Idle shimmy at the tether end.
+                    dir = to_anchor * 0.2
+            else:
+                dir = to_anchor
+            # Visual anger pulse: short scale pump when within lunge
+            # range of the player.
+            if _mesh != null and mario != null:
+                var dclose: float = global_position.distance_to(mario.global_position)
+                var pump: float = 1.0
+                if dclose < leash:
+                    pump = 1.0 + sin(_time * 14.0) * 0.08
+                _mesh.scale = _mesh.scale.lerp(Vector3(pump, pump, pump), 0.2)
         "glide":
             # Cuttlefish-style aerial predator: floats at _center.y +
             # hover_height, drifts toward the player with a sine bob,
-            # occasionally dives when close.
+            # and periodically commits to a swoop that drops ALL the way
+            # down to player level so it can actually hit. State tracks
+            # the phase of the swoop for a satisfying arc:
+            #   idle      0..5s   hover + bob
+            #   dive      5..6s   drop toward player
+            #   retreat   6..7s   climb back up
             var hover_y: float = _center.y + 2.2
             var target: Vector3 = _center
+            target.y = hover_y + sin(_time * 1.6) * 0.35
+            var aggressive: bool = false
             if mario != null:
+                var dist: float = global_position.distance_to(mario.global_position)
                 target = mario.global_position
                 target.y = hover_y + sin(_time * 1.6) * 0.35
-                # Dive: every ~6s, if player is close, swoop downward
-                # briefly toward their actual height.
-                var dive_phase: float = fposmod(_time, 6.0)
-                if dive_phase < 0.6 and global_position.distance_to(mario.global_position) < 8.0:
-                    target.y = mario.global_position.y + 0.8
-            else:
-                target.y = hover_y + sin(_time * 1.6) * 0.35
+                var cycle: float = fposmod(_time, 7.0)
+                if dist < 10.0 and cycle > 5.0 and cycle < 6.0:
+                    # Dive: target = close to the player's actual body so
+                    # the hurt area actually touches them.
+                    target.y = mario.global_position.y + 0.4
+                    aggressive = true
+                # Tilt the body forward during dive for visual intent.
+                if _mesh != null:
+                    var tilt: float = clamp((6.0 - cycle), 0.0, 1.0) * -0.6 if aggressive else 0.0
+                    _mesh.rotation.x = lerp(_mesh.rotation.x, tilt, 0.2)
             var to_target: Vector3 = target - global_position
-            # Smooth approach — hover like it's swimming through the air.
-            var move_step: float = min(speed * delta, to_target.length())
+            # Speed up during the dive so it reads as an attack.
+            var dive_speed: float = speed * (2.2 if aggressive else 1.0)
+            var move_step: float = min(dive_speed * delta, to_target.length())
             if to_target.length() > 0.01:
                 global_position += to_target.normalized() * move_step
                 rotation.y = atan2(-to_target.x, -to_target.z)
