@@ -803,10 +803,20 @@ def build_scene(blueprint: dict, scene_name: str) -> Scene:
         # Terrain cells painted "water" derive a single global water
         # surface Y. We use the MIN of the painted cells' surface Ys —
         # max would let an accidentally-sculpted-up cell flood the
-        # whole level ("all the land is swimmable"). Authors keep the
-        # water flat by sculpting the pool bottom first, then painting;
-        # the water mesh is ALSO forced flat to water_level_y at
-        # runtime so uneven sculpts don't look weird either.
+        # whole level. Authors keep the water flat by sculpting the
+        # pool bottom first, then painting; the water mesh is ALSO
+        # forced flat to water_level_y at runtime so uneven sculpts
+        # don't look weird.
+        #
+        # IMPORTANT: terrain emits are sunk TERRAIN_Z_OFFSET (2cm)
+        # to avoid Z-fight with room floor slabs, so the actual world
+        # Y of a painted water cell is `origin_y + corner_avg - 0.02`.
+        # Using the unsunk value would put water_level_y 2cm above
+        # the rendered grass and Mario's feet (at the grass surface
+        # y = -0.02) would land below water_level_y = 0 → instant
+        # swim-on-grass. Subtract the offset so the swim threshold
+        # matches the actually-rendered surface.
+        TERRAIN_Z_OFFSET = 0.02
         for patch in blueprint.get("terrain_patches", []):
             grid = patch.get("surface_grid") or []
             heights = patch.get("heights") or []
@@ -824,7 +834,7 @@ def build_scene(blueprint: dict, scene_name: str) -> Scene:
                         + float(heights[(ci + 1) * r + (cj + 1)])
                         + float(heights[ci * r + (cj + 1)])
                     )
-                    cell_top = origin_y + corner_avg
+                    cell_top = origin_y + corner_avg - TERRAIN_Z_OFFSET
                     if effective_water_y is None or cell_top < effective_water_y:
                         effective_water_y = cell_top
     if effective_water_y is not None:
