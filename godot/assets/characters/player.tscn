@@ -1,94 +1,85 @@
-[gd_scene load_steps=18 format=3 uid="uid://bptux01"]
+[gd_scene load_steps=19 format=3 uid="uid://bptux01"]
 
-; Tux-inspired penguin player rig. Larry Ewing placed the original Tux
-; artwork in the public domain (with an attribution ask), so a penguin
-; silhouette that borrows the general look is legally safe. Keeping the
-; same 7-bone hierarchy (pelvis/torso/head/arm_l/arm_r/leg_l/leg_r) so
-; clean_character_anim.gd drives the rig unchanged.
+[sub_resource type="CapsuleMesh" id="body_mesh"]
+radius = 0.2
+height = 0.62
+radial_segments = 16
 
-[sub_resource type="SphereMesh" id="head_mesh"]
-radius = 0.22
-height = 0.44
+[sub_resource type="StandardMaterial3D" id="black_mat"]
+shading_mode = 0
+albedo_color = Color(0.07, 0.07, 0.09, 1)
+
+[sub_resource type="SphereMesh" id="belly_mesh"]
+radius = 0.16
+height = 0.52
 radial_segments = 16
 rings = 10
 
-[sub_resource type="StandardMaterial3D" id="black_mat"]
-albedo_color = Color(0.07, 0.07, 0.09, 1)
-shading_mode = 0
-
 [sub_resource type="StandardMaterial3D" id="white_mat"]
+shading_mode = 0
 albedo_color = Color(0.98, 0.98, 0.98, 1)
-shading_mode = 0
 
-[sub_resource type="StandardMaterial3D" id="orange_mat"]
-albedo_color = Color(1.0, 0.62, 0.08, 1)
-shading_mode = 0
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_qte20"]
+radius = 0.0875
+height = 0.27
 
-[sub_resource type="StandardMaterial3D" id="eye_white_mat"]
-albedo_color = Color(1, 1, 1, 1)
-shading_mode = 0
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_3c0ok"]
+radius = 0.112
+height = 0.304
 
-[sub_resource type="StandardMaterial3D" id="pupil_mat"]
-albedo_color = Color(0.05, 0.05, 0.1, 1)
-shading_mode = 0
-
-[sub_resource type="CapsuleMesh" id="body_mesh"]
-radius = 0.27
-height = 0.62
-radial_segments = 14
-
-; The white belly is a slightly flattened sphere in front of the body.
-[sub_resource type="SphereMesh" id="belly_mesh"]
-radius = 0.22
-height = 0.52
-radial_segments = 14
+[sub_resource type="SphereMesh" id="head_mesh"]
+radius = 0.142
+height = 0.27
+radial_segments = 18
 rings = 10
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_qte20"]
+top_radius = 0.14
+bottom_radius = 0.145
+height = 0.205
 
 [sub_resource type="SphereMesh" id="eye_sphere"]
 radius = 0.045
-height = 0.09
-radial_segments = 10
+height = 0.13
+radial_segments = 12
 rings = 6
+
+[sub_resource type="StandardMaterial3D" id="eye_white_mat"]
+shading_mode = 0
 
 [sub_resource type="SphereMesh" id="pupil_sphere"]
 radius = 0.02
-height = 0.04
-radial_segments = 8
+height = 0.07
+radial_segments = 10
 rings = 6
 
-; Beak: a small prism rotated so the narrow edge points forward.
-[sub_resource type="PrismMesh" id="beak_mesh"]
-size = Vector3(0.14, 0.07, 0.11)
+[sub_resource type="StandardMaterial3D" id="pupil_mat"]
+shading_mode = 0
+albedo_color = Color(0.05, 0.05, 0.1, 1)
 
-; Wings (short flippers): flattened capsules sticking out from the body.
+[sub_resource type="PrismMesh" id="beak_mesh"]
+size = Vector3(0.145, 0.06, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="orange_mat"]
+shading_mode = 0
+albedo_color = Color(1, 0.62, 0.08, 1)
+
+[sub_resource type="PrismMesh" id="PrismMesh_y7kcb"]
+size = Vector3(0.13, 0.06, 0.04)
+
 [sub_resource type="CapsuleMesh" id="wing_mesh"]
 radius = 0.06
-height = 0.32
+height = 0.415
 radial_segments = 10
 
-; Feet: orange blobs doubling as shoes.
-[sub_resource type="BoxMesh" id="foot_mesh"]
-size = Vector3(0.2, 0.08, 0.24)
-
-; Leg: short thick segment. Tux's legs are stubby.
 [sub_resource type="CapsuleMesh" id="leg_mesh"]
-radius = 0.07
-height = 0.22
+radius = 0.028
+height = 0.25
 radial_segments = 10
 
-; Little highlight dots in the eyes (subtle).
-[sub_resource type="SphereMesh" id="eye_spec"]
-radius = 0.008
-height = 0.016
-radial_segments = 6
-rings = 4
+[sub_resource type="PrismMesh" id="PrismMesh_qte20"]
+size = Vector3(0.245, 0.28, 0.065)
 
-; Smile line — a thin dark box under the beak.
-[sub_resource type="BoxMesh" id="smile_mesh"]
-size = Vector3(0.08, 0.02, 0.015)
-
-; The rig root is rotated 180° around Y so the authored +Z face ends up
-; at Godot's forward (-Z). clean_character_anim doesn't touch this root.
 [node name="Rig" type="Node3D"]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
 
@@ -99,64 +90,73 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
 
 [node name="BodyMesh" type="MeshInstance3D" parent="pelvis/torso"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.765, 0, 0, 0)
 mesh = SubResource("body_mesh")
 surface_material_override/0 = SubResource("black_mat")
 
 [node name="Belly" type="MeshInstance3D" parent="pelvis/torso"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.02, 0.12)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.585, 0, -0.012683272, 0.085791)
 mesh = SubResource("belly_mesh")
+surface_material_override/0 = SubResource("white_mat")
+
+[node name="Belly2" type="MeshInstance3D" parent="pelvis/torso"]
+transform = Transform3D(-1, 1.3653239e-07, 9.1434493e-10, -1.5088247e-07, -0.9043207, -0.010458887, -2.46006e-09, -0.035056636, 0.26979735, 0, 0.15059936, 0.12350714)
+mesh = SubResource("CapsuleMesh_qte20")
+surface_material_override/0 = SubResource("white_mat")
+
+[node name="Belly3" type="MeshInstance3D" parent="pelvis/torso"]
+transform = Transform3D(-1, 1.3653239e-07, 9.1434493e-10, -1.5088247e-07, -0.9043207, -0.010458887, -2.46006e-09, -0.035056636, 0.26979735, 0, 0.10324931, 0.12350714)
+mesh = SubResource("CapsuleMesh_3c0ok")
 surface_material_override/0 = SubResource("white_mat")
 
 [node name="head" type="Node3D" parent="pelvis/torso"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.36, 0)
 
-; The head stays a solid black sphere; no overlapping white belly on
-; the front (previous attempt buried the eyes inside it). White is
-; handled by a small chin-patch below the beak + the eye whites.
 [node name="HeadMesh" type="MeshInstance3D" parent="pelvis/torso/head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03356576, 0)
 mesh = SubResource("head_mesh")
 surface_material_override/0 = SubResource("black_mat")
 
-; Small flattened white chin patch, sitting just under the beak.
-; Z-scale is tiny so it doesn't push out through the face features.
-[node name="ChinPatch" type="MeshInstance3D" parent="pelvis/torso/head"]
-transform = Transform3D(1.2, 0, 0, 0, 0.35, 0, 0, 0, 0.25, 0, -0.12, 0.18)
-mesh = SubResource("belly_mesh")
-surface_material_override/0 = SubResource("white_mat")
+[node name="HeadMesh2" type="MeshInstance3D" parent="pelvis/torso/head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08876419, 0)
+mesh = SubResource("CylinderMesh_qte20")
+surface_material_override/0 = SubResource("black_mat")
 
-; Eyes are explicitly forward of the head sphere (z > 0.22 + radius)
-; so no other mesh can occlude them from the front.
 [node name="EyeL" type="MeshInstance3D" parent="pelvis/torso/head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.06, 0.03, 0.21)
+transform = Transform3D(1, 0, 0, 0, 0.9947816, 0.10202864, 0, -0.10202864, 0.9947816, -0.05268764, -0.030332148, 0.114166856)
 mesh = SubResource("eye_sphere")
 surface_material_override/0 = SubResource("eye_white_mat")
 
 [node name="EyeR" type="MeshInstance3D" parent="pelvis/torso/head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.06, 0.03, 0.21)
+transform = Transform3D(1, 0, 0, 0, 0.9947816, 0.10202864, 0, -0.10202864, 0.9947816, 0.052094318, -0.030332148, 0.114166856)
 mesh = SubResource("eye_sphere")
 surface_material_override/0 = SubResource("eye_white_mat")
 
 [node name="PupilL" type="MeshInstance3D" parent="pelvis/torso/head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.06, 0.03, 0.24)
+transform = Transform3D(1, 0, 0, 0, 0.9947816, 0.10202864, 0, -0.10202864, 0.9947816, -0.06, -0.040124357, 0.14532855)
 mesh = SubResource("pupil_sphere")
 surface_material_override/0 = SubResource("pupil_mat")
 
 [node name="PupilR" type="MeshInstance3D" parent="pelvis/torso/head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.06, 0.03, 0.24)
+transform = Transform3D(1, 0, 0, 0, 0.9947816, 0.10202864, 0, -0.10202864, 0.9947816, 0.06, -0.040124357, 0.14532855)
 mesh = SubResource("pupil_sphere")
 surface_material_override/0 = SubResource("pupil_mat")
 
 [node name="Beak" type="MeshInstance3D" parent="pelvis/torso/head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.04, 0.235)
+transform = Transform3D(1.2326381, 0, 0, 0, -0.40921813, -0.374222, 0, 0.99579614, -0.15378496, 0, -0.09297019, 0.15776941)
 mesh = SubResource("beak_mesh")
 surface_material_override/0 = SubResource("orange_mat")
 
-; Wings/flippers. Rotated so they hang down along the body sides.
+[node name="Beak2" type="MeshInstance3D" parent="pelvis/torso/head"]
+transform = Transform3D(1.2326381, 0, 0, 0, -0.18626505, -0.39848724, 0, 1.0603654, -0.06999877, 0, -0.10134864, 0.15776941)
+mesh = SubResource("PrismMesh_y7kcb")
+surface_material_override/0 = SubResource("orange_mat")
+
 [node name="arm_l" type="Node3D" parent="pelvis/torso"]
 transform = Transform3D(0.94, 0.34, 0, -0.34, 0.94, 0, 0, 0, 1, -0.27, 0.12, 0)
 
 [node name="WingMesh" type="MeshInstance3D" parent="pelvis/torso/arm_l"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.15, 0)
+transform = Transform3D(0.9999999, -5.9604645e-08, 0, 5.9604645e-08, 0.9999999, 0, 0, 0, 0.99999964, 0.08460909, -0.1069628, 0)
 mesh = SubResource("wing_mesh")
 surface_material_override/0 = SubResource("black_mat")
 
@@ -164,33 +164,32 @@ surface_material_override/0 = SubResource("black_mat")
 transform = Transform3D(0.94, -0.34, 0, 0.34, 0.94, 0, 0, 0, 1, 0.27, 0.12, 0)
 
 [node name="WingMesh" type="MeshInstance3D" parent="pelvis/torso/arm_r"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.15, 0)
+transform = Transform3D(0.9999999, 5.9604645e-08, 0, -5.9604645e-08, 0.9999999, 0, 0, 0, 0.9999997, -0.07894683, -0.09371066, 0)
 mesh = SubResource("wing_mesh")
 surface_material_override/0 = SubResource("black_mat")
 
-; Stubby orange legs + feet. Feet are large boxes for a cartoon read.
 [node name="leg_l" type="Node3D" parent="pelvis"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.12, -0.08, 0)
 
 [node name="LegMesh" type="MeshInstance3D" parent="pelvis/leg_l"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.11, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.13032605, 0)
 mesh = SubResource("leg_mesh")
 surface_material_override/0 = SubResource("orange_mat")
 
 [node name="Foot" type="MeshInstance3D" parent="pelvis/leg_l"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.28, 0.05)
-mesh = SubResource("foot_mesh")
+transform = Transform3D(-1, -8.940697e-08, 2.6645353e-15, 0, -4.371139e-08, -1, 8.940697e-08, -1, 4.3711385e-08, 0, -0.26429516, 0.09446359)
+mesh = SubResource("PrismMesh_qte20")
 surface_material_override/0 = SubResource("orange_mat")
 
 [node name="leg_r" type="Node3D" parent="pelvis"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.12, -0.08, 0)
 
 [node name="LegMesh" type="MeshInstance3D" parent="pelvis/leg_r"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.11, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.13032605, 0)
 mesh = SubResource("leg_mesh")
 surface_material_override/0 = SubResource("orange_mat")
 
 [node name="Foot" type="MeshInstance3D" parent="pelvis/leg_r"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.28, 0.05)
-mesh = SubResource("foot_mesh")
+transform = Transform3D(-1, -8.940697e-08, 2.6645353e-15, 0, -4.371139e-08, -1, 8.940697e-08, -1, 4.3711385e-08, 0, -0.26429516, 0.09446359)
+mesh = SubResource("PrismMesh_qte20")
 surface_material_override/0 = SubResource("orange_mat")
