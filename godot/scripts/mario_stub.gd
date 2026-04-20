@@ -16,6 +16,12 @@ var _ray_down: RayCast3D
 var _ray_up: RayCast3D
 var _actor_anchor: Node3D
 var _pickup_area: Area3D
+# Narrow Area3D at Mario's feet that watches for WaterArea nodes
+# emitted by terrain_patch.gd on painted water cells. The swim state
+# requires both pos.y < water_level_y AND this sensor overlapping a
+# water_area — otherwise walking out of a pond onto grass at the
+# same Y would keep Mario looped in swim.
+var _water_sensor: Area3D
 var _sound_bank: Node
 var _prev_action_for_sfx: int = 0
 var _shadow: MeshInstance3D
@@ -107,6 +113,22 @@ func _ready() -> void:
     _pickup_area.add_child(cs)
     _pickup_area.area_entered.connect(_on_pickup)
     add_child(_pickup_area)
+
+    # Feet-level water sensor. Narrow box at the player's feet so only
+    # being *directly over* a painted water cell counts. Layer/mask
+    # match the pickup area so water Area3Ds (emitted on layer 1 with
+    # meta water_area) register here.
+    _water_sensor = Area3D.new()
+    _water_sensor.name = "WaterSensor"
+    _water_sensor.collision_layer = 0
+    _water_sensor.collision_mask = 1
+    var ws_cs := CollisionShape3D.new()
+    var ws_box := BoxShape3D.new()
+    ws_box.size = Vector3(0.55, 0.4, 0.55)
+    ws_cs.shape = ws_box
+    ws_cs.position = Vector3(0, 0.2, 0)
+    _water_sensor.add_child(ws_cs)
+    add_child(_water_sensor)
 
     _ray_down = RayCast3D.new()
     _ray_down.name = "RayDown"
@@ -241,6 +263,15 @@ func _physics_process(delta: float) -> void:
     _state.anim_at_end = _animator != null and _animator.is_at_end()
     _state.power_cap = power_cap
     _state.water_level_y = water_level_y
+    # Am I horizontally over a painted water cell? Required for swim
+    # state to trigger OR stay active — the global water_level_y alone
+    # would false-fire on grass that happens to sit near the water's Y.
+    _state.in_water_area = false
+    if _water_sensor != null:
+        for wa in _water_sensor.get_overlapping_areas():
+            if wa.has_meta("water_area"):
+                _state.in_water_area = true
+                break
     # Report pole-zone overlap to the state. We test the pickup Area3D's
     # overlaps; anything with meta("pole_zone") is climbable.
     _state.near_pole = false

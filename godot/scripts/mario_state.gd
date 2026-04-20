@@ -163,9 +163,13 @@ var power_cap: String = ""
 # Name of the surface body Mario's last move_and_slide() ended on. Owner
 # sets this each tick; walking/braking physics use it to pick friction.
 var floor_surface: String = "default"
-# Water detection — owner sets water_level_y each tick; if our feet dip
-# below it we transition into swim mode. Simple single-volume model.
+# Water detection — owner sets water_level_y each tick; swim mode
+# fires only when Mario is BOTH below that threshold AND horizontally
+# over a painted water cell (`in_water_area` from mario_stub's foot
+# sensor). The area check prevents grass that happens to sit near
+# water_level_y from looping the player into swim.
 var water_level_y: float = -INF
+var in_water_area: bool = false
 # Pole state — owner reports if a pole_zone Area3D is overlapping Mario
 # and what its world origin is, so the state can snap onto it.
 var near_pole: bool = false
@@ -261,8 +265,12 @@ func step(delta: float) -> void:
             ACT_HOLDING_POLE:             changed = _act_holding_pole(delta)
             ACT_CLIMBING_POLE:            changed = _act_climbing_pole(delta)
             _:                            changed = set_action(ACT_IDLE)
-        # Any land-bound action can be interrupted by entering water.
-        if not changed and pos.y < water_level_y and (action & ACT_FLAG_AIR) == 0 \
+        # Any land-bound action can be interrupted by entering water —
+        # but ONLY when the foot sensor confirms we're over a painted
+        # water cell. Otherwise low-lying grass would keep retriggering
+        # swim every frame.
+        if not changed and pos.y < water_level_y and in_water_area \
+                and (action & ACT_FLAG_AIR) == 0 \
                 and action != ACT_WATER_IDLE and action != ACT_SWIMMING:
             set_action(ACT_WATER_IDLE)
             changed = true
@@ -685,7 +693,11 @@ func _act_climbing_pole(delta: float) -> bool:
 
 
 func _act_water_idle(delta: float) -> bool:
-    if pos.y > water_level_y + 0.5:
+    # Exit swim the moment we're above the surface OR we've moved off
+    # a water cell laterally (onto grass). Without the area check,
+    # hopping out of a pond onto a same-height shore would keep the
+    # player stuck swimming.
+    if pos.y > water_level_y + 0.5 or not in_water_area:
         return set_action(ACT_FREEFALL)
     _request_anim(MARIO_ANIM_SWIM_PART2, 0.6)
     if input_jump_pressed or input_stick.length() > 0.1 or input_attack_pressed:
@@ -698,7 +710,7 @@ func _act_water_idle(delta: float) -> bool:
 
 
 func _act_swimming(delta: float) -> bool:
-    if pos.y > water_level_y + 0.5:
+    if pos.y > water_level_y + 0.5 or not in_water_area:
         return set_action(ACT_FREEFALL)
     _request_anim(MARIO_ANIM_FLUTTERKICK, 1.2)
     # Stroke impulse on jump press or attack press.

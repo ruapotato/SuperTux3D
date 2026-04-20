@@ -246,6 +246,44 @@ func _ready() -> void:
 					wvert_uvs.append(Vector2.ZERO)
 				windices.append_array([base, base + 1, base + 2,
 					base, base + 2, base + 3])
+		# For each painted water cell, also drop an Area3D over its
+		# xz footprint so mario_stub's foot sensor can tell whether
+		# the player is horizontally OVER water. The state needs this
+		# in addition to the global water_level_y check — without it,
+		# walking off a pool onto grass that happens to sit at the
+		# same y keeps Mario in swim state (no Y condition flips).
+		for ci in range(res - 1):
+			for cj in range(res - 1):
+				if String(surface_grid[ci * (res - 1) + cj]) != "water":
+					continue
+				var ax2: float = float(ci) * cell_x
+				var bx2: float = float(ci + 1) * cell_x
+				var az2: float = float(cj) * cell_z
+				var bz2: float = float(cj + 1) * cell_z
+				var area := Area3D.new()
+				area.name = "WaterArea_%d_%d" % [ci, cj]
+				# Layer 1 matches pickups / other gameplay triggers;
+				# Mario's sensor filters by meta tag below. We set
+				# monitorable so Mario's sensor sees us, but disable
+				# monitoring since the area itself doesn't need to
+				# detect anything.
+				area.collision_layer = 1
+				area.collision_mask = 0
+				area.monitorable = true
+				area.monitoring = false
+				area.set_meta("water_area", true)
+				var cs_area := CollisionShape3D.new()
+				var box := BoxShape3D.new()
+				# Tall + matches cell xz footprint. 200m y so any
+				# Mario height inside the water column counts.
+				box.size = Vector3(cell_x, 200.0, cell_z)
+				cs_area.shape = box
+				area.add_child(cs_area)
+				area.position = Vector3(
+					(ax2 + bx2) * 0.5,
+					local_water_y - 95.0,
+					(az2 + bz2) * 0.5)
+				add_child(area)
 		if windices.size() > 0:
 			var wmesh := ArrayMesh.new()
 			var warrays: Array = []
