@@ -325,16 +325,73 @@ def build_scene(blueprint: dict, scene_name: str) -> Scene:
                    f'transform = {xform_translate(ox, oy, oz)}\n')
         room_parent = f"{scene_name}/{rname}"
 
-        # Floor slab — thin box under the room.
+        # Floor slab. If `floor_holes` is defined, split the plate into
+        # four border strips around the hole so the hole is a real
+        # open shaft (not a CSG subtract that can drift). Multiple
+        # holes would need a proper partitioner; one hole covers
+        # atrium / stair shaft / elevator well cases.
         if room.get("floor", True):
-            emit_box(scene, room_parent, "Floor",
-                     (sx / 2.0, -0.1, sz / 2.0),
-                     (sx, 0.2, sz), floor_mat)
-        # Ceiling — thin box on top.
+            holes = room.get("floor_holes", [])
+            if not holes:
+                emit_box(scene, room_parent, "Floor",
+                         (sx / 2.0, -0.1, sz / 2.0),
+                         (sx, 0.2, sz), floor_mat)
+            else:
+                hole = holes[0]
+                hx0 = float(hole["x"])
+                hz0 = float(hole["z"])
+                hw = float(hole["width"])
+                hd = float(hole["depth"])
+                hx1 = hx0 + hw
+                hz1 = hz0 + hd
+                # South strip (z < hz0).
+                if hz0 > 0:
+                    emit_box(scene, room_parent, "Floor_S",
+                             (sx / 2.0, -0.1, hz0 / 2.0),
+                             (sx, 0.2, hz0), floor_mat)
+                # North strip (z > hz1).
+                if hz1 < sz:
+                    emit_box(scene, room_parent, "Floor_N",
+                             (sx / 2.0, -0.1, (hz1 + sz) / 2.0),
+                             (sx, 0.2, sz - hz1), floor_mat)
+                # West strip (x < hx0), Z only across the hole band.
+                if hx0 > 0:
+                    emit_box(scene, room_parent, "Floor_W",
+                             (hx0 / 2.0, -0.1, (hz0 + hz1) / 2.0),
+                             (hx0, 0.2, hz1 - hz0), floor_mat)
+                # East strip (x > hx1).
+                if hx1 < sx:
+                    emit_box(scene, room_parent, "Floor_E",
+                             ((hx1 + sx) / 2.0, -0.1, (hz0 + hz1) / 2.0),
+                             (sx - hx1, 0.2, hz1 - hz0), floor_mat)
+        # Ceiling — thin box on top. Same hole logic when requested.
         if room.get("ceiling", True):
-            emit_box(scene, room_parent, "Ceiling",
-                     (sx / 2.0, sy + 0.1, sz / 2.0),
-                     (sx, 0.2, sz), room_mat)
+            c_holes = room.get("ceiling_holes", [])
+            if not c_holes:
+                emit_box(scene, room_parent, "Ceiling",
+                         (sx / 2.0, sy + 0.1, sz / 2.0),
+                         (sx, 0.2, sz), room_mat)
+            else:
+                hole = c_holes[0]
+                hx0 = float(hole["x"]); hz0 = float(hole["z"])
+                hw = float(hole["width"]); hd = float(hole["depth"])
+                hx1 = hx0 + hw; hz1 = hz0 + hd
+                if hz0 > 0:
+                    emit_box(scene, room_parent, "Ceil_S",
+                             (sx / 2.0, sy + 0.1, hz0 / 2.0),
+                             (sx, 0.2, hz0), room_mat)
+                if hz1 < sz:
+                    emit_box(scene, room_parent, "Ceil_N",
+                             (sx / 2.0, sy + 0.1, (hz1 + sz) / 2.0),
+                             (sx, 0.2, sz - hz1), room_mat)
+                if hx0 > 0:
+                    emit_box(scene, room_parent, "Ceil_W",
+                             (hx0 / 2.0, sy + 0.1, (hz0 + hz1) / 2.0),
+                             (hx0, 0.2, hz1 - hz0), room_mat)
+                if hx1 < sx:
+                    emit_box(scene, room_parent, "Ceil_E",
+                             ((hx1 + sx) / 2.0, sy + 0.1, (hz0 + hz1) / 2.0),
+                             (sx - hx1, 0.2, hz1 - hz0), room_mat)
 
         walls = room.get("walls", {})
         # NORTH: at z = sz, length along X. Openings x=0..sx.
@@ -498,19 +555,166 @@ def build_scene(blueprint: dict, scene_name: str) -> Scene:
                      (px + s[0] / 2.0, py + s[1] / 2.0, pz + s[2] / 2.0),
                      tuple(s), mat)
         elif kind == "stair":
+            # Stair with orientation. direction chooses which way the
+            # climb goes: +z (default), -z, +x, -x. Optional landing
+            # at half-height forms an L-shape via a second flight in
+            # a perpendicular direction.
             steps = int(extra.get("steps", 6))
             rise = float(extra.get("rise", 0.4))
             run = float(extra.get("run", 0.6))
             width = float(extra.get("width", 2.0))
+            direction = extra.get("direction", "+z")
+            # Unit vectors for the climb axis (dx, dz) and the width
+            # axis (wx, wz — the direction the step's width extends).
+            if direction == "+z":
+                dx, dz, wx, wz = 0, 1, 1, 0
+            elif direction == "-z":
+                dx, dz, wx, wz = 0, -1, 1, 0
+            elif direction == "+x":
+                dx, dz, wx, wz = 1, 0, 0, 1
+            else:  # "-x"
+                dx, dz, wx, wz = -1, 0, 0, 1
             for i in range(steps):
+                step_cx = px + dx * run * (i + 0.5)
+                step_cz = pz + dz * run * (i + 0.5)
+                step_cy = py + rise * (i + 0.5)
+                size_x = width if wx else run
+                size_z = width if wz else run
                 emit_box(scene, scene_name, f"{name}_step{i}",
-                         (px + width / 2.0,
-                          py + rise * (i + 0.5),
-                          pz + run * (i + 0.5)),
-                         (width, rise, run),
+                         (step_cx, step_cy, step_cz),
+                         (size_x, rise, size_z),
                          mat)
+            # Optional landing + second flight for L-shape / switchback.
+            landing = extra.get("landing", None)
+            if landing:
+                # Landing is a square platform at the top of the first
+                # flight. Second flight continues from the landing's
+                # far edge in `landing.direction`.
+                l_size = float(landing.get("size", width))
+                top_y = py + rise * steps
+                land_cx = px + dx * (run * steps + l_size * 0.5)
+                land_cz = pz + dz * (run * steps + l_size * 0.5)
+                emit_box(scene, scene_name, f"{name}_landing",
+                         (land_cx, top_y + 0.1, land_cz),
+                         (l_size if wx else l_size, 0.2, l_size),
+                         mat)
+                l_dir = landing.get("direction", "+z")
+                l_steps = int(landing.get("steps", steps))
+                if l_dir == "+z":
+                    ddx, ddz, dwx, dwz = 0, 1, 1, 0
+                elif l_dir == "-z":
+                    ddx, ddz, dwx, dwz = 0, -1, 1, 0
+                elif l_dir == "+x":
+                    ddx, ddz, dwx, dwz = 1, 0, 0, 1
+                else:
+                    ddx, ddz, dwx, dwz = -1, 0, 0, 1
+                for i in range(l_steps):
+                    sx = land_cx + ddx * run * (i + 0.5)
+                    sz = land_cz + ddz * run * (i + 0.5)
+                    sy = top_y + rise * (i + 0.5)
+                    sizex = width if dwx else run
+                    sizez = width if dwz else run
+                    emit_box(scene, scene_name, f"{name}_up_step{i}",
+                             (sx, sy, sz), (sizex, rise, sizez), mat)
+        elif kind == "spiral_stair":
+            # Helical staircase winding around a vertical axis at
+            # (px, py, pz). Each step is a wedge-shaped box rotated
+            # around Y by its angular offset. For a cheap wedge we use
+            # a thin box positioned outward from the axis.
+            steps = int(extra.get("steps", 16))
+            rise = float(extra.get("rise", 0.35))
+            radius = float(extra.get("radius", 1.6))
+            width = float(extra.get("width", 1.8))
+            depth = float(extra.get("depth", 0.55))
+            angle_per_step = float(extra.get("angle", 0.45))  # radians
+            import math as _m
+            for i in range(steps):
+                theta = i * angle_per_step
+                cx_world = px + radius * _m.cos(theta)
+                cz_world = pz + radius * _m.sin(theta)
+                cy_world = py + rise * (i + 0.5)
+                # Each step is an axis-aligned box oriented along the
+                # radial direction. We can't rotate via Transform3D
+                # without building a full basis; instead we emit
+                # shallow boxes and let Godot's imperfect result look
+                # "carved stone" rather than "pie slice." Good enough
+                # for a playable spiral.
+                # Size: width along the tangent, depth along the radial.
+                emit_rotated_box(
+                    scene, scene_name, f"{name}_step{i}",
+                    (cx_world, cy_world, cz_world),
+                    (width, rise, depth),
+                    theta,
+                    mat,
+                )
+            # Central column so the stair has something to hug.
+            h = rise * steps
+            emit_box(scene, scene_name, f"{name}_column",
+                     (px, py + h * 0.5, pz),
+                     (radius * 0.5, h, radius * 0.5), mat)
+        elif kind == "elevator":
+            # Moving platform shuttling between two Y levels. The
+            # runtime script (scripts/elevator.gd) reads meta values
+            # to know the Y range, speed, and trigger behavior.
+            low_y = float(extra.get("low_y", py))
+            high_y = float(extra.get("high_y", py + 4.0))
+            eh = float(extra.get("thickness", 0.4))
+            ew = float(extra.get("width", 2.4))
+            ed = float(extra.get("depth", 2.4))
+            speed = float(extra.get("speed", 2.0))
+            mode = extra.get("mode", "toggle")  # toggle|loop|call
+            body_transform = xform_translate(px, low_y + eh * 0.5, pz)
+            body_body = (
+                f'transform = {body_transform}\n'
+                f'collision_layer = 1\n'
+                f'collision_mask = 1\n'
+                f'metadata/elevator_low_y = {low_y}\n'
+                f'metadata/elevator_high_y = {high_y}\n'
+                f'metadata/elevator_speed = {speed}\n'
+                f'metadata/elevator_mode = "{mode}"\n'
+                f'script = ExtResource("{scene.ext_resource("res://scripts/elevator.gd", "Script")}")\n'
+            )
+            scene.node(name, scene_name, "AnimatableBody3D", body_body)
+            mesh_id = scene.sub("BoxMesh", f"size = {vec(ew, eh, ed)}\n")
+            shape_id = scene.sub("BoxShape3D", f"size = {vec(ew, eh, ed)}\n")
+            mi = f'mesh = SubResource("{mesh_id}")\n'
+            if mat is not None:
+                mi += f'surface_material_override/0 = ExtResource("{mat}")\n'
+            scene.node("Mesh", f"{scene_name}/{name}", "MeshInstance3D", mi)
+            scene.node("Col", f"{scene_name}/{name}", "CollisionShape3D",
+                       f'shape = SubResource("{shape_id}")\n')
 
     return scene
+
+
+def emit_rotated_box(scene: Scene, parent: str, name: str,
+                     pos: tuple[float, float, float],
+                     size: tuple[float, float, float],
+                     y_rotation: float,
+                     mat_id: str | None) -> None:
+    """Spiral-stair helper: emit a box with a Y-axis rotation baked
+    into the StaticBody3D transform. Used for spiral steps that wind
+    around an axis."""
+    import math as _m
+    c = _m.cos(y_rotation)
+    s = _m.sin(y_rotation)
+    mesh_id = scene.sub("BoxMesh", f"size = {vec(*size)}\n")
+    shape_id = scene.sub("BoxShape3D", f"size = {vec(*size)}\n")
+    tx, ty, tz = pos
+    # Rotation around Y axis (columns are X, Y, Z direction vectors).
+    body_body = (
+        f'transform = Transform3D({c}, 0, {-s}, 0, 1, 0, {s}, 0, {c}, '
+        f'{tx}, {ty}, {tz})\n'
+        f'collision_layer = 1\n'
+        f'collision_mask = 1\n'
+    )
+    scene.node(name, parent, "StaticBody3D", body_body)
+    mi = f'mesh = SubResource("{mesh_id}")\n'
+    if mat_id is not None:
+        mi += f'surface_material_override/0 = ExtResource("{mat_id}")\n'
+    scene.node("Mesh", f"{parent}/{name}", "MeshInstance3D", mi)
+    scene.node("Col", f"{parent}/{name}", "CollisionShape3D",
+               f'shape = SubResource("{shape_id}")\n')
 
 
 def main() -> int:

@@ -22,6 +22,7 @@ const LEVEL_SHORTCUTS := {
     KEY_7: ["sky",       1],
     KEY_8: ["bowser",    1],
     KEY_9: ["demo_full", 1],
+    KEY_0: ["test_multistory", 1],
 }
 
 # Q / E step through the worlds in order.
