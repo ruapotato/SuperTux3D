@@ -1,17 +1,45 @@
-[gd_scene load_steps=13 format=3 uid="uid://bkoopa002"]
+[gd_scene load_steps=21 format=3 uid="uid://bkoopa002"]
 
-; Clean-room Koopa Troopa. Green domed shell, yellow plastron, head forward.
+; Clean-room Koopa Troopa. Green tiered shell, yellow plastron, beaked head.
+; Added: tiered shell rings, shell rim band, tail nub, wider beak, eye pupils,
+; claw spike prisms on feet.
 ; Feet at y=0, faces -Z.
 
 [sub_resource type="SphereMesh" id="shell_mesh"]
 radius = 0.32
-height = 0.4
+height = 0.42
 radial_segments = 16
 rings = 10
 is_hemisphere = true
 
 [sub_resource type="StandardMaterial3D" id="shell_mat"]
 albedo_color = Color(0.15, 0.65, 0.2, 1)
+shading_mode = 0
+
+[sub_resource type="StandardMaterial3D" id="shell_dark_mat"]
+albedo_color = Color(0.09, 0.45, 0.14, 1)
+shading_mode = 0
+
+[sub_resource type="CylinderMesh" id="shell_ring2_mesh"]
+top_radius = 0.24
+bottom_radius = 0.28
+height = 0.04
+radial_segments = 16
+
+[sub_resource type="CylinderMesh" id="shell_ring3_mesh"]
+top_radius = 0.16
+bottom_radius = 0.22
+height = 0.04
+radial_segments = 16
+
+[sub_resource type="CylinderMesh" id="shell_rim_mesh"]
+top_radius = 0.33
+bottom_radius = 0.33
+height = 0.05
+radial_segments = 18
+
+[sub_resource type="StandardMaterial3D" id="shell_rim_mat"]
+albedo_color = Color(0.95, 0.78, 0.2, 1)
 shading_mode = 0
 
 [sub_resource type="SphereMesh" id="plastron_mesh"]
@@ -25,45 +53,81 @@ albedo_color = Color(0.98, 0.85, 0.32, 1)
 shading_mode = 0
 
 [sub_resource type="SphereMesh" id="head_mesh"]
-radius = 0.14
+radius = 0.15
 height = 0.28
 radial_segments = 12
 rings = 8
 
 [sub_resource type="StandardMaterial3D" id="skin_mat"]
-albedo_color = Color(0.92, 0.82, 0.38, 1)
+albedo_color = Color(0.95, 0.85, 0.42, 1)
 shading_mode = 0
 
 [sub_resource type="SphereMesh" id="eye_mesh"]
-radius = 0.025
-height = 0.05
+radius = 0.035
+height = 0.07
 radial_segments = 8
 rings = 6
 
-[sub_resource type="StandardMaterial3D" id="eye_mat"]
+[sub_resource type="StandardMaterial3D" id="eye_white_mat"]
+albedo_color = Color(0.98, 0.98, 0.98, 1)
+shading_mode = 0
+
+[sub_resource type="SphereMesh" id="pupil_mesh"]
+radius = 0.018
+height = 0.036
+radial_segments = 6
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="pupil_mat"]
 albedo_color = Color(0.05, 0.05, 0.08, 1)
 shading_mode = 0
 
-[sub_resource type="BoxMesh" id="beak_mesh"]
-size = Vector3(0.08, 0.04, 0.06)
+[sub_resource type="PrismMesh" id="beak_mesh"]
+size = Vector3(0.1, 0.05, 0.08)
+left_to_right = 0.5
 
 [sub_resource type="StandardMaterial3D" id="beak_mat"]
-albedo_color = Color(0.95, 0.6, 0.15, 1)
+albedo_color = Color(0.96, 0.6, 0.12, 1)
 shading_mode = 0
+
+[sub_resource type="SphereMesh" id="tail_mesh"]
+radius = 0.06
+height = 0.14
+radial_segments = 10
+rings = 6
 
 [sub_resource type="BoxMesh" id="foot_mesh"]
 size = Vector3(0.14, 0.1, 0.2)
 
 [sub_resource type="StandardMaterial3D" id="foot_mat"]
-albedo_color = Color(0.85, 0.45, 0.1, 1)
+albedo_color = Color(0.88, 0.45, 0.1, 1)
 shading_mode = 0
+
+[sub_resource type="PrismMesh" id="claw_mesh"]
+size = Vector3(0.025, 0.04, 0.03)
+left_to_right = 0.5
 
 [node name="EnemyVisual" type="Node3D"]
 
 [node name="Shell" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, -0.02)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.33, -0.02)
 mesh = SubResource("shell_mesh")
 surface_material_override/0 = SubResource("shell_mat")
+
+[node name="ShellRim" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.33, -0.02)
+mesh = SubResource("shell_rim_mesh")
+surface_material_override/0 = SubResource("shell_rim_mat")
+
+[node name="ShellRing2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.47, -0.02)
+mesh = SubResource("shell_ring2_mesh")
+surface_material_override/0 = SubResource("shell_dark_mat")
+
+[node name="ShellRing3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.53, -0.02)
+mesh = SubResource("shell_ring3_mesh")
+surface_material_override/0 = SubResource("shell_dark_mat")
 
 [node name="Plastron" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0.1)
@@ -71,24 +135,39 @@ mesh = SubResource("plastron_mesh")
 surface_material_override/0 = SubResource("plastron_mat")
 
 [node name="Head" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.38, 0.3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0.32)
 mesh = SubResource("head_mesh")
 surface_material_override/0 = SubResource("skin_mat")
 
-[node name="EyeL" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, 0.42, 0.42)
+[node name="EyeWhiteL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.055, 0.45, 0.43)
 mesh = SubResource("eye_mesh")
-surface_material_override/0 = SubResource("eye_mat")
+surface_material_override/0 = SubResource("eye_white_mat")
 
-[node name="EyeR" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, 0.42, 0.42)
+[node name="EyeWhiteR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.055, 0.45, 0.43)
 mesh = SubResource("eye_mesh")
-surface_material_override/0 = SubResource("eye_mat")
+surface_material_override/0 = SubResource("eye_white_mat")
+
+[node name="PupilL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, 0.45, 0.47)
+mesh = SubResource("pupil_mesh")
+surface_material_override/0 = SubResource("pupil_mat")
+
+[node name="PupilR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, 0.45, 0.47)
+mesh = SubResource("pupil_mesh")
+surface_material_override/0 = SubResource("pupil_mat")
 
 [node name="Beak" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.36, 0.44)
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.38, 0.48)
 mesh = SubResource("beak_mesh")
 surface_material_override/0 = SubResource("beak_mat")
+
+[node name="TailNub" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.6, 0.8, 0, -0.8, 0.6, 0, 0.28, -0.32)
+mesh = SubResource("tail_mesh")
+surface_material_override/0 = SubResource("skin_mat")
 
 [node name="FootL" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0.05, 0.05)
@@ -99,3 +178,23 @@ surface_material_override/0 = SubResource("foot_mat")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0.05, 0.05)
 mesh = SubResource("foot_mesh")
 surface_material_override/0 = SubResource("foot_mat")
+
+[node name="ClawL1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, -0.13, 0.1, 0.14)
+mesh = SubResource("claw_mesh")
+surface_material_override/0 = SubResource("eye_white_mat")
+
+[node name="ClawL2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, -0.07, 0.1, 0.14)
+mesh = SubResource("claw_mesh")
+surface_material_override/0 = SubResource("eye_white_mat")
+
+[node name="ClawR1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0.07, 0.1, 0.14)
+mesh = SubResource("claw_mesh")
+surface_material_override/0 = SubResource("eye_white_mat")
+
+[node name="ClawR2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0.13, 0.1, 0.14)
+mesh = SubResource("claw_mesh")
+surface_material_override/0 = SubResource("eye_white_mat")

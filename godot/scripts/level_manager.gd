@@ -108,11 +108,13 @@ func _add_safety_floor() -> void:
 
 
 func _spawn_markers(level_root: Node) -> void:
-    # Walk the level scene for metadata markers and create enemies/
-    # pickups at their world positions. Supported metadata keys:
-    #   enemy_bhv   → string (bhvGoomba, bhvKoopa, ...) → spawns enemy.gd
-    #   pickup_kind → string (coin_yellow, star, ...)  → spawns pickup Area3D
-    var spawn_count := {"enemy": 0, "pickup": 0}
+    # Walk the level scene for metadata markers and create gameplay
+    # objects at their world positions. Supported metadata keys:
+    #   enemy_bhv   → spawns enemy.gd CharacterBody3D
+    #   pickup_kind → spawns pickup Area3D
+    #   warp_to     → the Area3D becomes a level-transition trigger;
+    #                 when Mario enters, load the named level
+    var spawn_count := {"enemy": 0, "pickup": 0, "warp": 0}
     var queue: Array = [level_root]
     while not queue.is_empty():
         var n: Node = queue.pop_front()
@@ -136,9 +138,16 @@ func _spawn_markers(level_root: Node) -> void:
                 p.global_position = n3.global_position
                 world_root.add_child(p)
                 spawn_count.pickup += 1
-    if spawn_count.enemy > 0 or spawn_count.pickup > 0:
-        print("[level_manager] seeded %d enemies, %d pickups from scene markers"
-              % [spawn_count.enemy, spawn_count.pickup])
+            if n.has_meta("warp_to") and n is Area3D:
+                var target_level: String = str(n.get_meta("warp_to"))
+                (n as Area3D).body_entered.connect(
+                    func(body: Node) -> void:
+                        if body == mario:
+                            call_deferred("load_level", target_level, 1))
+                spawn_count.warp += 1
+    if spawn_count.enemy > 0 or spawn_count.pickup > 0 or spawn_count.warp > 0:
+        print("[level_manager] seeded %d enemies, %d pickups, %d warps from scene markers"
+              % [spawn_count.enemy, spawn_count.pickup, spawn_count.warp])
 
 
 func _find_spawn(level_root: Node) -> Vector3:

@@ -222,11 +222,14 @@ func _pose_freefall(t: float) -> void:
     _rot(bones.get("torso"), Vector3(0.1, 0, 0))
 
 
-# Flip: continuous torso rotation around X over the duration. Sign
-# picks forward vs backward flip. Magnitude > 1 spins past a full flip.
+# Flip: continuous rotation around the pelvis (not torso) so the legs
+# go with the body. Rotating torso alone leaves the legs stuck since
+# they're children of pelvis, not torso. Sign picks forward vs backward
+# flip; magnitude >1 spins past a full flip.
 func _pose_flip(t: float, rate: float) -> void:
     var angle: float = t * 7.0 * rate
-    _rot(bones.get("torso"), Vector3(angle, 0, 0))
+    _rot(bones.get("pelvis"), Vector3(angle, 0, 0))
+    _rot(bones.get("torso"), Vector3(0, 0, 0))
     _rot(bones.get("arm_l"), Vector3(-2.3, 0, -0.3))
     _rot(bones.get("arm_r"), Vector3(-2.3, 0, 0.3))
     _rot(bones.get("leg_l"), Vector3(-0.6, 0, 0))

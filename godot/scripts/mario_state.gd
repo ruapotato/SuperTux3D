@@ -293,6 +293,13 @@ func _act_idle(_delta: float) -> bool:
         return set_action(ACT_PUNCHING)
     if input_stick.length() > 0.1:
         forward_vel = 0.0
+        # Snap to the stick direction on the very first frame of motion.
+        # Without this, ACT_WALKING's gradual turn sweeps Mario through a
+        # small U-turn whenever the stick comes up from neutral in a
+        # different direction than he was last facing.
+        var snap_dir := _stick_to_world_dir()
+        if snap_dir.length() > 0.001:
+            face_yaw = atan2(-snap_dir.x, -snap_dir.z)
         return set_action(ACT_WALKING)
     # Cycle through HEAD_LEFT → HEAD_RIGHT → HEAD_CENTER like the decomp.
     match action_state:
@@ -392,8 +399,14 @@ func _act_braking(delta: float) -> bool:
     vel.y = -1.0
     if forward_vel <= 0.1:
         return set_action(ACT_IDLE)
-    # If the player pushes stick in a new direction hard, let them redirect.
+    # If the player pushes stick in a new direction hard, let them
+    # redirect. Snap face_yaw to the stick first, so the turn reads as
+    # a quick pivot instead of a gradual swing.
     if input_stick.length() > 0.1:
+        var snap_dir := _stick_to_world_dir()
+        if snap_dir.length() > 0.001:
+            face_yaw = atan2(-snap_dir.x, -snap_dir.z)
+        forward_vel = max(forward_vel, 2.0)
         return set_action(ACT_WALKING)
     return false
 

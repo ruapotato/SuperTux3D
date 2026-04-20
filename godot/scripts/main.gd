@@ -145,20 +145,19 @@ func _on_star_collected() -> void:
     if _save != null:
         _save.record_star(_level_manager.current_level)
     _respawn_after(2.5)
-    # Override the next respawn to land in castle_grounds rather than the
-    # current level's spawn. The simplest approach: change the current
-    # level_manager state immediately before respawn fires.
+    # After a short star fanfare, warp back to the grass hub so each
+    # level trip feels like a round-trip from a home base.
     var t := Timer.new()
     t.wait_time = 2.4
     t.one_shot = true
     add_child(t)
-    t.timeout.connect(_go_to_castle)
+    t.timeout.connect(_go_to_hub)
     t.start()
 
 
-func _go_to_castle() -> void:
+func _go_to_hub() -> void:
     if _level_manager != null:
-        _level_manager.current_level = "castle_inside"
+        _level_manager.current_level = BOOT_LEVEL
         _level_manager.current_area = 1
 
 
@@ -319,7 +318,7 @@ func _process(delta: float) -> void:
         + "action: %s\n"
         + "%s\n"
         + "WASD move  Space jump  Ctrl crouch  Shift attack/dive\n"
-        + "Wheel zoom  1-9 swap level  0 castle  Q/E cycle  R respawn  F1 collision"
+        + "Wheel zoom  1-8 swap world  Q/E cycle  R respawn  F1 collision"
     ) % [
         level_info,
         stats,

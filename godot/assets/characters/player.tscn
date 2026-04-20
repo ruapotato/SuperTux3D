@@ -113,8 +113,10 @@ shading_mode = 0
 
 [node name="Rig" type="Node3D"]
 
+; 180° rotation around Y so the character's face (authored at +Z in
+; mesh space) ends up at -Z, matching Godot's "forward = -Z" convention.
 [node name="pelvis" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.5, 0)
 
 [node name="torso" type="Node3D" parent="pelvis"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
