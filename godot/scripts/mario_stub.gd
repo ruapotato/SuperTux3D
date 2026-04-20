@@ -33,6 +33,23 @@ var star_count: int = 0
 var lives: int = 4
 var power_cap: String = ""      # "wing" / "metal" / "vanish" / ""
 var power_cap_time: float = 0.0  # seconds remaining
+# Inventory of collected keys ("bronze", "silver", "gold"). Locked
+# doors check has_key() before letting the player through.
+var keys: Array[String] = []
+
+
+func has_key(color: String) -> bool:
+    return color in keys
+
+
+func consume_key(color: String) -> bool:
+    # Remove one copy of the key; returns true if it was there. Lets
+    # doors be one-shot (consumes) or reusable (peek via has_key).
+    var idx: int = keys.find(color)
+    if idx < 0:
+        return false
+    keys.remove_at(idx)
+    return true
 
 var _prev_crouch: bool = false
 var _prev_attack: bool = false
@@ -344,8 +361,36 @@ func _play_state_sfx() -> void:
             _play_sfx("land")
         MarioStateScript.ACT_GROUND_POUND_LAND:
             _play_sfx("ground_pound")
+            _break_nearby_blocks()
         MarioStateScript.ACT_PUNCHING:
             _play_sfx("punch")
+
+
+func _break_nearby_blocks() -> void:
+    # Ground-pound smashes any breakable block within 2m. Each block is
+    # registered in the 'breakable' group by level_manager when it
+    # finds meta('breakable'=true) in the level scene. On break, we
+    # optionally spawn the reward listed in meta('reward_kind').
+    for node in get_tree().get_nodes_in_group("breakable"):
+        if not (node is Node3D):
+            continue
+        var n3: Node3D = node
+        if global_position.distance_to(n3.global_position) > 2.0:
+            continue
+        var reward: String = str(n3.get_meta("reward_kind", ""))
+        var reward_pos: Vector3 = n3.global_position
+        if reward != "":
+            _spawn_reward_at(reward, reward_pos)
+        n3.queue_free()
+
+
+func _spawn_reward_at(kind: String, pos: Vector3) -> void:
+    # Import the spawner on demand to avoid circular preload. Uses the
+    # same PICKUP_SCENES table that normal pickups use.
+    var ObjectSpawner := preload("res://scripts/object_spawner.gd")
+    var p: Node3D = ObjectSpawner._make_pickup(kind)
+    get_tree().current_scene.add_child(p)
+    p.global_position = pos
 
 
 func _on_pickup(other: Area3D) -> void:
@@ -381,6 +426,11 @@ func _on_pickup(other: Area3D) -> void:
         "cap_vanish":
             power_cap = "vanish"
             power_cap_time = 20.0
+            _play_sfx("cap")
+        "key_bronze", "key_silver", "key_gold":
+            var color: String = kind.substr(4)  # strip "key_"
+            if not has_key(color):  # don't stack duplicates
+                keys.append(color)
             _play_sfx("cap")
     other.queue_free()
 

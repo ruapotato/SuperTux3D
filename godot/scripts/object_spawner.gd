@@ -238,6 +238,9 @@ const PICKUP_SCENES := {
     "cap_wing":    "res://assets/pickups/cap_wing.tscn",
     "cap_metal":   "res://assets/pickups/cap_metal.tscn",
     "cap_vanish":  "res://assets/pickups/cap_normal.tscn",
+    "key_bronze":  "res://assets/pickups/key_bronze.tscn",
+    "key_silver":  "res://assets/pickups/key_silver.tscn",
+    "key_gold":    "res://assets/pickups/key_gold.tscn",
 }
 
 

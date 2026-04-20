@@ -9,7 +9,9 @@ const BOOT_LEVEL := "grass_hub"
 const BOOT_AREA := 1
 
 # Level-switcher keyboard shortcuts. Each key jumps to one of the
-# procedural clean-room worlds.
+# procedural clean-room worlds. Key 9 jumps to the blueprint demo
+# (locked door + breakable block + key pickup), useful for testing
+# the new systems without needing to find them inside a big level.
 const LEVEL_SHORTCUTS := {
     KEY_1: ["grass_hub", 1],
     KEY_2: ["mountain",  1],
@@ -19,6 +21,7 @@ const LEVEL_SHORTCUTS := {
     KEY_6: ["sand",      1],
     KEY_7: ["sky",       1],
     KEY_8: ["bowser",    1],
+    KEY_9: ["demo_full", 1],
 }
 
 # Q / E step through the worlds in order.

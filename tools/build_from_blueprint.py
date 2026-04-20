@@ -223,15 +223,78 @@ def emit_wall_with_openings(
 # -----------------------------------------------------------------------
 # Blueprint interpreter
 
+def _find_room(blueprint: dict, name: str) -> dict | None:
+    for r in blueprint.get("rooms", []):
+        if r["name"] == name:
+            return r
+    return None
+
+
+def _opposite(side: str) -> str:
+    return {"north": "south", "south": "north",
+            "east": "west", "west": "east"}.get(side, side)
+
+
+def _inject_opening(room: dict, side: str, opening: dict) -> None:
+    """Ensure `room['walls'][side]['openings']` contains `opening`.
+    Used by connector declarations so room authors don't have to
+    hand-copy the same door spec onto both sides."""
+    walls = room.setdefault("walls", {})
+    side_spec = walls.setdefault(side, {})
+    openings = side_spec.setdefault("openings", [])
+    openings.append(opening)
+
+
 def build_scene(blueprint: dict, scene_name: str) -> Scene:
     scene = Scene()
-    scene.node(scene_name, None, "Node3D")
+    root_body = ""
+    if "spawn_point" in blueprint:
+        sp = blueprint["spawn_point"]
+        root_body = f'metadata/spawn_point = {vec(sp[0], sp[1], sp[2])}\n'
+    scene.node(scene_name, None, "Node3D", root_body)
+    # When requested, inject a basic Environment + Sun so the scene
+    # loads as a standalone playable level. Without this the blueprint
+    # output is just geometry — no lighting, black ambient.
+    if blueprint.get("standalone_level", False):
+        env_body = (
+            'background_mode = 1\n'
+            'background_color = Color(0.52, 0.75, 0.98, 1)\n'
+            'ambient_light_source = 2\n'
+            'ambient_light_color = Color(0.8, 0.82, 0.78, 1)\n'
+            'ambient_light_energy = 0.8\n'
+        )
+        env_id = scene.sub("Environment", env_body)
+        scene.node("WorldEnvironment", scene_name, "WorldEnvironment",
+                   f'environment = SubResource("{env_id}")\n')
+        scene.node("Sun", scene_name, "DirectionalLight3D",
+                   'transform = Transform3D(0.7, -0.5, 0.5, 0.0, 0.7, 0.7, -0.7, -0.5, 0.5, 0, 6, 0)\n')
     mats = blueprint.get("materials", {})
     mat_ids: dict[str, str] = {}
     for name, path in mats.items():
         mat_ids[name] = scene.ext_resource(path, "Material")
 
     wall_t = float(blueprint.get("wall_thickness", 0.3))
+
+    # Resolve connectors FIRST so rooms emit their walls with the
+    # injected openings already in place. A connector links two
+    # rooms by name and adds a matching door/window opening on
+    # each room's adjacent wall.
+    for conn in blueprint.get("connectors", []):
+        ra = _find_room(blueprint, conn["room_a"])
+        rb = _find_room(blueprint, conn["room_b"])
+        if ra is None or rb is None:
+            continue
+        opening_a = {
+            "type": conn.get("type", "door"),
+            "x": conn["x_a"],
+            "width": conn.get("width", 2.0),
+            "height": conn.get("height", 3.0),
+            "sill": conn.get("sill", 0.0),
+        }
+        opening_b = dict(opening_a)
+        opening_b["x"] = conn["x_b"]
+        _inject_opening(ra, conn["side_a"], opening_a)
+        _inject_opening(rb, _opposite(conn["side_a"]), opening_b)
 
     for room in blueprint.get("rooms", []):
         rname = room["name"]
@@ -297,6 +360,107 @@ def build_scene(blueprint: dict, scene_name: str) -> Scene:
                 walls["west"].get("openings", []),
                 room_mat,
             )
+
+    # Breakable blocks — meta('breakable'=true). Optionally meta
+    # ('reward_kind') spawns a pickup at the block's position when
+    # ground-pounded.
+    for block in blueprint.get("blocks", []):
+        bx, by, bz = block["pos"]
+        sx, sy, sz = block.get("size", [1.4, 1.4, 1.4])
+        mat = mat_ids.get(block.get("material", ""))
+        name = block.get("name") or f"Block_{bx}_{by}_{bz}"
+        mesh_id = scene.sub("BoxMesh", f"size = {vec(sx, sy, sz)}\n")
+        shape_id = scene.sub("BoxShape3D", f"size = {vec(sx, sy, sz)}\n")
+        body = (
+            f'transform = {xform_translate(bx, by + sy * 0.5, bz)}\n'
+            f'collision_layer = 1\n'
+            f'collision_mask = 1\n'
+        )
+        if block.get("breakable", False):
+            body += 'metadata/breakable = true\n'
+            if "reward" in block:
+                body += f'metadata/reward_kind = "{block["reward"]}"\n'
+        scene.node(name, scene_name, "StaticBody3D", body)
+        mi_body = f'mesh = SubResource("{mesh_id}")\n'
+        if mat is not None:
+            mi_body += f'surface_material_override/0 = ExtResource("{mat}")\n'
+        scene.node("Mesh", f"{scene_name}/{name}", "MeshInstance3D", mi_body)
+        scene.node("Col", f"{scene_name}/{name}", "CollisionShape3D",
+                   f'shape = SubResource("{shape_id}")\n')
+
+    # Keys — just pickup Area3Ds with meta('pickup_kind'='key_<color>').
+    # object_spawner already knows key_bronze/silver/gold. In the
+    # blueprint we just drop a marker and the runtime seeder handles it.
+    for key in blueprint.get("keys", []):
+        kx, ky, kz = key["pos"]
+        color = key.get("color", "bronze")
+        name = key.get("name") or f"Key_{color}_{kx}_{ky}_{kz}"
+        body = (
+            f'transform = {xform_translate(kx, ky, kz)}\n'
+            f'metadata/pickup_kind = "key_{color}"\n'
+        )
+        scene.node(name, scene_name, "Marker3D", body)
+
+    # Locked doors. Two forms:
+    # 1. "warp"      — Area3D that warps to another level but blocks
+    #                   until player has the key.
+    # 2. "barrier"   — Area3D + barrier mesh that removes itself when
+    #                   the player consumes the key. No level warp.
+    for lock in blueprint.get("locks", []):
+        lx, ly, lz = lock["pos"]
+        key_color = lock.get("key", "bronze")
+        width = float(lock.get("width", 2.0))
+        height = float(lock.get("height", 3.5))
+        depth = float(lock.get("depth", 0.5))
+        name = lock.get("name") or f"Lock_{lx}_{ly}_{lz}"
+        if lock["type"] == "warp":
+            body = (
+                f'transform = {xform_translate(lx, ly + height * 0.5, lz)}\n'
+                f'collision_layer = 0\n'
+                f'collision_mask = 1\n'
+                f'metadata/warp_to = "{lock.get("warp_to", "")}"\n'
+                f'metadata/lock_key = "{key_color}"\n'
+            )
+            scene.node(name, scene_name, "Area3D", body)
+            # Trigger volume.
+            shape_id = scene.sub("BoxShape3D", f"size = {vec(width, height, depth)}\n")
+            scene.node("Col", f"{scene_name}/{name}", "CollisionShape3D",
+                       f'shape = SubResource("{shape_id}")\n')
+        else:
+            # Barrier: parent Area3D holds a child StaticBody3D that
+            # gets freed when the key is consumed.
+            body = (
+                f'transform = {xform_translate(lx, ly + height * 0.5, lz)}\n'
+                f'collision_layer = 0\n'
+                f'collision_mask = 1\n'
+                f'metadata/lock_key = "{key_color}"\n'
+                f'metadata/lock_barrier = "Barrier"\n'
+            )
+            scene.node(name, scene_name, "Area3D", body)
+            shape_id = scene.sub("BoxShape3D", f"size = {vec(width, height, depth)}\n")
+            scene.node("Col", f"{scene_name}/{name}", "CollisionShape3D",
+                       f'shape = SubResource("{shape_id}")\n')
+            # Barrier mesh + collision inside the Area3D.
+            barrier_body = (
+                'collision_layer = 1\n'
+                'collision_mask = 1\n'
+            )
+            scene.node("Barrier", f"{scene_name}/{name}",
+                       "StaticBody3D", barrier_body)
+            bmesh = scene.sub("BoxMesh", f"size = {vec(width, height, depth)}\n")
+            bshape = scene.sub("BoxShape3D",
+                                f"size = {vec(width, height, depth)}\n")
+            bmat = mat_ids.get(lock.get("material", ""), None)
+            bmi = f'mesh = SubResource("{bmesh}")\n'
+            if bmat is not None:
+                bmi += f'surface_material_override/0 = ExtResource("{bmat}")\n'
+            scene.node("Mesh",
+                       f"{scene_name}/{name}/Barrier",
+                       "MeshInstance3D", bmi)
+            scene.node("Col",
+                       f"{scene_name}/{name}/Barrier",
+                       "CollisionShape3D",
+                       f'shape = SubResource("{bshape}")\n')
 
     # Extras: pillars, stairs, platforms, etc. — purely additive primitives.
     for extra in blueprint.get("extras", []):

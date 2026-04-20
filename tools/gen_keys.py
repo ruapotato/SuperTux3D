@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+"""Generate the 3 key pickup .tscn scenes under assets/pickups/key_*.tscn."""
+import os
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                   "..", "godot", "assets", "pickups")
+
+# (filename, display color, emission color)
+KEYS = [
+    ("key_bronze.tscn", "Color(0.72, 0.42, 0.18, 1)", "Color(0.85, 0.45, 0.18, 1)"),
+    ("key_silver.tscn", "Color(0.80, 0.84, 0.88, 1)", "Color(0.75, 0.82, 0.95, 1)"),
+    ("key_gold.tscn",   "Color(0.98, 0.82, 0.22, 1)", "Color(1.0, 0.78, 0.22, 1)"),
+]
+
+TEMPLATE = '''[gd_scene load_steps=9 format=3 uid="uid://bkey{idx}"]
+
+[sub_resource type="StandardMaterial3D" id="key_mat"]
+albedo_color = {color}
+metallic = 0.8
+roughness = 0.25
+emission_enabled = true
+emission = {emission}
+emission_energy_multiplier = 0.4
+
+[sub_resource type="CylinderMesh" id="shaft"]
+top_radius = 0.05
+bottom_radius = 0.05
+height = 0.35
+radial_segments = 10
+
+[sub_resource type="TorusMesh" id="bow"]
+inner_radius = 0.09
+outer_radius = 0.14
+rings = 14
+ring_segments = 8
+
+[sub_resource type="BoxMesh" id="tooth1"]
+size = Vector3(0.1, 0.05, 0.02)
+
+[sub_resource type="BoxMesh" id="tooth2"]
+size = Vector3(0.06, 0.05, 0.02)
+
+[sub_resource type="Animation" id="spin"]
+length = 2.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {{
+"times": PackedFloat32Array(0, 1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 3.14159, 0), Vector3(0, 6.28318, 0)],
+}}
+
+[sub_resource type="AnimationLibrary" id="anim_lib"]
+_data = {{
+"spin": SubResource("spin"),
+}}
+
+[node name="Key" type="Node3D"]
+
+[node name="Shaft" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, 0)
+mesh = SubResource("shaft")
+surface_material_override/0 = SubResource("key_mat")
+
+[node name="Bow" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+mesh = SubResource("bow")
+surface_material_override/0 = SubResource("key_mat")
+
+[node name="Tooth1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07, -0.12, 0)
+mesh = SubResource("tooth1")
+surface_material_override/0 = SubResource("key_mat")
+
+[node name="Tooth2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.04, -0.06, 0)
+mesh = SubResource("tooth2")
+surface_material_override/0 = SubResource("key_mat")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {{
+"": SubResource("anim_lib"),
+}}
+autoplay = "spin"
+'''
+
+for idx, (fname, color, emission) in enumerate(KEYS):
+    with open(os.path.join(OUT, fname), "w") as f:
+        f.write(TEMPLATE.format(idx=idx, color=color, emission=emission))
+    print(f"wrote {fname}")

@@ -1,0 +1,899 @@
+[gd_scene load_steps=123 format=3]
+[ext_resource type="Material" path="res://assets/materials/brick_stone.tres" id="e1_brick_stone"]
+[ext_resource type="Material" path="res://assets/materials/stone_grey.tres" id="e2_stone_grey"]
+[ext_resource type="Material" path="res://assets/materials/wood_dark.tres" id="e3_wood_dark"]
+[ext_resource type="Material" path="res://assets/materials/fabric_red.tres" id="e4_fabric_red"]
+[ext_resource type="Material" path="res://assets/materials/silver.tres" id="e5_silver"]
+[ext_resource type="Material" path="res://assets/materials/gold.tres" id="e6_gold"]
+[sub_resource type="Environment" id="s1"]
+background_mode = 1
+background_color = Color(0.52, 0.75, 0.98, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.8, 0.82, 0.78, 1)
+ambient_light_energy = 0.8
+
+[sub_resource type="BoxMesh" id="s2"]
+size = Vector3(14, 0.2, 14)
+
+[sub_resource type="BoxShape3D" id="s3"]
+size = Vector3(14, 0.2, 14)
+
+[sub_resource type="BoxMesh" id="s4"]
+size = Vector3(14, 0.2, 14)
+
+[sub_resource type="BoxShape3D" id="s5"]
+size = Vector3(14, 0.2, 14)
+
+[sub_resource type="BoxMesh" id="s6"]
+size = Vector3(6.0, 5.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s7"]
+size = Vector3(6.0, 5.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s8"]
+size = Vector3(2.5, 1.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s9"]
+size = Vector3(2.5, 1.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s10"]
+size = Vector3(5.5, 5.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s11"]
+size = Vector3(5.5, 5.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s12"]
+size = Vector3(6.0, 5.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s13"]
+size = Vector3(6.0, 5.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s14"]
+size = Vector3(2.5, 1.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s15"]
+size = Vector3(2.5, 1.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s16"]
+size = Vector3(5.5, 5.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s17"]
+size = Vector3(5.5, 5.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s18"]
+size = Vector3(0.4, 5.0, 2.0)
+
+[sub_resource type="BoxShape3D" id="s19"]
+size = Vector3(0.4, 5.0, 2.0)
+
+[sub_resource type="BoxMesh" id="s20"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s21"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s22"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s23"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s24"]
+size = Vector3(0.4, 5.0, 3.5)
+
+[sub_resource type="BoxShape3D" id="s25"]
+size = Vector3(0.4, 5.0, 3.5)
+
+[sub_resource type="BoxMesh" id="s26"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s27"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s28"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s29"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s30"]
+size = Vector3(0.4, 5.0, 2.5)
+
+[sub_resource type="BoxShape3D" id="s31"]
+size = Vector3(0.4, 5.0, 2.5)
+
+[sub_resource type="BoxMesh" id="s32"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s33"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s34"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s35"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s36"]
+size = Vector3(0.4, 5.0, 1.5)
+
+[sub_resource type="BoxShape3D" id="s37"]
+size = Vector3(0.4, 5.0, 1.5)
+
+[sub_resource type="BoxMesh" id="s38"]
+size = Vector3(0.4, 5.0, 2.0)
+
+[sub_resource type="BoxShape3D" id="s39"]
+size = Vector3(0.4, 5.0, 2.0)
+
+[sub_resource type="BoxMesh" id="s40"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s41"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s42"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s43"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s44"]
+size = Vector3(0.4, 5.0, 7.5)
+
+[sub_resource type="BoxShape3D" id="s45"]
+size = Vector3(0.4, 5.0, 7.5)
+
+[sub_resource type="BoxMesh" id="s46"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s47"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s48"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s49"]
+size = Vector3(0.4, 1.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s50"]
+size = Vector3(0.4, 5.0, 1.5)
+
+[sub_resource type="BoxShape3D" id="s51"]
+size = Vector3(0.4, 5.0, 1.5)
+
+[sub_resource type="BoxMesh" id="s52"]
+size = Vector3(14, 0.2, 10)
+
+[sub_resource type="BoxShape3D" id="s53"]
+size = Vector3(14, 0.2, 10)
+
+[sub_resource type="BoxMesh" id="s54"]
+size = Vector3(14, 0.2, 10)
+
+[sub_resource type="BoxShape3D" id="s55"]
+size = Vector3(14, 0.2, 10)
+
+[sub_resource type="BoxMesh" id="s56"]
+size = Vector3(14.0, 6.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s57"]
+size = Vector3(14.0, 6.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s58"]
+size = Vector3(6.0, 6.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s59"]
+size = Vector3(6.0, 6.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s60"]
+size = Vector3(2.5, 2.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s61"]
+size = Vector3(2.5, 2.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s62"]
+size = Vector3(5.5, 6.0, 0.4)
+
+[sub_resource type="BoxShape3D" id="s63"]
+size = Vector3(5.5, 6.0, 0.4)
+
+[sub_resource type="BoxMesh" id="s64"]
+size = Vector3(0.4, 6.0, 2.0)
+
+[sub_resource type="BoxShape3D" id="s65"]
+size = Vector3(0.4, 6.0, 2.0)
+
+[sub_resource type="BoxMesh" id="s66"]
+size = Vector3(0.4, 2.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s67"]
+size = Vector3(0.4, 2.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s68"]
+size = Vector3(0.4, 1.0, 1.5)
+
+[sub_resource type="BoxShape3D" id="s69"]
+size = Vector3(0.4, 1.0, 1.5)
+
+[sub_resource type="BoxMesh" id="s70"]
+size = Vector3(0.4, 6.0, 3.5)
+
+[sub_resource type="BoxShape3D" id="s71"]
+size = Vector3(0.4, 6.0, 3.5)
+
+[sub_resource type="BoxMesh" id="s72"]
+size = Vector3(0.4, 2.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s73"]
+size = Vector3(0.4, 2.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s74"]
+size = Vector3(0.4, 1.0, 1.5)
+
+[sub_resource type="BoxShape3D" id="s75"]
+size = Vector3(0.4, 1.0, 1.5)
+
+[sub_resource type="BoxMesh" id="s76"]
+size = Vector3(0.4, 6.0, 1.5)
+
+[sub_resource type="BoxShape3D" id="s77"]
+size = Vector3(0.4, 6.0, 1.5)
+
+[sub_resource type="BoxMesh" id="s78"]
+size = Vector3(0.4, 6.0, 2.0)
+
+[sub_resource type="BoxShape3D" id="s79"]
+size = Vector3(0.4, 6.0, 2.0)
+
+[sub_resource type="BoxMesh" id="s80"]
+size = Vector3(0.4, 2.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s81"]
+size = Vector3(0.4, 2.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s82"]
+size = Vector3(0.4, 1.0, 1.5)
+
+[sub_resource type="BoxShape3D" id="s83"]
+size = Vector3(0.4, 1.0, 1.5)
+
+[sub_resource type="BoxMesh" id="s84"]
+size = Vector3(0.4, 6.0, 3.5)
+
+[sub_resource type="BoxShape3D" id="s85"]
+size = Vector3(0.4, 6.0, 3.5)
+
+[sub_resource type="BoxMesh" id="s86"]
+size = Vector3(0.4, 2.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s87"]
+size = Vector3(0.4, 2.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s88"]
+size = Vector3(0.4, 1.0, 1.5)
+
+[sub_resource type="BoxShape3D" id="s89"]
+size = Vector3(0.4, 1.0, 1.5)
+
+[sub_resource type="BoxMesh" id="s90"]
+size = Vector3(0.4, 6.0, 1.5)
+
+[sub_resource type="BoxShape3D" id="s91"]
+size = Vector3(0.4, 6.0, 1.5)
+
+[sub_resource type="BoxMesh" id="s92"]
+size = Vector3(1.5, 1.5, 1.5)
+
+[sub_resource type="BoxShape3D" id="s93"]
+size = Vector3(1.5, 1.5, 1.5)
+
+[sub_resource type="BoxMesh" id="s94"]
+size = Vector3(1.4, 1.4, 1.4)
+
+[sub_resource type="BoxShape3D" id="s95"]
+size = Vector3(1.4, 1.4, 1.4)
+
+[sub_resource type="BoxShape3D" id="s96"]
+size = Vector3(2.5, 4.0, 0.5)
+
+[sub_resource type="BoxMesh" id="s97"]
+size = Vector3(2.5, 4.0, 0.5)
+
+[sub_resource type="BoxShape3D" id="s98"]
+size = Vector3(2.5, 4.0, 0.5)
+
+[sub_resource type="BoxMesh" id="s99"]
+size = Vector3(0.6, 5.0, 0.6)
+
+[sub_resource type="BoxShape3D" id="s100"]
+size = Vector3(0.6, 5.0, 0.6)
+
+[sub_resource type="BoxMesh" id="s101"]
+size = Vector3(0.6, 5.0, 0.6)
+
+[sub_resource type="BoxShape3D" id="s102"]
+size = Vector3(0.6, 5.0, 0.6)
+
+[sub_resource type="BoxMesh" id="s103"]
+size = Vector3(0.6, 5.0, 0.6)
+
+[sub_resource type="BoxShape3D" id="s104"]
+size = Vector3(0.6, 5.0, 0.6)
+
+[sub_resource type="BoxMesh" id="s105"]
+size = Vector3(0.6, 5.0, 0.6)
+
+[sub_resource type="BoxShape3D" id="s106"]
+size = Vector3(0.6, 5.0, 0.6)
+
+[sub_resource type="BoxMesh" id="s107"]
+size = Vector3(4.0, 0.3, 0.5)
+
+[sub_resource type="BoxShape3D" id="s108"]
+size = Vector3(4.0, 0.3, 0.5)
+
+[sub_resource type="BoxMesh" id="s109"]
+size = Vector3(4.0, 0.3, 0.5)
+
+[sub_resource type="BoxShape3D" id="s110"]
+size = Vector3(4.0, 0.3, 0.5)
+
+[sub_resource type="BoxMesh" id="s111"]
+size = Vector3(4.0, 0.3, 0.5)
+
+[sub_resource type="BoxShape3D" id="s112"]
+size = Vector3(4.0, 0.3, 0.5)
+
+[sub_resource type="BoxMesh" id="s113"]
+size = Vector3(4.0, 0.3, 0.5)
+
+[sub_resource type="BoxShape3D" id="s114"]
+size = Vector3(4.0, 0.3, 0.5)
+
+[sub_resource type="BoxMesh" id="s115"]
+size = Vector3(6, 0.4, 2)
+
+[sub_resource type="BoxShape3D" id="s116"]
+size = Vector3(6, 0.4, 2)
+
+[node name="LevelRoot" type="Node3D"]
+metadata/spawn_point = Vector3(7, 1, 2)
+[node name="WorldEnvironment" type="WorldEnvironment" parent="LevelRoot"]
+environment = SubResource("s1")
+[node name="Sun" type="DirectionalLight3D" parent="LevelRoot"]
+transform = Transform3D(0.7, -0.5, 0.5, 0.0, 0.7, 0.7, -0.7, -0.5, 0.5, 0, 6, 0)
+[node name="Antechamber" type="Node3D" parent="LevelRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+[node name="Floor" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.0, -0.1, 7.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/Floor"]
+mesh = SubResource("s2")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/Floor"]
+shape = SubResource("s3")
+[node name="Ceiling" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.0, 5.1, 7.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/Ceiling"]
+mesh = SubResource("s4")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/Ceiling"]
+shape = SubResource("s5")
+[node name="WallN_seg0" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.0, 2.5, 14)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallN_seg0"]
+mesh = SubResource("s6")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallN_seg0"]
+shape = SubResource("s7")
+[node name="WallN_seg1" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.25, 4.5, 14)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallN_seg1"]
+mesh = SubResource("s8")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallN_seg1"]
+shape = SubResource("s9")
+[node name="WallN_seg2" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.25, 2.5, 14)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallN_seg2"]
+mesh = SubResource("s10")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallN_seg2"]
+shape = SubResource("s11")
+[node name="WallS_seg0" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.0, 2.5, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallS_seg0"]
+mesh = SubResource("s12")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallS_seg0"]
+shape = SubResource("s13")
+[node name="WallS_seg1" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.25, 4.5, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallS_seg1"]
+mesh = SubResource("s14")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallS_seg1"]
+shape = SubResource("s15")
+[node name="WallS_seg2" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.25, 2.5, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallS_seg2"]
+mesh = SubResource("s16")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallS_seg2"]
+shape = SubResource("s17")
+[node name="WallE_seg0" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 2.5, 1.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallE_seg0"]
+mesh = SubResource("s18")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallE_seg0"]
+shape = SubResource("s19")
+[node name="WallE_seg1" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0.75, 2.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallE_seg1"]
+mesh = SubResource("s20")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallE_seg1"]
+shape = SubResource("s21")
+[node name="WallE_seg2" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 4.25, 2.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallE_seg2"]
+mesh = SubResource("s22")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallE_seg2"]
+shape = SubResource("s23")
+[node name="WallE_seg3" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 2.5, 5.25)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallE_seg3"]
+mesh = SubResource("s24")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallE_seg3"]
+shape = SubResource("s25")
+[node name="WallE_seg4" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0.75, 7.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallE_seg4"]
+mesh = SubResource("s26")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallE_seg4"]
+shape = SubResource("s27")
+[node name="WallE_seg5" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 4.25, 7.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallE_seg5"]
+mesh = SubResource("s28")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallE_seg5"]
+shape = SubResource("s29")
+[node name="WallE_seg6" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 2.5, 9.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallE_seg6"]
+mesh = SubResource("s30")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallE_seg6"]
+shape = SubResource("s31")
+[node name="WallE_seg7" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0.75, 11.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallE_seg7"]
+mesh = SubResource("s32")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallE_seg7"]
+shape = SubResource("s33")
+[node name="WallE_seg8" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 4.25, 11.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallE_seg8"]
+mesh = SubResource("s34")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallE_seg8"]
+shape = SubResource("s35")
+[node name="WallE_seg9" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 2.5, 13.25)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallE_seg9"]
+mesh = SubResource("s36")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallE_seg9"]
+shape = SubResource("s37")
+[node name="WallW_seg0" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 2.5, 1.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallW_seg0"]
+mesh = SubResource("s38")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallW_seg0"]
+shape = SubResource("s39")
+[node name="WallW_seg1" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 0.75, 2.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallW_seg1"]
+mesh = SubResource("s40")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallW_seg1"]
+shape = SubResource("s41")
+[node name="WallW_seg2" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 4.25, 2.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallW_seg2"]
+mesh = SubResource("s42")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallW_seg2"]
+shape = SubResource("s43")
+[node name="WallW_seg3" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 2.5, 7.25)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallW_seg3"]
+mesh = SubResource("s44")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallW_seg3"]
+shape = SubResource("s45")
+[node name="WallW_seg4" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 0.75, 11.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallW_seg4"]
+mesh = SubResource("s46")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallW_seg4"]
+shape = SubResource("s47")
+[node name="WallW_seg5" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 4.25, 11.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallW_seg5"]
+mesh = SubResource("s48")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallW_seg5"]
+shape = SubResource("s49")
+[node name="WallW_seg6" type="StaticBody3D" parent="LevelRoot/Antechamber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 2.5, 13.25)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Antechamber/WallW_seg6"]
+mesh = SubResource("s50")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/Antechamber/WallW_seg6"]
+shape = SubResource("s51")
+[node name="VaultRoom" type="Node3D" parent="LevelRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 14)
+[node name="Floor" type="StaticBody3D" parent="LevelRoot/VaultRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.0, -0.1, 5.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultRoom/Floor"]
+mesh = SubResource("s52")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultRoom/Floor"]
+shape = SubResource("s53")
+[node name="Ceiling" type="StaticBody3D" parent="LevelRoot/VaultRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.0, 6.1, 5.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultRoom/Ceiling"]
+mesh = SubResource("s54")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultRoom/Ceiling"]
+shape = SubResource("s55")
+[node name="WallN_seg0" type="StaticBody3D" parent="LevelRoot/VaultRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.0, 3.0, 10)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultRoom/WallN_seg0"]
+mesh = SubResource("s56")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultRoom/WallN_seg0"]
+shape = SubResource("s57")
+[node name="WallS_seg0" type="StaticBody3D" parent="LevelRoot/VaultRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.0, 3.0, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultRoom/WallS_seg0"]
+mesh = SubResource("s58")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultRoom/WallS_seg0"]
+shape = SubResource("s59")
+[node name="WallS_seg1" type="StaticBody3D" parent="LevelRoot/VaultRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.25, 5.0, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultRoom/WallS_seg1"]
+mesh = SubResource("s60")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultRoom/WallS_seg1"]
+shape = SubResource("s61")
+[node name="WallS_seg2" type="StaticBody3D" parent="LevelRoot/VaultRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.25, 3.0, 0.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultRoom/WallS_seg2"]
+mesh = SubResource("s62")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultRoom/WallS_seg2"]
+shape = SubResource("s63")
+[node name="WallE_seg0" type="StaticBody3D" parent="LevelRoot/VaultRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 3.0, 1.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultRoom/WallE_seg0"]
+mesh = SubResource("s64")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultRoom/WallE_seg0"]
+shape = SubResource("s65")
+[node name="WallE_seg1" type="StaticBody3D" parent="LevelRoot/VaultRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 1.25, 2.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultRoom/WallE_seg1"]
+mesh = SubResource("s66")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultRoom/WallE_seg1"]
+shape = SubResource("s67")
+[node name="WallE_seg2" type="StaticBody3D" parent="LevelRoot/VaultRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 5.5, 2.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultRoom/WallE_seg2"]
+mesh = SubResource("s68")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultRoom/WallE_seg2"]
+shape = SubResource("s69")
+[node name="WallE_seg3" type="StaticBody3D" parent="LevelRoot/VaultRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 3.0, 5.25)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultRoom/WallE_seg3"]
+mesh = SubResource("s70")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultRoom/WallE_seg3"]
+shape = SubResource("s71")
+[node name="WallE_seg4" type="StaticBody3D" parent="LevelRoot/VaultRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 1.25, 7.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultRoom/WallE_seg4"]
+mesh = SubResource("s72")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultRoom/WallE_seg4"]
+shape = SubResource("s73")
+[node name="WallE_seg5" type="StaticBody3D" parent="LevelRoot/VaultRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 5.5, 7.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultRoom/WallE_seg5"]
+mesh = SubResource("s74")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultRoom/WallE_seg5"]
+shape = SubResource("s75")
+[node name="WallE_seg6" type="StaticBody3D" parent="LevelRoot/VaultRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 3.0, 9.25)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultRoom/WallE_seg6"]
+mesh = SubResource("s76")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultRoom/WallE_seg6"]
+shape = SubResource("s77")
+[node name="WallW_seg0" type="StaticBody3D" parent="LevelRoot/VaultRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 3.0, 1.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultRoom/WallW_seg0"]
+mesh = SubResource("s78")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultRoom/WallW_seg0"]
+shape = SubResource("s79")
+[node name="WallW_seg1" type="StaticBody3D" parent="LevelRoot/VaultRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 1.25, 2.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultRoom/WallW_seg1"]
+mesh = SubResource("s80")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultRoom/WallW_seg1"]
+shape = SubResource("s81")
+[node name="WallW_seg2" type="StaticBody3D" parent="LevelRoot/VaultRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 5.5, 2.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultRoom/WallW_seg2"]
+mesh = SubResource("s82")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultRoom/WallW_seg2"]
+shape = SubResource("s83")
+[node name="WallW_seg3" type="StaticBody3D" parent="LevelRoot/VaultRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 3.0, 5.25)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultRoom/WallW_seg3"]
+mesh = SubResource("s84")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultRoom/WallW_seg3"]
+shape = SubResource("s85")
+[node name="WallW_seg4" type="StaticBody3D" parent="LevelRoot/VaultRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 1.25, 7.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultRoom/WallW_seg4"]
+mesh = SubResource("s86")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultRoom/WallW_seg4"]
+shape = SubResource("s87")
+[node name="WallW_seg5" type="StaticBody3D" parent="LevelRoot/VaultRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 5.5, 7.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultRoom/WallW_seg5"]
+mesh = SubResource("s88")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultRoom/WallW_seg5"]
+shape = SubResource("s89")
+[node name="WallW_seg6" type="StaticBody3D" parent="LevelRoot/VaultRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 3.0, 9.25)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultRoom/WallW_seg6"]
+mesh = SubResource("s90")
+surface_material_override/0 = ExtResource("e1_brick_stone")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultRoom/WallW_seg6"]
+shape = SubResource("s91")
+[node name="GoldKeyStash" type="StaticBody3D" parent="LevelRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0.75, 10)
+collision_layer = 1
+collision_mask = 1
+metadata/breakable = true
+metadata/reward_kind = "key_gold"
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/GoldKeyStash"]
+mesh = SubResource("s92")
+surface_material_override/0 = ExtResource("e3_wood_dark")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/GoldKeyStash"]
+shape = SubResource("s93")
+[node name="CoinStash" type="StaticBody3D" parent="LevelRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.7, 11)
+collision_layer = 1
+collision_mask = 1
+metadata/breakable = true
+metadata/reward_kind = "coin_red"
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/CoinStash"]
+mesh = SubResource("s94")
+surface_material_override/0 = ExtResource("e3_wood_dark")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/CoinStash"]
+shape = SubResource("s95")
+[node name="SilverKeyPickup" type="Marker3D" parent="LevelRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1.2, 3)
+metadata/pickup_kind = "key_silver"
+[node name="BronzeKeyPickup" type="Marker3D" parent="LevelRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 4.2, 11)
+metadata/pickup_kind = "key_bronze"
+[node name="SilverDoor" type="Area3D" parent="LevelRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 2.0, 14)
+collision_layer = 0
+collision_mask = 1
+metadata/lock_key = "silver"
+metadata/lock_barrier = "Barrier"
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/SilverDoor"]
+shape = SubResource("s96")
+[node name="Barrier" type="StaticBody3D" parent="LevelRoot/SilverDoor"]
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/SilverDoor/Barrier"]
+mesh = SubResource("s97")
+surface_material_override/0 = ExtResource("e5_silver")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/SilverDoor/Barrier"]
+shape = SubResource("s98")
+[node name="NE_Pillar" type="StaticBody3D" parent="LevelRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.5, 3)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/NE_Pillar"]
+mesh = SubResource("s99")
+surface_material_override/0 = ExtResource("e3_wood_dark")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/NE_Pillar"]
+shape = SubResource("s100")
+[node name="NW_Pillar" type="StaticBody3D" parent="LevelRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 2.5, 3)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/NW_Pillar"]
+mesh = SubResource("s101")
+surface_material_override/0 = ExtResource("e3_wood_dark")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/NW_Pillar"]
+shape = SubResource("s102")
+[node name="SE_Pillar" type="StaticBody3D" parent="LevelRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.5, 11)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/SE_Pillar"]
+mesh = SubResource("s103")
+surface_material_override/0 = ExtResource("e3_wood_dark")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/SE_Pillar"]
+shape = SubResource("s104")
+[node name="SW_Pillar" type="StaticBody3D" parent="LevelRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 2.5, 11)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/SW_Pillar"]
+mesh = SubResource("s105")
+surface_material_override/0 = ExtResource("e3_wood_dark")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/SW_Pillar"]
+shape = SubResource("s106")
+[node name="VaultStair_step0" type="StaticBody3D" parent="LevelRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.0, 0.15, 22.25)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultStair_step0"]
+mesh = SubResource("s107")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultStair_step0"]
+shape = SubResource("s108")
+[node name="VaultStair_step1" type="StaticBody3D" parent="LevelRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.0, 0.44999999999999996, 22.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultStair_step1"]
+mesh = SubResource("s109")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultStair_step1"]
+shape = SubResource("s110")
+[node name="VaultStair_step2" type="StaticBody3D" parent="LevelRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.0, 0.75, 23.25)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultStair_step2"]
+mesh = SubResource("s111")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultStair_step2"]
+shape = SubResource("s112")
+[node name="VaultStair_step3" type="StaticBody3D" parent="LevelRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.0, 1.05, 23.75)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultStair_step3"]
+mesh = SubResource("s113")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultStair_step3"]
+shape = SubResource("s114")
+[node name="VaultDais" type="StaticBody3D" parent="LevelRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.0, 1.4, 24.5)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/VaultDais"]
+mesh = SubResource("s115")
+surface_material_override/0 = ExtResource("e4_fabric_red")
+[node name="Col" type="CollisionShape3D" parent="LevelRoot/VaultDais"]
+shape = SubResource("s116")

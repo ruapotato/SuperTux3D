@@ -1,0 +1,97 @@
+{
+  "_doc": "Full feature demo: two connected rooms, locked door, breakable stash, keys.",
+  "standalone_level": true,
+  "spawn_point": [7, 1, 2],
+  "materials": {
+    "brick":   "res://assets/materials/brick_stone.tres",
+    "floor":   "res://assets/materials/stone_grey.tres",
+    "wood":    "res://assets/materials/wood_dark.tres",
+    "red":     "res://assets/materials/fabric_red.tres",
+    "silver":  "res://assets/materials/silver.tres",
+    "gold":    "res://assets/materials/gold.tres"
+  },
+  "wall_thickness": 0.4,
+  "rooms": [
+    {
+      "name": "Antechamber",
+      "origin": [0, 0, 0],
+      "size": [14, 5, 14],
+      "material": "brick",
+      "floor_material": "floor",
+      "walls": {
+        "south": {
+          "openings": [
+            {"type": "door", "x": 6, "width": 2.5, "height": 4}
+          ]
+        },
+        "east": {
+          "openings": [
+            {"type": "window", "x": 2, "width": 1.5, "height": 2, "sill": 1.5},
+            {"type": "window", "x": 7, "width": 1.5, "height": 2, "sill": 1.5},
+            {"type": "window", "x": 11, "width": 1.5, "height": 2, "sill": 1.5}
+          ]
+        },
+        "west": {
+          "openings": [
+            {"type": "window", "x": 2, "width": 1.5, "height": 2, "sill": 1.5},
+            {"type": "window", "x": 11, "width": 1.5, "height": 2, "sill": 1.5}
+          ]
+        }
+      }
+    },
+    {
+      "name": "VaultRoom",
+      "origin": [0, 0, 14],
+      "size": [14, 6, 10],
+      "material": "brick",
+      "floor_material": "floor",
+      "walls": {
+        "north": {
+          "openings": []
+        },
+        "east": {
+          "openings": [
+            {"type": "window", "x": 2, "width": 1.5, "height": 2.5, "sill": 2.5},
+            {"type": "window", "x": 7, "width": 1.5, "height": 2.5, "sill": 2.5}
+          ]
+        },
+        "west": {
+          "openings": [
+            {"type": "window", "x": 2, "width": 1.5, "height": 2.5, "sill": 2.5},
+            {"type": "window", "x": 7, "width": 1.5, "height": 2.5, "sill": 2.5}
+          ]
+        }
+      }
+    }
+  ],
+  "_connectors_doc": "A connector declares a shared opening between two rooms. The blueprint converter adds matching openings to the north wall of room_a AND the south wall of room_b automatically.",
+  "connectors": [
+    {"room_a": "Antechamber", "side_a": "north", "room_b": "VaultRoom",
+     "x_a": 6, "x_b": 6, "type": "door", "width": 2.5, "height": 4}
+  ],
+  "_keys_doc": "Silver key sits on a pillar in the Antechamber. Gold key is HIDDEN in a breakable stash block.",
+  "keys": [
+    {"pos": [3, 1.2, 3],   "color": "silver", "name": "SilverKeyPickup"},
+    {"pos": [11, 4.2, 11], "color": "bronze", "name": "BronzeKeyPickup"}
+  ],
+  "_locks_doc": "Silver door stands between Antechamber and VaultRoom. Barrier type = mesh + trigger that disappears when key consumed.",
+  "locks": [
+    {"type": "barrier", "pos": [7, 0, 14], "key": "silver",
+     "width": 2.5, "height": 4, "depth": 0.5, "material": "silver",
+     "name": "SilverDoor"}
+  ],
+  "blocks": [
+    {"pos": [10, 0, 10], "size": [1.5, 1.5, 1.5], "material": "wood",
+     "breakable": true, "reward": "key_gold", "name": "GoldKeyStash"},
+    {"pos": [4, 0, 11], "size": [1.4, 1.4, 1.4], "material": "wood",
+     "breakable": true, "reward": "coin_red", "name": "CoinStash"}
+  ],
+  "extras": [
+    {"type": "pillar", "name": "NE_Pillar", "pos": [2, 0, 3],  "radius": 0.3, "height": 5, "material": "wood"},
+    {"type": "pillar", "name": "NW_Pillar", "pos": [12, 0, 3], "radius": 0.3, "height": 5, "material": "wood"},
+    {"type": "pillar", "name": "SE_Pillar", "pos": [2, 0, 11], "radius": 0.3, "height": 5, "material": "wood"},
+    {"type": "pillar", "name": "SW_Pillar", "pos": [12, 0, 11], "radius": 0.3, "height": 5, "material": "wood"},
+    {"type": "stair", "name": "VaultStair", "pos": [5, 0, 22], "steps": 4, "rise": 0.3, "run": 0.5, "width": 4, "material": "floor"},
+    {"type": "platform", "name": "VaultDais", "pos": [4, 1.2, 23.5], "size": [6, 0.4, 2], "material": "red"}
+  ]
+}

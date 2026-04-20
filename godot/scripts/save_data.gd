@@ -18,6 +18,7 @@ var last_area: int = 1
 const VALID_LEVELS := {
     "grass_hub": true, "mountain": true, "snow": true, "water": true,
     "lava": true, "sand": true, "sky": true, "bowser": true,
+    "demo_full": true,
 }
 
 

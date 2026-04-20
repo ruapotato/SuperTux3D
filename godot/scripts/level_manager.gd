@@ -148,16 +148,20 @@ func _spawn_markers(level_root: Node) -> void:
                 var target_level: String = str(n.get_meta("warp_to"))
                 var area: Area3D = n as Area3D
                 var required_stars: int = 0
+                var required_key: String = ""
                 if n.has_meta("requires_stars"):
                     required_stars = int(n.get_meta("requires_stars"))
-                # Force mask=1 so Mario's layer-1 body triggers the warp —
-                # the scene authoring sometimes uses mask=2 which misses.
+                if n.has_meta("lock_key"):
+                    required_key = str(n.get_meta("lock_key"))
                 area.collision_mask = 1
-                # Visually dim a locked door so the player reads it as
-                # unreachable. When the count's high enough on re-entry
-                # to the hub, the dim comes off because the scene is
-                # re-instantiated fresh.
+                # Dim the door visually if any gate is active — star
+                # threshold OR a key we don't have.
+                var locked_now: bool = false
                 if required_stars > 0 and mario.star_count < required_stars:
+                    locked_now = true
+                if required_key != "" and not mario.has_key(required_key):
+                    locked_now = true
+                if locked_now:
                     _apply_locked_tint(area)
                 area.body_entered.connect(
                     func(body: Node) -> void:
@@ -166,11 +170,46 @@ func _spawn_markers(level_root: Node) -> void:
                         if mario.star_count < required_stars:
                             _show_gate_message(target_level, required_stars)
                             return
+                        if required_key != "" and not mario.has_key(required_key):
+                            print("[lock] needs %s key" % required_key)
+                            if mario.has_method("_play_sfx"):
+                                mario._play_sfx("hurt")
+                            return
                         call_deferred("load_level", target_level, 1))
                 spawn_count.warp += 1
-    if spawn_count.enemy > 0 or spawn_count.pickup > 0 or spawn_count.warp > 0:
-        print("[level_manager] seeded %d enemies, %d pickups, %d warps from scene markers"
-              % [spawn_count.enemy, spawn_count.pickup, spawn_count.warp])
+            # Locked "door" with no warp — just an obstacle that opens
+            # when player has the key. Spawns as a barrier StaticBody
+            # paired with a trigger Area3D. When unlocked the barrier
+            # queue_frees so the player can pass.
+            if n.has_meta("lock_barrier") and n is Area3D:
+                var req_key: String = str(n.get_meta("lock_key", ""))
+                var barrier_path: String = str(n.get_meta("lock_barrier"))
+                var area2: Area3D = n as Area3D
+                area2.collision_mask = 1
+                var barrier_node: Node = n.get_node_or_null(barrier_path)
+                area2.body_entered.connect(
+                    func(body: Node) -> void:
+                        if body != mario or req_key == "":
+                            return
+                        if mario.consume_key(req_key):
+                            if barrier_node != null:
+                                barrier_node.queue_free()
+                            if mario.has_method("_play_sfx"):
+                                mario._play_sfx("cap_get"))
+    # Register breakable blocks in a group so mario_stub's ground-pound
+    # handler can find them.
+    var breakable_count := 0
+    var queue2: Array = [level_root]
+    while not queue2.is_empty():
+        var n: Node = queue2.pop_front()
+        for c in n.get_children():
+            queue2.append(c)
+        if n is Node3D and n.has_meta("breakable"):
+            n.add_to_group("breakable")
+            breakable_count += 1
+    if spawn_count.enemy > 0 or spawn_count.pickup > 0 or spawn_count.warp > 0 or breakable_count > 0:
+        print("[level_manager] seeded %d enemies, %d pickups, %d warps, %d breakables"
+              % [spawn_count.enemy, spawn_count.pickup, spawn_count.warp, breakable_count])
 
 
 func _apply_locked_tint(area: Area3D) -> void:
