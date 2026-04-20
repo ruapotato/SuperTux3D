@@ -74,6 +74,7 @@ class Scene:
         self.sub_resources: list[tuple[str, str, str]] = []  # (id, type, body)
         self.nodes: list[tuple[str, str | None, str, str]] = []  # (name, parent, type, body)
         self._next_sub = 1
+        self._root_name: str | None = None
 
     def ext_resource(self, path: str, type_: str) -> str:
         for p, t, i in self.ext_resources:
@@ -90,7 +91,22 @@ class Scene:
         return sid
 
     def node(self, name: str, parent: str | None, type_: str, body: str = "") -> None:
+        if parent is None and self._root_name is None:
+            self._root_name = name
         self.nodes.append((name, parent, type_, body))
+
+    def _normalize_parent(self, parent: str | None) -> str | None:
+        # Godot TSCN wants the scene root's children to declare
+        # parent=".", not parent="<root_name>". Deeper nodes use paths
+        # RELATIVE to the root — strip the root-name prefix.
+        if parent is None or self._root_name is None:
+            return parent
+        root = self._root_name
+        if parent == root:
+            return "."
+        if parent.startswith(root + "/"):
+            return parent[len(root) + 1:]
+        return parent
 
     def format(self) -> str:
         load_steps = 1 + len(self.ext_resources) + len(self.sub_resources)
@@ -100,10 +116,11 @@ class Scene:
         for sid, type_, body in self.sub_resources:
             out.append(f'[sub_resource type="{type_}" id="{sid}"]\n{body}\n')
         for name, parent, type_, body in self.nodes:
-            if parent is None:
+            normalized = self._normalize_parent(parent)
+            if normalized is None:
                 out.append(f'[node name="{name}" type="{type_}"]\n')
             else:
-                out.append(f'[node name="{name}" type="{type_}" parent="{parent}"]\n')
+                out.append(f'[node name="{name}" type="{type_}" parent="{normalized}"]\n')
             if body:
                 out.append(body)
                 if not body.endswith("\n"):
