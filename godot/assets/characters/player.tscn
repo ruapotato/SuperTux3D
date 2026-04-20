@@ -110,54 +110,46 @@ surface_material_override/0 = SubResource("white_mat")
 [node name="head" type="Node3D" parent="pelvis/torso"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.36, 0)
 
+; The head stays a solid black sphere; no overlapping white belly on
+; the front (previous attempt buried the eyes inside it). White is
+; handled by a small chin-patch below the beak + the eye whites.
 [node name="HeadMesh" type="MeshInstance3D" parent="pelvis/torso/head"]
 mesh = SubResource("head_mesh")
 surface_material_override/0 = SubResource("black_mat")
 
-[node name="HeadBelly" type="MeshInstance3D" parent="pelvis/torso/head"]
-transform = Transform3D(1, 0, 0, 0, 0.7, 0, 0, 0, 0.7, 0, -0.06, 0.14)
+; Small flattened white chin patch, sitting just under the beak.
+; Z-scale is tiny so it doesn't push out through the face features.
+[node name="ChinPatch" type="MeshInstance3D" parent="pelvis/torso/head"]
+transform = Transform3D(1.2, 0, 0, 0, 0.35, 0, 0, 0, 0.25, 0, -0.12, 0.18)
 mesh = SubResource("belly_mesh")
 surface_material_override/0 = SubResource("white_mat")
 
+; Eyes are explicitly forward of the head sphere (z > 0.22 + radius)
+; so no other mesh can occlude them from the front.
 [node name="EyeL" type="MeshInstance3D" parent="pelvis/torso/head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.065, 0.05, 0.19)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.06, 0.03, 0.21)
 mesh = SubResource("eye_sphere")
 surface_material_override/0 = SubResource("eye_white_mat")
 
 [node name="EyeR" type="MeshInstance3D" parent="pelvis/torso/head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.065, 0.05, 0.19)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.06, 0.03, 0.21)
 mesh = SubResource("eye_sphere")
 surface_material_override/0 = SubResource("eye_white_mat")
 
 [node name="PupilL" type="MeshInstance3D" parent="pelvis/torso/head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.065, 0.05, 0.225)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.06, 0.03, 0.24)
 mesh = SubResource("pupil_sphere")
 surface_material_override/0 = SubResource("pupil_mat")
 
 [node name="PupilR" type="MeshInstance3D" parent="pelvis/torso/head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.065, 0.05, 0.225)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.06, 0.03, 0.24)
 mesh = SubResource("pupil_sphere")
 surface_material_override/0 = SubResource("pupil_mat")
 
-[node name="PupilSpecL" type="MeshInstance3D" parent="pelvis/torso/head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.058, 0.057, 0.237)
-mesh = SubResource("eye_spec")
-surface_material_override/0 = SubResource("eye_white_mat")
-
-[node name="PupilSpecR" type="MeshInstance3D" parent="pelvis/torso/head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.072, 0.057, 0.237)
-mesh = SubResource("eye_spec")
-surface_material_override/0 = SubResource("eye_white_mat")
-
 [node name="Beak" type="MeshInstance3D" parent="pelvis/torso/head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.02, 0.22)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.04, 0.235)
 mesh = SubResource("beak_mesh")
 surface_material_override/0 = SubResource("orange_mat")
-
-[node name="Smile" type="MeshInstance3D" parent="pelvis/torso/head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.09, 0.23)
-mesh = SubResource("smile_mesh")
-surface_material_override/0 = SubResource("pupil_mat")
 
 ; Wings/flippers. Rotated so they hang down along the body sides.
 [node name="arm_l" type="Node3D" parent="pelvis/torso"]
