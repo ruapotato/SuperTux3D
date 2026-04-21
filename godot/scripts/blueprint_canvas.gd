@@ -673,15 +673,16 @@ func _draw_terrain_patch(patch: Dictionary, selected: bool) -> void:
 					+ float(heights[(i + 1) * res + (j + 1)])
 				)
 				var t: float = clamp((avg - min_h) / span, 0.0, 1.0)
-				# Flat-terrain default: a solid grass green, not a
-				# noise field. Earlier the cells got hash-jitter so
-				# resolution was visible on pristine patches, but it
-				# read as a distracting static pattern over any
-				# authored region. The cell-count readout in the
-				# inspector covers the "am I at enough resolution?"
-				# question instead.
-				var col: Color = Color(0.30, 0.62, 0.22).lerp(
-					Color(0.85, 0.80, 0.55), t)
+				# Colourblind-friendly height gradient: dark teal at
+				# low elevations → bright yellow at high. Strong
+				# value AND hue contrast so deuteranopic /
+				# protanopic viewers can read heights cleanly —
+				# earlier grass-green → sandy-yellow had hues that
+				# looked near-identical to red-green colour-blind
+				# eyes. Teal (blue-green) and yellow stay distinct
+				# under every common colour vision deficiency.
+				var col: Color = Color(0.10, 0.35, 0.42).lerp(
+					Color(0.98, 0.90, 0.25), t)
 				if has_grid:
 					var kind: String = String(surface_grid[i * (res - 1) + j])
 					if kind != "" and PAINT_TINT.has(kind):

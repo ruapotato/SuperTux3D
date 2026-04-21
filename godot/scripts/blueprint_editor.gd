@@ -137,8 +137,9 @@ const TOOLS := [
 	["terrain",      "Terrain (drag)",         "T"],
 	["enemy",        "Enemy",                  "N"],
 	["pickup",       "Pickup",                 "C"],
-	["water",        "Water Volume (drag)",    "U"],
-	["lava",         "Lava Volume (drag)",     "J"],
+	# Water / lava drag-box volumes retired — terrain paint covers
+	# both with full shape freedom and actual swim-through water.
+	# Keeping the schema + existing volumes support for older levels.
 	["warp",         "Warp",                   "X"],
 	["spawn",        "Spawn Point",            "G"],
 	["temp_spawn",   "Temp Spawn (for Play)",  "M"],
