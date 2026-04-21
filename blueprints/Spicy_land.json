@@ -21,9 +21,9 @@
 
   },
   "spawn_point": [
-    4,
-    1,
-    4
+    4.0,
+    1.0,
+    4.0
   ],
   "standalone_level": true,
   "terrain_patches": [
@@ -1066,7 +1066,7 @@
         0.0,
         -9.0
       ],
-      "resolution": 32,
+      "resolution": 32.0,
       "size_x": 97.0,
       "size_z": 58.0,
       "slope_color": [

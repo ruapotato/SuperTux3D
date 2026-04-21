@@ -447,6 +447,12 @@ func _write_to(path: String) -> bool:
 		_status("Failed to write: %s" % path, true)
 		return false
 	f.store_string(text)
+	# CRITICAL: close the file BEFORE running the converter. Without an
+	# explicit close, Godot keeps the write buffered; the converter's
+	# `json.load(open(path))` then sees a truncated / empty file and
+	# raises a JSONDecodeError. Happens every time the build succeeds
+	# from CLI but silently fails through the editor's Save/Play path.
+	f.close()
 	current_file = path
 	_file_label.text = path.get_file()
 	_dirty = false
@@ -1834,7 +1840,11 @@ func _inspector_terrain() -> void:
 		item["size_z"] = v; _mark_dirty(); _canvas.queue_redraw())
 	# Resolution change reshapes the heights array. Resample bilinearly
 	# so an existing sculpt survives the switch instead of flat-resetting.
-	_mkspin(_mkrow("Resolution"), int(item.get("resolution", 16)), 4, 96, 1, func(v: float) -> void:
+	# Cap lifted to 192 vertices per side (~36k verts / 73k tris) so
+	# detailed outdoor levels can sculpt + paint at sub-metre precision
+	# without running out of cells. 32×32 is the default for new
+	# patches; 64+ is for hand-authored large terrains.
+	_mkspin(_mkrow("Resolution"), int(item.get("resolution", 16)), 4, 192, 1, func(v: float) -> void:
 		_resize_terrain(item, int(v)); _mark_dirty(); _canvas.queue_redraw(); _rebuild_inspector())
 	# Material is an OVERRIDE. Blank (default) uses the slope-blended
 	# grass/dirt vertex colours baked by terrain_patch.gd at runtime.

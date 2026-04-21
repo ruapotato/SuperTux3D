@@ -113,7 +113,7 @@ func _gui_input(event: InputEvent) -> void:
 
 func _zoom_at(screen_point: Vector2, factor: float) -> void:
 	var world_before := canvas_to_world(screen_point)
-	pixels_per_meter = clamp(pixels_per_meter * factor, 2.0, 120.0)
+	pixels_per_meter = clamp(pixels_per_meter * factor, 2.0, 280.0)
 	var world_after := canvas_to_world(screen_point)
 	pan += (world_after - world_before) * pixels_per_meter
 	queue_redraw()
