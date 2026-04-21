@@ -398,6 +398,26 @@ func _ready() -> void:
 		smi.mesh = smesh
 		smi.name = "Skirt"
 		add_child(smi)
+		# Solid collision for the skirt — without this, swimming laterally
+		# takes the player straight through the pool wall into the dirt
+		# beneath the grass, where there's no ground and swim_area ends,
+		# so they fall into the death plane. Walls now physically stop
+		# under-water motion; the only way out is to swim up to the
+		# surface and over the top of the wall.
+		var swall_verts := PackedVector3Array()
+		swall_verts.resize(skirt_indices.size())
+		for k in range(skirt_indices.size()):
+			swall_verts[k] = skirt_verts[skirt_indices[k]]
+		var sshape := ConcavePolygonShape3D.new()
+		sshape.data = swall_verts
+		var sbody := StaticBody3D.new()
+		sbody.name = "SkirtCol"
+		sbody.collision_layer = 1
+		sbody.collision_mask = 1
+		var scs := CollisionShape3D.new()
+		scs.shape = sshape
+		sbody.add_child(scs)
+		add_child(sbody)
 
 	# Lava mesh — emissive orange, HAS collision so the player bounces
 	# off. mario_state reads surface_kind="burning" off the body and
