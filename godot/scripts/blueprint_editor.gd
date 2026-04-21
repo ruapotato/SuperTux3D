@@ -447,12 +447,27 @@ func _write_to(path: String) -> bool:
 		_status("Failed to write: %s" % path, true)
 		return false
 	f.store_string(text)
-	# CRITICAL: close the file BEFORE running the converter. Without an
-	# explicit close, Godot keeps the write buffered; the converter's
-	# `json.load(open(path))` then sees a truncated / empty file and
-	# raises a JSONDecodeError. Happens every time the build succeeds
-	# from CLI but silently fails through the editor's Save/Play path.
+	# Belt-and-suspenders flush: explicit flush(), explicit close(),
+	# drop the ref, sleep briefly, then verify by reading back. The
+	# converter runs immediately after this returns and Godot's write
+	# buffering previously let Python see a truncated file half the
+	# time — the intermittent JSONDecodeError the author was hitting.
+	f.flush()
 	f.close()
+	f = null
+	# If the read-back doesn't match what we tried to write, loop a
+	# few times with short delays before giving up. Hits when the OS
+	# page cache is behind the Godot write.
+	var retries: int = 0
+	while retries < 5:
+		var rf := FileAccess.open(path, FileAccess.READ)
+		if rf != null:
+			var on_disk := rf.get_as_text()
+			rf.close()
+			if on_disk.length() == text.length():
+				break
+		OS.delay_msec(30)
+		retries += 1
 	current_file = path
 	_file_label.text = path.get_file()
 	_dirty = false
@@ -951,10 +966,11 @@ func _finalize_terrain_drag(end_world: Vector2) -> void:
 	var size := b - a
 	if size.x < 4.0 or size.y < 4.0:
 		return  # too small to bother — terrain needs room to sculpt
-	# Twice the previous density so painting + sculpting have enough
-	# resolution for Mario-scale features (shorelines, dirt paths, lava
-	# cracks). 32×32 vertices = ~1k polys per patch, still cheap.
-	var res: int = 32
+	# 64×64 vertices by default so shorelines, dirt paths, and lava
+	# edges can be painted at sub-metre precision without cranking the
+	# resolution slider every time. ~4k verts / 8k tris per patch is
+	# still comfortably cheap on desktop GPUs.
+	var res: int = 64
 	var heights: Array = []
 	heights.resize(res * res)
 	for i in range(res * res):
@@ -1954,14 +1970,25 @@ func _inspector_terrain() -> void:
 func _resize_terrain(patch: Dictionary, new_res: int) -> void:
 	var old_res: int = int(patch.get("resolution", 16))
 	var old_heights: Array = patch.get("heights", [])
-	# Always rebuild surface_grid at the new cell count — re-painting
-	# is cheap and a bilinear-resampled paint mask rarely matches what
-	# the author intended (cell boundaries shift).
+	# Resample surface_grid nearest-neighbour so existing paint shape
+	# survives a resolution bump. Was previously wiped to "" because
+	# bilinear mixing of discrete surface kinds is meaningless, but
+	# nearest-neighbour keeps the pattern and just gets coarser/finer
+	# at the cell boundaries — usually what the author wants.
 	var new_cells: int = (new_res - 1) * (new_res - 1)
 	var new_grid: Array = []
 	new_grid.resize(new_cells)
-	for i in range(new_cells):
-		new_grid[i] = ""
+	var old_grid: Array = patch.get("surface_grid", [])
+	var old_cells: int = (old_res - 1) * (old_res - 1)
+	if old_grid.size() == old_cells and old_res >= 2 and new_res >= 2:
+		for i in range(new_res - 1):
+			for j in range(new_res - 1):
+				var oi: int = clamp(int(round(float(i) * (old_res - 1) / float(new_res - 1) - 0.0)), 0, old_res - 2)
+				var oj: int = clamp(int(round(float(j) * (old_res - 1) / float(new_res - 1) - 0.0)), 0, old_res - 2)
+				new_grid[i * (new_res - 1) + j] = old_grid[oi * (old_res - 1) + oj]
+	else:
+		for i in range(new_cells):
+			new_grid[i] = ""
 	patch["surface_grid"] = new_grid
 	if old_heights.size() != old_res * old_res or new_res == old_res:
 		patch["resolution"] = new_res
