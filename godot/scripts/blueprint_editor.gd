@@ -966,11 +966,12 @@ func _finalize_terrain_drag(end_world: Vector2) -> void:
 	var size := b - a
 	if size.x < 4.0 or size.y < 4.0:
 		return  # too small to bother — terrain needs room to sculpt
-	# 64×64 vertices by default so shorelines, dirt paths, and lava
-	# edges can be painted at sub-metre precision without cranking the
-	# resolution slider every time. ~4k verts / 8k tris per patch is
-	# still comfortably cheap on desktop GPUs.
-	var res: int = 64
+	# 128×128 vertices by default so outdoor levels get genuinely
+	# detailed shorelines and lava edges without touching the
+	# Resolution slider. ~16k verts / 32k tris per patch — large but
+	# still cheap on desktop GPUs, and the user can dial down for
+	# smaller themed patches.
+	var res: int = 128
 	var heights: Array = []
 	heights.resize(res * res)
 	for i in range(res * res):
@@ -1856,12 +1857,30 @@ func _inspector_terrain() -> void:
 		item["size_z"] = v; _mark_dirty(); _canvas.queue_redraw())
 	# Resolution change reshapes the heights array. Resample bilinearly
 	# so an existing sculpt survives the switch instead of flat-resetting.
-	# Cap lifted to 192 vertices per side (~36k verts / 73k tris) so
-	# detailed outdoor levels can sculpt + paint at sub-metre precision
-	# without running out of cells. 32×32 is the default for new
-	# patches; 64+ is for hand-authored large terrains.
-	_mkspin(_mkrow("Resolution"), int(item.get("resolution", 16)), 4, 192, 1, func(v: float) -> void:
+	# Cap lifted to 256 vertices per side (~65k verts / 130k tris) so
+	# detailed outdoor levels can sculpt + paint at centimetre
+	# precision. 128×128 is the default for new patches; dial down for
+	# cheap background terrain, up to 256 for hero ground.
+	_mkspin(_mkrow("Resolution"), int(item.get("resolution", 16)), 4, 256, 1, func(v: float) -> void:
 		_resize_terrain(item, int(v)); _mark_dirty(); _canvas.queue_redraw(); _rebuild_inspector())
+	# One-click convenience: double the cell count (clamped to the cap)
+	# so the author doesn't need to type into the spinner. Paints +
+	# heights are resampled so their shapes carry over.
+	var refine_btn := Button.new()
+	refine_btn.text = "Refine ×2  (double cell count)"
+	refine_btn.tooltip_text = "Resample this patch at twice the resolution. Paint and sculpted heights are preserved."
+	refine_btn.pressed.connect(func() -> void:
+		var old_r: int = int(item.get("resolution", 16))
+		var new_r: int = min(old_r * 2, 256)
+		if new_r == old_r:
+			_status("Already at max resolution (256)", true)
+			return
+		_resize_terrain(item, new_r)
+		_mark_dirty()
+		_canvas.queue_redraw()
+		_rebuild_inspector()
+		_status("Resolution %d → %d (%d cells)" % [old_r, new_r, (new_r - 1) * (new_r - 1)]))
+	_inspector.add_child(refine_btn)
 	# Material is an OVERRIDE. Blank (default) uses the slope-blended
 	# grass/dirt vertex colours baked by terrain_patch.gd at runtime.
 	var mat_options: Array = ["(slope colors)"] + MATERIAL_OPTIONS
