@@ -317,7 +317,17 @@ func _ready() -> void:
 	var skirt_uvs := PackedVector2Array()
 	var skirt_colors := PackedColorArray()
 	var skirt_indices := PackedInt32Array()
+	# Box-shape wall definitions for collision — each entry is a tuple
+	# (center: Vector3, size: Vector3). The visual skirt is a thin
+	# trimesh (looks like extruded earth); the box collision on top
+	# has some thickness (0.25m) and slight overhang past the shared
+	# edge so corners don't leave tunnelable gaps between adjacent
+	# walls. Thin trimesh alone was letting the swim capsule squeeze
+	# through corners when the player hit the wall at an angle.
+	var wall_boxes: Array = []  # Array of [Vector3 center, Vector3 size]
 	var SKIRT_DEPTH := 8.0
+	var WALL_THICK := 0.25
+	var WALL_OVERHANG := 0.15   # slight overlap past the cell edge at each end
 	if have_water and water_level_y > -1e8:
 		var skirt_bottom_local: float = water_level_y - self.global_position.y - SKIRT_DEPTH
 		var dirt: Color = slope_color.lerp(Color.BLACK, 0.25)
@@ -379,6 +389,33 @@ func _ready() -> void:
 						base_idx, base_idx + 1, base_idx + 2,
 						base_idx, base_idx + 2, base_idx + 3,
 					])
+					# Axis-aligned box collision for this wall. Use the
+					# MAX of the two top heights so the box always
+					# reaches the terrain surface; slight overhang at
+					# both ends means adjacent walls at a corner share
+					# a tiny overlap instead of leaving a seam.
+					var edge_len_x: float = abs(vt_tr.x - vt_tl.x)
+					var edge_len_z: float = abs(vt_tr.z - vt_tl.z)
+					var edge_mid_x: float = (vt_tl.x + vt_tr.x) * 0.5
+					var edge_mid_z: float = (vt_tl.z + vt_tr.z) * 0.5
+					var top_y_max: float = max(vt_tl.y, vt_tr.y)
+					var box_h: float = top_y_max - skirt_bottom_local
+					var box_cy: float = (top_y_max + skirt_bottom_local) * 0.5
+					var box_size: Vector3
+					if abs(di) > 0:
+						# Wall normal in ±x → box is thin in x, wide in z.
+						box_size = Vector3(WALL_THICK,
+							box_h,
+							edge_len_z + WALL_OVERHANG * 2.0)
+					else:
+						# Wall normal in ±z → box is thin in z, wide in x.
+						box_size = Vector3(edge_len_x + WALL_OVERHANG * 2.0,
+							box_h,
+							WALL_THICK)
+					wall_boxes.append([
+						Vector3(edge_mid_x, box_cy, edge_mid_z),
+						box_size,
+					])
 	if skirt_indices.size() > 0:
 		var smesh := ArrayMesh.new()
 		var sarrays: Array = []
@@ -398,25 +435,25 @@ func _ready() -> void:
 		smi.mesh = smesh
 		smi.name = "Skirt"
 		add_child(smi)
-		# Solid collision for the skirt — without this, swimming laterally
-		# takes the player straight through the pool wall into the dirt
-		# beneath the grass, where there's no ground and swim_area ends,
-		# so they fall into the death plane. Walls now physically stop
-		# under-water motion; the only way out is to swim up to the
-		# surface and over the top of the wall.
-		var swall_verts := PackedVector3Array()
-		swall_verts.resize(skirt_indices.size())
-		for k in range(skirt_indices.size()):
-			swall_verts[k] = skirt_verts[skirt_indices[k]]
-		var sshape := ConcavePolygonShape3D.new()
-		sshape.data = swall_verts
+	# Box colliders for each pool wall — thin flat trimeshes let
+	# swim-capsule penetration at angled approaches and corners.
+	# Each wall is its own StaticBody3D with a BoxShape3D, thick
+	# enough to be robust and overlapping slightly at the edges so
+	# corners join cleanly.
+	if wall_boxes.size() > 0:
 		var sbody := StaticBody3D.new()
 		sbody.name = "SkirtCol"
 		sbody.collision_layer = 1
 		sbody.collision_mask = 1
-		var scs := CollisionShape3D.new()
-		scs.shape = sshape
-		sbody.add_child(scs)
+		for entry in wall_boxes:
+			var centre: Vector3 = entry[0]
+			var size: Vector3 = entry[1]
+			var box_shape := BoxShape3D.new()
+			box_shape.size = size
+			var cs_wall := CollisionShape3D.new()
+			cs_wall.shape = box_shape
+			cs_wall.position = centre
+			sbody.add_child(cs_wall)
 		add_child(sbody)
 
 	# Lava mesh — emissive orange, HAS collision so the player bounces
