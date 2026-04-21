@@ -265,12 +265,14 @@ func step(delta: float) -> void:
             ACT_HOLDING_POLE:             changed = _act_holding_pole(delta)
             ACT_CLIMBING_POLE:            changed = _act_climbing_pole(delta)
             _:                            changed = set_action(ACT_IDLE)
-        # Any land-bound action can be interrupted by entering water —
-        # but ONLY when the foot sensor confirms we're over a painted
-        # water cell. Otherwise low-lying grass would keep retriggering
-        # swim every frame.
+        # Swim-enter fires whenever Mario is both below water_level_y
+        # AND over a painted water cell — regardless of whether he
+        # got there from walking in or from falling back down after a
+        # stroke-jump breached the surface. Earlier we required
+        # (action & ACT_FLAG_AIR) == 0, which blocked fall-back-in
+        # re-entry and dropped the player through the water column
+        # into the death plane after every stroke.
         if not changed and pos.y < water_level_y and in_water_area \
-                and (action & ACT_FLAG_AIR) == 0 \
                 and action != ACT_WATER_IDLE and action != ACT_SWIMMING:
             set_action(ACT_WATER_IDLE)
             changed = true
