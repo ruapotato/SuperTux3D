@@ -959,6 +959,21 @@ func _next_name(kind: String, prefix: String) -> String:
 	return "%s%d" % [prefix, i]
 
 
+const TERRAIN_CELL_TARGET_M := 0.4   # about half Mario's capsule diameter (0.8m)
+const TERRAIN_RES_MIN := 16
+const TERRAIN_RES_MAX := 256
+
+
+func _ideal_resolution(size_x: float, size_z: float) -> int:
+	"""Return the terrain resolution (vertex count per side) that
+	lands a cell size of ~TERRAIN_CELL_TARGET_M on the longer axis.
+	Same value applies to both axes; the shorter axis gets cells
+	slightly smaller than the target. Clamped to [MIN, MAX]."""
+	var longest: float = max(size_x, size_z)
+	var r: int = int(round(longest / TERRAIN_CELL_TARGET_M)) + 1
+	return clamp(r, TERRAIN_RES_MIN, TERRAIN_RES_MAX)
+
+
 func _finalize_terrain_drag(end_world: Vector2) -> void:
 	var start: Vector2 = _canvas._drag_start_world
 	var a := Vector2(min(start.x, end_world.x), min(start.y, end_world.y))
@@ -966,12 +981,12 @@ func _finalize_terrain_drag(end_world: Vector2) -> void:
 	var size := b - a
 	if size.x < 4.0 or size.y < 4.0:
 		return  # too small to bother — terrain needs room to sculpt
-	# 128×128 vertices by default so outdoor levels get genuinely
-	# detailed shorelines and lava edges without touching the
-	# Resolution slider. ~16k verts / 32k tris per patch — large but
-	# still cheap on desktop GPUs, and the user can dial down for
-	# smaller themed patches.
-	var res: int = 128
+	# Resolution auto-scales with the drag size: target cell ~0.4m
+	# (about half Mario's capsule diameter of 0.8m), so every drag
+	# gets detail proportional to the terrain you're building. A 20m
+	# patch gets ~50 res, a 100m patch ~250. Capped at 256 so the
+	# biggest patches don't blow past 65k cells.
+	var res: int = _ideal_resolution(size.x, size.y)
 	var heights: Array = []
 	heights.resize(res * res)
 	for i in range(res * res):
@@ -1848,17 +1863,45 @@ func _inspector_terrain() -> void:
 	var item := _current_item()
 	if item.is_empty(): return
 	_inspector_header("Terrain: %s" % item.get("name", "(unnamed)"))
-	# Big cell-count readout so the author sees at a glance whether
-	# this patch is detailed enough. Low resolutions show in orange
-	# so they stand out; high resolutions in green.
+	# Big cell-count readout + cell size so the author sees at a
+	# glance whether this patch is detailed enough. Cells much bigger
+	# than Mario's body read as coarse, so we also compare to his
+	# capsule diameter (0.8m) and tint accordingly.
 	var res_now: int = int(item.get("resolution", 16))
+	var sx_now: float = float(item.get("size_x", 10))
+	var sz_now: float = float(item.get("size_z", 10))
+	var cell_x_m: float = sx_now / max(res_now - 1, 1)
+	var cell_z_m: float = sz_now / max(res_now - 1, 1)
 	var cells_now: int = (res_now - 1) * (res_now - 1)
 	var readout := Label.new()
-	readout.text = "  %d × %d  =  %s cells" % [res_now, res_now,
-		str(cells_now).pad_decimals(0)]
-	var tone: Color = Color(0.55, 0.95, 0.55) if res_now >= 64 else Color(1.0, 0.72, 0.3)
+	readout.text = "  %d × %d grid  =  %s cells  (cell %.2fm × %.2fm)" % [
+		res_now, res_now, str(cells_now).pad_decimals(0),
+		cell_x_m, cell_z_m]
+	# Green when cells are ≤ 0.5m (finer than half-player-width).
+	# Orange when cells exceed 1m (too coarse for precise painting).
+	var max_cell: float = max(cell_x_m, cell_z_m)
+	var tone: Color = Color(1.0, 0.55, 0.35)
+	if max_cell <= 0.5:
+		tone = Color(0.55, 0.95, 0.55)
+	elif max_cell <= 1.0:
+		tone = Color(1.0, 0.85, 0.45)
 	readout.add_theme_color_override("font_color", tone)
 	_inspector.add_child(readout)
+	# Auto-fit button: set resolution so the longest axis's cell ≈
+	# 0.4m (half player diameter). One click turns a coarse 32-res
+	# 97m patch into a 243-res patch with paint preserved.
+	var ideal_res: int = _ideal_resolution(sx_now, sz_now)
+	if ideal_res != res_now:
+		var fit_btn := Button.new()
+		fit_btn.text = "⚡ Auto-fit resolution → %d  (cells ~0.4m)" % ideal_res
+		fit_btn.tooltip_text = "Resize this terrain to match Mario's scale — cell ≈ half his body width. Sculpt + paint are resampled."
+		fit_btn.pressed.connect(func() -> void:
+			_resize_terrain(item, ideal_res)
+			_mark_dirty()
+			_canvas.queue_redraw()
+			_rebuild_inspector()
+			_status("Resolution → %d (%d cells)" % [ideal_res, (ideal_res - 1) * (ideal_res - 1)]))
+		_inspector.add_child(fit_btn)
 	_mkline(_mkrow("Name"), String(item.get("name", "")), func(s: String) -> void:
 		item["name"] = s; _mark_dirty())
 	_vec3_row("Origin", item, "origin")
