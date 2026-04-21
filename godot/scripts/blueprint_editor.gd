@@ -1848,6 +1848,17 @@ func _inspector_terrain() -> void:
 	var item := _current_item()
 	if item.is_empty(): return
 	_inspector_header("Terrain: %s" % item.get("name", "(unnamed)"))
+	# Big cell-count readout so the author sees at a glance whether
+	# this patch is detailed enough. Low resolutions show in orange
+	# so they stand out; high resolutions in green.
+	var res_now: int = int(item.get("resolution", 16))
+	var cells_now: int = (res_now - 1) * (res_now - 1)
+	var readout := Label.new()
+	readout.text = "  %d × %d  =  %s cells" % [res_now, res_now,
+		str(cells_now).pad_decimals(0)]
+	var tone: Color = Color(0.55, 0.95, 0.55) if res_now >= 64 else Color(1.0, 0.72, 0.3)
+	readout.add_theme_color_override("font_color", tone)
+	_inspector.add_child(readout)
 	_mkline(_mkrow("Name"), String(item.get("name", "")), func(s: String) -> void:
 		item["name"] = s; _mark_dirty())
 	_vec3_row("Origin", item, "origin")

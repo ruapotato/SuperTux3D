@@ -675,6 +675,19 @@ func _draw_terrain_patch(patch: Dictionary, selected: bool) -> void:
 				var t: float = clamp((avg - min_h) / span, 0.0, 1.0)
 				var col: Color = Color(0.15, 0.25, 0.15).lerp(
 					Color(0.95, 0.88, 0.55), t)
+				# Stable hash-based per-cell jitter so individual cells
+				# are visually distinct EVEN on flat terrain. Without
+				# this, 32 cells and 128 cells look identical when
+				# every height is zero (all cells end up the same
+				# color → the whole patch reads as one big rect and
+				# the author can't see how dense the grid is).
+				var hash_val: int = ((i * 73856093) ^ (j * 19349663)) & 0xFFFFFF
+				var jr: float = float(hash_val & 0xFF) / 255.0 - 0.5
+				var jg: float = float((hash_val >> 8) & 0xFF) / 255.0 - 0.5
+				var jb: float = float((hash_val >> 16) & 0xFF) / 255.0 - 0.5
+				col.r = clamp(col.r + jr * 0.10, 0.0, 1.0)
+				col.g = clamp(col.g + jg * 0.10, 0.0, 1.0)
+				col.b = clamp(col.b + jb * 0.06, 0.0, 1.0)
 				if has_grid:
 					var kind: String = String(surface_grid[i * (res - 1) + j])
 					if kind != "" and PAINT_TINT.has(kind):
