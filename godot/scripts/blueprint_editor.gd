@@ -437,38 +437,47 @@ func _read_from(path: String) -> void:
 	_status("Loaded %s" % path.get_file())
 
 
-func _write_to(path: String) -> void:
+func _write_to(path: String) -> bool:
+	"""Save the blueprint JSON and run the converter. Returns true iff
+	the .tscn build succeeded — callers like the Play button need to
+	know whether to proceed or bail."""
 	var text := JSON.stringify(blueprint, "  ")
 	var f := FileAccess.open(path, FileAccess.WRITE)
 	if f == null:
 		_status("Failed to write: %s" % path, true)
-		return
+		return false
 	f.store_string(text)
 	current_file = path
 	_file_label.text = path.get_file()
 	_dirty = false
-	# Saving the JSON without also regenerating the .tscn left people
-	# playing a stale build and wondering where their new rooms went.
-	# Every save now round-trips through the converter so what's on disk
-	# as .tscn matches the JSON at all times.
-	var build_msg := _run_converter(path)
-	_status("Saved %s — %s" % [path.get_file(), build_msg])
+	var build_ok: bool = _run_converter(path)
+	return build_ok
 
 
-func _run_converter(json_path: String) -> String:
-	"""Invoke build_from_blueprint.py for the given JSON. Returns a
-	short human-readable status string ('built N.tscn' or an error
-	summary). Does NOT change status directly — caller composes it."""
+func _run_converter(json_path: String) -> bool:
+	"""Invoke build_from_blueprint.py for the given JSON. Returns true
+	on success, false on failure. Writes the status line either way
+	(build failures get the error-coloured flash + the script output
+	tail so the author can see WHY it broke)."""
 	var stem := json_path.get_file().get_basename()
 	var out_path := "%s/%s.tscn" % [LEVELS_DIR, stem]
 	var output: Array = []
 	var code := OS.execute(PY, [BUILD_SCRIPT, json_path, out_path], output, true)
-	if code == 0:
-		return "built %s" % out_path.get_file()
+	if code == 0 and FileAccess.file_exists(out_path):
+		_status("Saved %s — built %s" % [json_path.get_file(), out_path.get_file()])
+		return true
 	var tail: String = ""
 	if output.size() > 0:
-		tail = String(output[0]).substr(0, 200)
-	return "build failed (%d): %s" % [code, tail]
+		tail = String(output[0]).substr(0, 400)
+	var reason: String = "python exit %d" % code
+	if code == 0:
+		reason = "python exit 0 but .tscn missing (write permission?)"
+	_status("BUILD FAILED (%s): %s" % [reason, tail], true)
+	# Dump to the engine log too — the editor status line is easy to
+	# miss, and a stack-trace-looking dump is hard to ignore.
+	push_error("[blueprint_editor] build of %s failed: %s — output: %s" % [
+		json_path.get_file(), reason, tail])
+	return false
 
 
 func _on_build() -> void:
@@ -1297,9 +1306,12 @@ func _on_play() -> void:
 	if current_file == "":
 		_status("Save the blueprint first so Play has a level to load", true)
 		return
-	# _write_to runs the converter, so the latest edits reach the .tscn
-	# before we swap scenes.
-	_write_to(current_file)
+	# _write_to runs the converter. Abort Play when the build failed —
+	# otherwise we'd swap scenes into a missing or stale .tscn and the
+	# user would see the generic level-manager "missing level" error
+	# with no hint of the build failure.
+	if not _write_to(current_file):
+		return
 	var stem: String = current_file.get_file().get_basename()
 	LevelSelectScript.pending_level = stem
 	LevelSelectScript.pending_temp_spawn = _temp_spawn.duplicate() if _temp_spawn.size() == 3 else []
