@@ -1,0 +1,777 @@
+{
+  "_doc": "Imported from mountain.tscn. Markers (enemies, pickups, warps) carried over; geometry was not \u2014 drag in terrain / rooms in the blueprint editor.",
+  "blocks": [],
+  "connectors": [],
+  "enemies": [
+    {
+      "bhv": "bhvGoomba",
+      "name": "Goomba1",
+      "pos": [
+        4.0,
+        1.0,
+        22.0
+      ]
+    },
+    {
+      "bhv": "bhvGoomba",
+      "name": "Goomba2",
+      "pos": [
+        -6.0,
+        1.0,
+        18.0
+      ]
+    },
+    {
+      "bhv": "bhvGoomba",
+      "name": "Goomba3",
+      "pos": [
+        12.0,
+        1.0,
+        16.0
+      ]
+    },
+    {
+      "bhv": "bhvGoomba",
+      "name": "Goomba4",
+      "pos": [
+        -28.0,
+        1.0,
+        6.0
+      ]
+    },
+    {
+      "bhv": "bhvGoomba",
+      "name": "Goomba5",
+      "pos": [
+        -40.0,
+        1.0,
+        2.0
+      ]
+    },
+    {
+      "bhv": "bhvGoomba",
+      "name": "Goomba6",
+      "pos": [
+        -12.0,
+        9.5,
+        -26.0
+      ]
+    },
+    {
+      "bhv": "bhvGoomba",
+      "name": "Goomba7",
+      "pos": [
+        10.0,
+        18.5,
+        -28.0
+      ]
+    },
+    {
+      "bhv": "bhvGoomba",
+      "name": "Goomba8",
+      "pos": [
+        2.0,
+        33.5,
+        -42.0
+      ]
+    },
+    {
+      "bhv": "bhvKoopa",
+      "name": "Koopa1",
+      "pos": [
+        20.0,
+        1.0,
+        22.0
+      ]
+    },
+    {
+      "bhv": "bhvKoopa",
+      "name": "Koopa2",
+      "pos": [
+        -52.0,
+        1.0,
+        6.0
+      ]
+    },
+    {
+      "bhv": "bhvKoopa",
+      "name": "Koopa3",
+      "pos": [
+        -14.0,
+        9.5,
+        -30.0
+      ]
+    },
+    {
+      "bhv": "bhvKoopa",
+      "name": "Koopa4",
+      "pos": [
+        22.0,
+        19.5,
+        -24.0
+      ]
+    },
+    {
+      "bhv": "bhvKoopa",
+      "name": "Koopa5",
+      "pos": [
+        2.0,
+        37.0,
+        -52.0
+      ]
+    },
+    {
+      "bhv": "bhvBobomb",
+      "name": "Bobomb1",
+      "pos": [
+        -32.0,
+        1.0,
+        -4.0
+      ]
+    },
+    {
+      "bhv": "bhvBobomb",
+      "name": "Bobomb2",
+      "pos": [
+        28.0,
+        1.0,
+        6.0
+      ]
+    },
+    {
+      "bhv": "bhvBobomb",
+      "name": "Bobomb3",
+      "pos": [
+        6.0,
+        18.5,
+        -30.0
+      ]
+    },
+    {
+      "bhv": "bhvCuttlefish",
+      "name": "Cuttle1",
+      "pos": [
+        0.0,
+        6.0,
+        20.0
+      ]
+    },
+    {
+      "bhv": "bhvCuttlefish",
+      "name": "Cuttle2",
+      "pos": [
+        30.0,
+        14.0,
+        6.0
+      ]
+    },
+    {
+      "bhv": "bhvCuttlefish",
+      "name": "Cuttle3",
+      "pos": [
+        0.0,
+        22.0,
+        -42.0
+      ]
+    },
+    {
+      "bhv": "bhvCuttlefish",
+      "name": "Cuttle4",
+      "pos": [
+        4.0,
+        40.0,
+        -52.0
+      ]
+    },
+    {
+      "bhv": "bhvBobombBuddy",
+      "name": "Buddy_Spring",
+      "pos": [
+        -4.0,
+        1.0,
+        33.0
+      ]
+    },
+    {
+      "bhv": "bhvBobombBuddy",
+      "name": "Buddy_Lodge",
+      "pos": [
+        -12.0,
+        9.5,
+        -22.0
+      ]
+    }
+  ],
+  "extras": [],
+  "keys": [],
+  "locks": [],
+  "materials": {
+    "brick": "res://assets/materials/brick_stone.tres",
+    "floor": "res://assets/materials/stone_grey.tres",
+    "gold": "res://assets/materials/gold.tres",
+    "metal": "res://assets/materials/metal_grey.tres",
+    "wood": "res://assets/materials/wood_dark.tres"
+  },
+  "pickups": [
+    {
+      "kind": "coin_yellow",
+      "name": "C01",
+      "pos": [
+        0.0,
+        1.5,
+        26.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C02",
+      "pos": [
+        -4.0,
+        1.5,
+        22.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C03",
+      "pos": [
+        4.0,
+        1.5,
+        18.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C04",
+      "pos": [
+        -10.0,
+        1.5,
+        14.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C05",
+      "pos": [
+        -18.0,
+        1.5,
+        8.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C06",
+      "pos": [
+        -26.0,
+        1.5,
+        2.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C07",
+      "pos": [
+        -34.0,
+        1.5,
+        -2.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C08",
+      "pos": [
+        -38.0,
+        1.5,
+        2.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C09",
+      "pos": [
+        -44.0,
+        1.5,
+        -4.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C10",
+      "pos": [
+        -48.0,
+        1.5,
+        2.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C11",
+      "pos": [
+        -46.0,
+        1.5,
+        6.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C12",
+      "pos": [
+        -50.0,
+        1.5,
+        8.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C13",
+      "pos": [
+        -52.0,
+        1.5,
+        4.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C14",
+      "pos": [
+        -52.0,
+        1.5,
+        10.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C15",
+      "pos": [
+        20.0,
+        1.5,
+        12.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C16",
+      "pos": [
+        26.0,
+        1.5,
+        8.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C17",
+      "pos": [
+        34.0,
+        1.5,
+        4.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C18",
+      "pos": [
+        30.0,
+        1.5,
+        10.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C19",
+      "pos": [
+        -20.0,
+        4.0,
+        0.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C20",
+      "pos": [
+        -18.0,
+        6.5,
+        -8.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C21",
+      "pos": [
+        -16.0,
+        8.5,
+        -16.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C22",
+      "pos": [
+        -14.0,
+        9.5,
+        -22.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C23",
+      "pos": [
+        -18.0,
+        9.5,
+        -26.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C24",
+      "pos": [
+        -14.0,
+        9.5,
+        -26.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C25",
+      "pos": [
+        -8.0,
+        9.5,
+        -24.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C26",
+      "pos": [
+        -20.0,
+        9.5,
+        -28.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C27",
+      "pos": [
+        -12.0,
+        9.5,
+        -28.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C28",
+      "pos": [
+        -3.0,
+        10.5,
+        -42.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C29",
+      "pos": [
+        -1.0,
+        10.5,
+        -42.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C30",
+      "pos": [
+        1.0,
+        10.5,
+        -42.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C31",
+      "pos": [
+        3.0,
+        10.5,
+        -42.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C32",
+      "pos": [
+        5.0,
+        10.5,
+        -42.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C33",
+      "pos": [
+        14.0,
+        11.0,
+        -26.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C34",
+      "pos": [
+        16.0,
+        13.0,
+        -34.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C35",
+      "pos": [
+        6.0,
+        15.0,
+        -34.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C36",
+      "pos": [
+        8.0,
+        18.0,
+        -24.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C37",
+      "pos": [
+        12.0,
+        21.0,
+        -32.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C38",
+      "pos": [
+        4.0,
+        25.0,
+        -30.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C39",
+      "pos": [
+        0.0,
+        33.5,
+        -34.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C40",
+      "pos": [
+        -4.0,
+        34.0,
+        -38.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C41",
+      "pos": [
+        3.0,
+        34.5,
+        -42.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C42",
+      "pos": [
+        -2.0,
+        35.0,
+        -46.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C43",
+      "pos": [
+        -3.0,
+        37.2,
+        -52.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C44",
+      "pos": [
+        3.0,
+        37.2,
+        -52.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "C45",
+      "pos": [
+        0.0,
+        37.2,
+        -55.0
+      ]
+    },
+    {
+      "kind": "coin_red",
+      "name": "RC1",
+      "pos": [
+        16.0,
+        4.5,
+        32.0
+      ]
+    },
+    {
+      "kind": "coin_red",
+      "name": "RC2",
+      "pos": [
+        -22.0,
+        1.2,
+        20.0
+      ]
+    },
+    {
+      "kind": "coin_red",
+      "name": "RC3",
+      "pos": [
+        -44.0,
+        1.5,
+        -14.0
+      ]
+    },
+    {
+      "kind": "coin_red",
+      "name": "RC4",
+      "pos": [
+        -14.0,
+        14.5,
+        -26.0
+      ]
+    },
+    {
+      "kind": "coin_red",
+      "name": "RC5",
+      "pos": [
+        24.0,
+        20.0,
+        -24.0
+      ]
+    },
+    {
+      "kind": "coin_red",
+      "name": "RC6",
+      "pos": [
+        -5.0,
+        35.0,
+        -40.0
+      ]
+    },
+    {
+      "kind": "coin_red",
+      "name": "RC7",
+      "pos": [
+        -5.0,
+        44.0,
+        -55.0
+      ]
+    },
+    {
+      "kind": "coin_red",
+      "name": "RC8",
+      "pos": [
+        32.0,
+        19.5,
+        0.0
+      ]
+    },
+    {
+      "kind": "star",
+      "name": "Star_Summit",
+      "pos": [
+        0.0,
+        40.0,
+        -52.0
+      ]
+    },
+    {
+      "kind": "star",
+      "name": "Star_Shrine",
+      "pos": [
+        -44.0,
+        2.6,
+        -12.0
+      ]
+    },
+    {
+      "kind": "star",
+      "name": "Star_Grotto",
+      "pos": [
+        39.0,
+        2.5,
+        4.0
+      ]
+    },
+    {
+      "kind": "oneup",
+      "name": "OneUp_SpringBehind",
+      "pos": [
+        -4.0,
+        1.5,
+        40.0
+      ]
+    },
+    {
+      "kind": "oneup",
+      "name": "OneUp_LodgeRoof",
+      "pos": [
+        -14.0,
+        14.5,
+        -26.0
+      ]
+    },
+    {
+      "kind": "oneup",
+      "name": "OneUp_Deck",
+      "pos": [
+        26.0,
+        20.0,
+        -27.0
+      ]
+    },
+    {
+      "kind": "oneup",
+      "name": "OneUp_CartRoom",
+      "pos": [
+        -52.0,
+        1.5,
+        4.0
+      ]
+    },
+    {
+      "kind": "cap_wing",
+      "name": "WingCap_Tree",
+      "pos": [
+        -12.0,
+        6.5,
+        24.0
+      ]
+    }
+  ],
+  "rooms": [],
+  "spawn_point": [
+    0,
+    1,
+    0
+  ],
+  "standalone_level": true,
+  "terrain_patches": [],
+  "volumes": [],
+  "wall_thickness": 0.4,
+  "warps": []
+}

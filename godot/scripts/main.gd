@@ -223,6 +223,8 @@ func _input(event: InputEvent) -> void:
     elif event is InputEventKey and event.pressed and event.keycode == KEY_F1:
         get_tree().debug_collisions_hint = not get_tree().debug_collisions_hint
         _reload_debug_shapes()
+    elif event is InputEventKey and event.pressed and event.keycode == KEY_F4:
+        _open_in_editor()
     elif event is InputEventKey and event.pressed and LEVEL_SHORTCUTS.has(event.keycode):
         var spec: Array = LEVEL_SHORTCUTS[event.keycode]
         _level_manager.load_level(spec[0], spec[1])
@@ -235,6 +237,19 @@ func _input(event: InputEvent) -> void:
             _cam_distance = max(_cam_distance - 0.7, CAM_DISTANCE_MIN)
         elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
             _cam_distance = min(_cam_distance + 0.7, CAM_DISTANCE_MAX)
+
+
+func _open_in_editor() -> void:
+    """F4 — flip to the blueprint editor with the current level
+    pre-loaded so the player can adjust geometry / paint / pickups
+    in place. The editor's _ready picks up pending_level_to_edit
+    and tries to open `blueprints/<stem>.json`; if that doesn't
+    exist (hand-authored level with no blueprint yet), the editor
+    starts blank and the user can save-as to create one."""
+    var stem: String = _level_manager.current_level if _level_manager != null else ""
+    LevelSelectScript.pending_level_to_edit = stem
+    Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+    get_tree().change_scene_to_file("res://scenes/blueprint_editor.tscn")
 
 
 func _respawn() -> void:
@@ -332,7 +347,8 @@ func _process(delta: float) -> void:
         + "action: %s\n"
         + "%s\n"
         + "WASD move  Space jump  Ctrl crouch  Shift attack/dive\n"
-        + "Wheel zoom  1-8 swap world  Q/E cycle  R respawn  F1 collision"
+        + "Wheel zoom  1-8 swap world  Q/E cycle  R respawn  F1 collision\n"
+        + "F4: edit this level   Esc: pause"
     ) % [
         level_info,
         stats,

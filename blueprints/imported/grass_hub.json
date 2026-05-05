@@ -1,0 +1,964 @@
+{
+  "_doc": "Imported from grass_hub.tscn. Markers (enemies, pickups, warps) carried over; geometry was not \u2014 drag in terrain / rooms in the blueprint editor.",
+  "blocks": [],
+  "connectors": [],
+  "enemies": [
+    {
+      "bhv": "bhvBobombBuddy",
+      "name": "Buddy_Plaza",
+      "pos": [
+        6.0,
+        1.0,
+        26.0
+      ]
+    },
+    {
+      "bhv": "bhvBobombBuddy",
+      "name": "Buddy_Hall",
+      "pos": [
+        0.0,
+        1.0,
+        10.0
+      ]
+    },
+    {
+      "bhv": "bhvBobombBuddy",
+      "name": "Buddy_Throne",
+      "pos": [
+        -4.0,
+        1.0,
+        -20.0
+      ]
+    },
+    {
+      "bhv": "bhvBobombBuddy",
+      "name": "Buddy_Courtyard",
+      "pos": [
+        -6.0,
+        1.0,
+        -44.0
+      ]
+    },
+    {
+      "bhv": "bhvBobombBuddy",
+      "name": "Buddy_Upper",
+      "pos": [
+        0.0,
+        7.0,
+        -24.0
+      ]
+    },
+    {
+      "bhv": "bhvGoomba",
+      "name": "Goomba_Crypt1",
+      "pos": [
+        -16.0,
+        -7.0,
+        -16.0
+      ]
+    },
+    {
+      "bhv": "bhvGoomba",
+      "name": "Goomba_Crypt2",
+      "pos": [
+        -24.0,
+        -7.0,
+        -24.0
+      ]
+    },
+    {
+      "bhv": "bhvGoomba",
+      "name": "Goomba_Plaza1",
+      "pos": [
+        -18.0,
+        1.0,
+        30.0
+      ]
+    },
+    {
+      "bhv": "bhvGoomba",
+      "name": "Goomba_Plaza2",
+      "pos": [
+        18.0,
+        1.0,
+        30.0
+      ]
+    },
+    {
+      "bhv": "bhvCuttlefish",
+      "name": "Cuttle1",
+      "pos": [
+        42.0,
+        0.6,
+        20.0
+      ]
+    },
+    {
+      "bhv": "bhvCuttlefish",
+      "name": "Cuttle2",
+      "pos": [
+        -42.0,
+        0.6,
+        -10.0
+      ]
+    },
+    {
+      "bhv": "bhvCuttlefish",
+      "name": "Cuttle3",
+      "pos": [
+        0.0,
+        0.6,
+        -42.0
+      ]
+    }
+  ],
+  "extras": [],
+  "keys": [],
+  "locks": [],
+  "materials": {
+    "brick": "res://assets/materials/brick_stone.tres",
+    "floor": "res://assets/materials/stone_grey.tres",
+    "gold": "res://assets/materials/gold.tres",
+    "metal": "res://assets/materials/metal_grey.tres",
+    "wood": "res://assets/materials/wood_dark.tres"
+  },
+  "pickups": [
+    {
+      "kind": "coin_yellow",
+      "name": "Coin01",
+      "pos": [
+        -6.0,
+        1.4,
+        28.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin02",
+      "pos": [
+        0.0,
+        1.4,
+        28.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin03",
+      "pos": [
+        6.0,
+        1.4,
+        28.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin04",
+      "pos": [
+        -3.0,
+        1.4,
+        24.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin05",
+      "pos": [
+        3.0,
+        1.4,
+        24.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin06",
+      "pos": [
+        0.0,
+        1.4,
+        16.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin07",
+      "pos": [
+        0.0,
+        1.4,
+        12.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin08",
+      "pos": [
+        0.0,
+        1.4,
+        8.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin09",
+      "pos": [
+        0.0,
+        1.4,
+        4.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin10",
+      "pos": [
+        0.0,
+        1.4,
+        0.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin11",
+      "pos": [
+        0.0,
+        1.4,
+        -4.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin12",
+      "pos": [
+        0.0,
+        1.4,
+        -8.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin13",
+      "pos": [
+        0.0,
+        1.4,
+        -12.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin14",
+      "pos": [
+        -14.0,
+        1.4,
+        8.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin15",
+      "pos": [
+        14.0,
+        1.4,
+        8.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin16",
+      "pos": [
+        -14.0,
+        1.4,
+        -8.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin17",
+      "pos": [
+        14.0,
+        1.4,
+        -8.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin18",
+      "pos": [
+        -24.0,
+        1.4,
+        12.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin19",
+      "pos": [
+        24.0,
+        1.4,
+        12.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin20",
+      "pos": [
+        -24.0,
+        1.4,
+        -18.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin21",
+      "pos": [
+        24.0,
+        1.4,
+        -18.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin22",
+      "pos": [
+        0.0,
+        2.5,
+        -13.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin23",
+      "pos": [
+        0.0,
+        3.8,
+        -15.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin24",
+      "pos": [
+        0.0,
+        5.2,
+        -17.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin25",
+      "pos": [
+        0.0,
+        6.9,
+        -19.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin26",
+      "pos": [
+        -10.0,
+        7.2,
+        -24.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin27",
+      "pos": [
+        10.0,
+        7.2,
+        -24.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin28",
+      "pos": [
+        -16.0,
+        7.2,
+        -24.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin29",
+      "pos": [
+        16.0,
+        7.2,
+        -24.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin30",
+      "pos": [
+        40.0,
+        1.4,
+        -4.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin31",
+      "pos": [
+        42.0,
+        1.4,
+        0.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin32",
+      "pos": [
+        44.0,
+        1.4,
+        4.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin33",
+      "pos": [
+        -40.0,
+        1.4,
+        -4.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin34",
+      "pos": [
+        -42.0,
+        1.4,
+        0.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin35",
+      "pos": [
+        -44.0,
+        1.4,
+        4.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin36",
+      "pos": [
+        -12.0,
+        1.4,
+        -40.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin37",
+      "pos": [
+        12.0,
+        1.4,
+        -40.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin38",
+      "pos": [
+        -12.0,
+        1.4,
+        -48.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin39",
+      "pos": [
+        12.0,
+        1.4,
+        -48.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin40",
+      "pos": [
+        0.0,
+        1.4,
+        -46.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin41",
+      "pos": [
+        0.0,
+        1.4,
+        -38.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin42",
+      "pos": [
+        -24.0,
+        -7.0,
+        -22.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin43",
+      "pos": [
+        -16.0,
+        -7.0,
+        -22.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin44",
+      "pos": [
+        -20.0,
+        -7.0,
+        -14.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin45",
+      "pos": [
+        -10.0,
+        13.0,
+        -5.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin46",
+      "pos": [
+        10.0,
+        13.0,
+        -5.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin47",
+      "pos": [
+        0.0,
+        13.0,
+        -20.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin48",
+      "pos": [
+        0.0,
+        13.0,
+        10.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin49",
+      "pos": [
+        30.0,
+        3.0,
+        21.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin50",
+      "pos": [
+        30.0,
+        8.0,
+        20.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin51",
+      "pos": [
+        30.0,
+        13.0,
+        20.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin52",
+      "pos": [
+        0.0,
+        0.8,
+        34.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin53",
+      "pos": [
+        -2.0,
+        0.8,
+        36.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin54",
+      "pos": [
+        2.0,
+        0.8,
+        36.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin55",
+      "pos": [
+        0.0,
+        0.8,
+        40.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin56",
+      "pos": [
+        0.0,
+        7.4,
+        -35.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin57",
+      "pos": [
+        -22.0,
+        7.4,
+        -28.0
+      ]
+    },
+    {
+      "kind": "coin_yellow",
+      "name": "Coin58",
+      "pos": [
+        22.0,
+        7.4,
+        -28.0
+      ]
+    },
+    {
+      "kind": "coin_red",
+      "name": "RedCoin1_TowerSE",
+      "pos": [
+        30.0,
+        18.5,
+        20.0
+      ]
+    },
+    {
+      "kind": "coin_red",
+      "name": "RedCoin2_TowerSW",
+      "pos": [
+        -30.0,
+        18.5,
+        20.0
+      ]
+    },
+    {
+      "kind": "coin_red",
+      "name": "RedCoin3_TowerNE",
+      "pos": [
+        30.0,
+        18.5,
+        -30.0
+      ]
+    },
+    {
+      "kind": "coin_red",
+      "name": "RedCoin4_TowerNW",
+      "pos": [
+        -30.0,
+        18.5,
+        -30.0
+      ]
+    },
+    {
+      "kind": "coin_red",
+      "name": "RedCoin5_EastWing",
+      "pos": [
+        42.0,
+        1.5,
+        -6.0
+      ]
+    },
+    {
+      "kind": "coin_red",
+      "name": "RedCoin6_WestWing",
+      "pos": [
+        -42.0,
+        1.5,
+        -6.0
+      ]
+    },
+    {
+      "kind": "coin_red",
+      "name": "RedCoin7_Courtyard",
+      "pos": [
+        0.0,
+        1.5,
+        -42.0
+      ]
+    },
+    {
+      "kind": "coin_red",
+      "name": "RedCoin8_CourtyardStatue",
+      "pos": [
+        -18.0,
+        3.0,
+        -52.0
+      ]
+    },
+    {
+      "kind": "star",
+      "name": "Star_ThronePlinth",
+      "pos": [
+        3.0,
+        3.5,
+        -22.0
+      ]
+    },
+    {
+      "kind": "star",
+      "name": "Star_CryptSarcophagus",
+      "pos": [
+        -20.0,
+        -6.0,
+        -20.0
+      ]
+    },
+    {
+      "kind": "star",
+      "name": "Star_RoseWindowSecret",
+      "pos": [
+        0.0,
+        13.5,
+        18.0
+      ]
+    },
+    {
+      "kind": "oneup",
+      "name": "OneUp_Crypt",
+      "pos": [
+        -20.0,
+        -7.0,
+        -26.0
+      ]
+    },
+    {
+      "kind": "oneup",
+      "name": "OneUp_Roof",
+      "pos": [
+        0.0,
+        13.0,
+        -20.0
+      ]
+    },
+    {
+      "kind": "oneup",
+      "name": "OneUp_Attic",
+      "pos": [
+        0.0,
+        17.0,
+        -44.0
+      ]
+    },
+    {
+      "kind": "oneup",
+      "name": "OneUp_GargoyleAlcove",
+      "pos": [
+        -14.0,
+        16.5,
+        22.0
+      ]
+    },
+    {
+      "kind": "cap_wing",
+      "name": "WingCap_TowerNW",
+      "pos": [
+        -30.0,
+        19.0,
+        -30.0
+      ]
+    },
+    {
+      "kind": "cap_metal",
+      "name": "MetalCap_TowerNE",
+      "pos": [
+        30.0,
+        19.0,
+        -30.0
+      ]
+    }
+  ],
+  "rooms": [],
+  "spawn_point": [
+    0,
+    1,
+    0
+  ],
+  "standalone_level": true,
+  "terrain_patches": [],
+  "volumes": [],
+  "wall_thickness": 0.4,
+  "warps": [
+    {
+      "name": "WarpArea",
+      "pos": [
+        50.0,
+        1.5,
+        0.0
+      ],
+      "requires_stars": 0,
+      "size": [
+        2.5,
+        3.0,
+        0.4
+      ],
+      "target_level": "mountain"
+    },
+    {
+      "name": "WarpArea",
+      "pos": [
+        -50.0,
+        1.5,
+        0.0
+      ],
+      "requires_stars": 0,
+      "size": [
+        2.5,
+        3.0,
+        0.4
+      ],
+      "target_level": "water"
+    },
+    {
+      "name": "WarpArea",
+      "pos": [
+        -12.0,
+        1.5,
+        -43.0
+      ],
+      "requires_stars": 3,
+      "size": [
+        2.5,
+        3.0,
+        0.4
+      ],
+      "target_level": "snow"
+    },
+    {
+      "name": "WarpArea",
+      "pos": [
+        12.0,
+        1.5,
+        -43.0
+      ],
+      "requires_stars": 5,
+      "size": [
+        2.5,
+        3.0,
+        0.4
+      ],
+      "target_level": "lava"
+    },
+    {
+      "name": "WarpArea",
+      "pos": [
+        -14.0,
+        8.6,
+        -27.0
+      ],
+      "requires_stars": 10,
+      "size": [
+        2.5,
+        3.0,
+        0.4
+      ],
+      "target_level": "sand"
+    },
+    {
+      "name": "WarpArea",
+      "pos": [
+        14.0,
+        8.6,
+        -27.0
+      ],
+      "requires_stars": 15,
+      "size": [
+        2.5,
+        3.0,
+        0.4
+      ],
+      "target_level": "sky"
+    },
+    {
+      "name": "WarpArea",
+      "pos": [
+        0.0,
+        3.5,
+        -27.5
+      ],
+      "requires_stars": 25,
+      "size": [
+        2.5,
+        3.0,
+        0.4
+      ],
+      "target_level": "bowser"
+    },
+    {
+      "name": "WarpArea",
+      "pos": [
+        -63.0,
+        1.0,
+        -20.0
+      ],
+      "requires_stars": 30,
+      "size": [
+        2.5,
+        3.0,
+        0.4
+      ],
+      "target_level": "bowser"
+    },
+    {
+      "name": "WarpArea",
+      "pos": [
+        63.0,
+        1.0,
+        -20.0
+      ],
+      "requires_stars": 50,
+      "size": [
+        2.5,
+        3.0,
+        0.4
+      ],
+      "target_level": "sky"
+    },
+    {
+      "name": "WarpArea",
+      "pos": [
+        0.0,
+        1.0,
+        -70.0
+      ],
+      "requires_stars": 70,
+      "size": [
+        2.5,
+        3.0,
+        0.4
+      ],
+      "target_level": "bowser"
+    }
+  ]
+}

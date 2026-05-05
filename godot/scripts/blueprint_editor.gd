@@ -170,6 +170,18 @@ var _tool_shortcuts: Dictionary = {}
 func _ready() -> void:
 	_build_ui()
 	_new_blueprint()
+	# F4 from the in-game player flips here with the current level's
+	# stem stashed in pending_level_to_edit. If a matching blueprint
+	# exists, auto-open it; otherwise the user lands on a blank file
+	# (and can save-as to seed a new blueprint for that level name).
+	if LevelSelectScript.pending_level_to_edit != "":
+		var stem: String = LevelSelectScript.pending_level_to_edit
+		LevelSelectScript.pending_level_to_edit = ""
+		var bp_path: String = "%s/%s.json" % [BLUEPRINTS_DIR, stem]
+		if FileAccess.file_exists(bp_path):
+			_read_from(bp_path)
+		else:
+			_status("No blueprint for '%s' yet — Save As to create one." % stem)
 	set_process_input(true)
 
 

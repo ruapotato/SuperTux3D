@@ -26,6 +26,11 @@ static var pending_level: String = ""
 # level. Set by the editor's "▶ Play" button when a Temp Spawn marker
 # was placed. [x, y, z]; empty = use the level's SpawnArea as normal.
 static var pending_temp_spawn: Array = []
+# When the player presses the in-game "edit this level" key (F4),
+# main.gd stores the current level's stem here, then changes scene to
+# the blueprint editor. Editor's _ready picks this up and auto-loads
+# blueprints/<stem>.json — or starts a blank file if there isn't one.
+static var pending_level_to_edit: String = ""
 
 
 func _ready() -> void:
