@@ -31,12 +31,15 @@ used or required.
 ## Getting started
 
 You need Godot 4.5+. Either drop a Godot binary into the project root
-(it's gitignored) or install one system-wide:
+(it's gitignored) or install one system-wide via your package manager.
 
 ```sh
-# Run the editor / play the game
-./Godot_v4.5.1-stable_linux.x86_64 --path godot
+./start.sh
 ```
+
+`start.sh` finds a bundled `Godot_v*` binary if one's in the project
+root, falls back to whatever `godot` is on `PATH` otherwise, and forwards
+any extra args (`./start.sh --headless` etc.).
 
 Boot lands on the main menu. From there:
 
