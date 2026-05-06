@@ -56,6 +56,12 @@ const LOCK_COLOR := Color(0.85, 0.35, 0.85)
 func _ready() -> void:
 	focus_mode = Control.FOCUS_ALL
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	# Without this, draw_rect/draw_line at world coords that fall to
+	# the left of the canvas's own rect spill over into the inspector
+	# panel — large terrain patches at the default pan position cover
+	# the tool palette and inspector. clip_contents=true tells Godot
+	# to scissor every draw call to the control's bounds.
+	clip_contents = true
 
 
 func world_to_canvas(p: Vector2) -> Vector2:
