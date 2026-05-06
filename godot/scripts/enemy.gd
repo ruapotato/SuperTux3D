@@ -103,10 +103,14 @@ func _build_visual() -> void:
         var scene: PackedScene = load(scene_path)
         var visual: Node3D = scene.instantiate()
         visual.name = "Visual"
-        # Enemy scenes were authored facing +Z (looking "back" in Godot
-        # convention). Flip the visual 180° around Y so the eyes and
-        # fronts end up at -Z, matching the movement direction.
-        visual.rotate_y(PI)
+        # Most enemy scenes are authored facing +Z (Godot's "looking
+        # back" convention) and need a 180° flip so the eyes/front
+        # end up at -Z to match `rotation.y = atan2(-dir.x, -dir.z)`.
+        # The cuttlefish GLB came from a different project and is
+        # already authored facing -Z, so it doesn't get the flip —
+        # otherwise it flies tail-first.
+        if bhv_name != "bhvCuttlefish":
+            visual.rotate_y(PI)
         add_child(visual)
         _mesh = visual
         # Add a collision capsule so the enemy stands on the floor.
@@ -400,20 +404,33 @@ func _on_body_entered(body: Node) -> void:
     if _squished:
         return
     if body is CharacterBody3D and body.has_method("take_damage"):
-        # Stomp if the player came from above — check either a vertical
-        # offset (they're above our head) OR they're falling and
-        # somewhere in the top half of our volume. Was too strict before
-        # — tall enemies and high-stomp impacts weren't registering.
+        # Stomp criterion: the player is moving DOWN with real
+        # downward velocity AND their feet are at-or-above our feet.
+        # The previous +0.3m height-clearance threshold meant flying
+        # enemies (cuttlefish) couldn't be stomped because the
+        # player's peak jump was barely level with the cuttle's hover
+        # altitude — Mario got damaged trying. Now Mario landing on
+        # any enemy from above with downward intent counts. The
+        # vel.y < -1.5 floor keeps standing-next-to-an-enemy from
+        # auto-stomping (gravity-snap pulls vel.y to ~-1 on flat).
         var player_y: float = body.global_position.y
         var enemy_y: float = global_position.y
-        var from_above: bool = player_y > enemy_y + 0.3
-        var falling: bool = body.velocity.y < 2.0
+        var from_above: bool = player_y >= enemy_y - 0.05
+        var falling: bool = body.velocity.y < -1.5
         if from_above and falling:
             _squish()
             if body.has_method("on_enemy_squished"):
                 body.on_enemy_squished()
         else:
             body.take_damage(1, bhv_name)
+
+
+func external_kill(source: String = "punch") -> void:
+    """Killed by a non-stomp source (punch, ground pound shockwave).
+    Plays the squish animation but doesn't bounce the player."""
+    if _squished or _exploded:
+        return
+    _squish()
 
 
 func _squish() -> void:

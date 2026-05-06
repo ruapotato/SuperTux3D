@@ -38,6 +38,7 @@ static func _find_animation_player(n: Node) -> AnimationPlayer:
 script = SubResource("boot_script")
 
 [node name="CuttleMesh" parent="." instance=ExtResource("1_glb")]
-; GLB is modeled ~1m tall facing +Z. Scale down to feel like a glider and
-; lift origin so the body hangs above the ground when spawned at y=0.
-transform = Transform3D(0.55, 0, 0, 0, 0.55, 0, 0, 0, 0.55, 0, 0.25, 0)
+; GLB is modeled ~1m tall facing -Z. Scale up so it reads as a real
+; threat and is bigger than Mario's head — earlier 0.55 scale made
+; it tiny and hard to land a stomp on.
+transform = Transform3D(1.4, 0, 0, 0, 1.4, 0, 0, 0, 1.4, 0, 0.5, 0)

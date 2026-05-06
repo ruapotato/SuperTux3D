@@ -503,8 +503,62 @@ func _play_state_sfx() -> void:
         MarioStateScript.ACT_GROUND_POUND_LAND:
             _play_sfx("ground_pound")
             _break_nearby_blocks()
+            _kill_nearby_enemies(2.5)   # shockwave radius
         MarioStateScript.ACT_PUNCHING:
             _play_sfx("punch")
+            # Punch reaches forward ~1.2m; anything in that arc dies.
+            _kill_in_punch_arc()
+
+
+func _kill_nearby_enemies(radius: float) -> void:
+    """Ground-pound shockwave: any enemy within `radius` dies. Walks
+    the active scene tree once; cheap because enemy bodies aren't
+    numerous."""
+    for node in get_tree().get_nodes_in_group("cuttlefish"):
+        if node is Node3D and global_position.distance_to(node.global_position) < radius:
+            if node.has_method("external_kill"):
+                node.external_kill("ground_pound")
+    # The cuttlefish group is a special case (flocking opt-in); for
+    # ALL other enemies we walk every CharacterBody3D in the world
+    # and check if it's an enemy.gd instance with external_kill.
+    var world: Node = get_tree().current_scene
+    if world == null:
+        return
+    var queue: Array = [world]
+    while not queue.is_empty():
+        var n: Node = queue.pop_front()
+        for c in n.get_children():
+            queue.append(c)
+        if n is CharacterBody3D and n != self and n.has_method("external_kill") \
+                and n is Node3D:
+            if global_position.distance_to(n.global_position) < radius:
+                n.external_kill("ground_pound")
+
+
+func _kill_in_punch_arc() -> void:
+    """Punching: any enemy within 1.4m of Mario AND in the forward
+    arc (within ~90° of his facing) dies. Generous on Y so flying
+    enemies hovering in front also count."""
+    var face_dir := Vector3(-sin(_state.face_yaw), 0.0, -cos(_state.face_yaw))
+    var world: Node = get_tree().current_scene
+    if world == null:
+        return
+    var queue: Array = [world]
+    while not queue.is_empty():
+        var n: Node = queue.pop_front()
+        for c in n.get_children():
+            queue.append(c)
+        if n is CharacterBody3D and n != self and n.has_method("external_kill") \
+                and n is Node3D:
+            var to_n: Vector3 = n.global_position - global_position
+            var horizontal := Vector3(to_n.x, 0.0, to_n.z)
+            if horizontal.length() > 1.4:
+                continue
+            if abs(to_n.y) > 1.6:
+                continue
+            if horizontal.length() > 0.001 and face_dir.dot(horizontal.normalized()) < 0.0:
+                continue   # behind Mario, no hit
+            n.external_kill("punch")
 
 
 func _break_nearby_blocks() -> void:
