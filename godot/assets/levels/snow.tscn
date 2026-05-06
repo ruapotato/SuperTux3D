@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=24 format=3]
 [ext_resource type="Material" path="res://assets/materials/brick_stone.tres" id="e1_brick_stone"]
 [ext_resource type="Material" path="res://assets/materials/stone_grey.tres" id="e2_stone_grey"]
 [ext_resource type="Material" path="res://assets/materials/wood_planks.tres" id="e3_wood_planks"]
@@ -14,6 +14,48 @@ ambient_light_source = 2
 ambient_light_color = Color(0.92, 0.95, 1.0, 1)
 ambient_light_energy = 0.95
 
+[sub_resource type="BoxMesh" id="s2"]
+size = Vector3(4.0, 0.4, 4.0)
+
+[sub_resource type="BoxShape3D" id="s3"]
+size = Vector3(4.0, 0.4, 4.0)
+
+[sub_resource type="BoxMesh" id="s4"]
+size = Vector3(4.0, 0.4, 4.0)
+
+[sub_resource type="BoxShape3D" id="s5"]
+size = Vector3(4.0, 0.4, 4.0)
+
+[sub_resource type="BoxMesh" id="s6"]
+size = Vector3(4.0, 0.4, 4.0)
+
+[sub_resource type="BoxShape3D" id="s7"]
+size = Vector3(4.0, 0.4, 4.0)
+
+[sub_resource type="BoxMesh" id="s8"]
+size = Vector3(4.0, 0.4, 4.0)
+
+[sub_resource type="BoxShape3D" id="s9"]
+size = Vector3(4.0, 0.4, 4.0)
+
+[sub_resource type="BoxMesh" id="s10"]
+size = Vector3(4.0, 0.4, 4.0)
+
+[sub_resource type="BoxShape3D" id="s11"]
+size = Vector3(4.0, 0.4, 4.0)
+
+[sub_resource type="BoxMesh" id="s12"]
+size = Vector3(4.0, 0.4, 4.0)
+
+[sub_resource type="BoxShape3D" id="s13"]
+size = Vector3(4.0, 0.4, 4.0)
+
+[sub_resource type="BoxMesh" id="s14"]
+size = Vector3(4.0, 0.4, 4.0)
+
+[sub_resource type="BoxShape3D" id="s15"]
+size = Vector3(4.0, 0.4, 4.0)
+
 [node name="BuildingRoot" type="Node3D"]
 metadata/spawn_point = Vector3(0, 2, 50)
 metadata/bgm = "bgm_course"
@@ -21,6 +63,69 @@ metadata/bgm = "bgm_course"
 environment = SubResource("s1")
 [node name="Sun" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.7, -0.5, 0.5, 0.0, 0.7, 0.7, -0.7, -0.5, 0.5, 0, 6, 0)
+[node name="Drift0" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 5.2, 30.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Drift0"]
+mesh = SubResource("s2")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Drift0"]
+shape = SubResource("s3")
+[node name="Drift1" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.0, 7.2, 18.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Drift1"]
+mesh = SubResource("s4")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Drift1"]
+shape = SubResource("s5")
+[node name="Drift2" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.0, 8.2, 6.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Drift2"]
+mesh = SubResource("s6")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Drift2"]
+shape = SubResource("s7")
+[node name="Drift3" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.0, 10.2, -8.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Drift3"]
+mesh = SubResource("s8")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Drift3"]
+shape = SubResource("s9")
+[node name="Drift4" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.0, 12.2, -22.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Drift4"]
+mesh = SubResource("s10")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Drift4"]
+shape = SubResource("s11")
+[node name="Drift5" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.0, 14.2, -36.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Drift5"]
+mesh = SubResource("s12")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Drift5"]
+shape = SubResource("s13")
+[node name="Drift6" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.0, 16.2, -50.0)
+collision_layer = 1
+collision_mask = 1
+[node name="Mesh" type="MeshInstance3D" parent="Drift6"]
+mesh = SubResource("s14")
+surface_material_override/0 = ExtResource("e2_stone_grey")
+[node name="Col" type="CollisionShape3D" parent="Drift6"]
+shape = SubResource("s15")
 [node name="Ground" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -110.0, -0.02, -110.0)
 script = ExtResource("e8_terrain_patch")
@@ -88,20 +193,20 @@ metadata/enemy_bhv = "bhvBobombBuddy"
 [node name="BobombBuddy_Lodge" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 0.5242257246879358, -28.0)
 metadata/enemy_bhv = "bhvBobombBuddy"
-[node name="DriftEast" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -2.5983536000858747, 10)
+[node name="DriftStar1" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 8.5, 18)
 metadata/pickup_kind = "star"
-[node name="DriftNorth" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5622959594618364, -30)
+[node name="DriftStar3" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 11.5, -8)
 metadata/pickup_kind = "star"
-[node name="RidgeWest" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, -0.0947841295915346, 5)
+[node name="DriftStar5" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 15.5, -36)
 metadata/pickup_kind = "star"
-[node name="FarPeak" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 5.005606422248144, -55)
+[node name="FarBase" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 5.875708675979195, -50)
 metadata/pickup_kind = "star"
-[node name="HiddenValley" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25, 1.207238677698449, -50)
+[node name="HiddenWest" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, -0.34032715029768323, 20)
 metadata/pickup_kind = "star"
 [node name="CoinA1" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, -1.1303319595448615, 40.0)
