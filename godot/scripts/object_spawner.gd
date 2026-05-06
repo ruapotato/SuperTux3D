@@ -276,6 +276,32 @@ static func _make_pickup(kind: String) -> Node3D:
     return body
 
 
+static func _make_ghost_star() -> Node3D:
+    """Spawn a visible-but-uncollectable star marker for stars the
+    player has already grabbed in this level. Same silhouette as a
+    real star, dim blue + emissive blue for clarity, no Area3D — it
+    purely visual feedback so the player sees what they've found."""
+    var root := Node3D.new()
+    root.name = "GhostStar"
+    var mesh_inst := MeshInstance3D.new()
+    var sphere_mesh := SphereMesh.new()
+    sphere_mesh.radius = 0.32
+    sphere_mesh.height = 0.64
+    sphere_mesh.radial_segments = 12
+    sphere_mesh.rings = 6
+    mesh_inst.mesh = sphere_mesh
+    var mat := StandardMaterial3D.new()
+    mat.albedo_color = Color(0.30, 0.50, 0.95, 0.55)
+    mat.emission_enabled = true
+    mat.emission = Color(0.20, 0.45, 1.00, 1.0)
+    mat.emission_energy_multiplier = 1.4
+    mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    mesh_inst.material_override = mat
+    root.add_child(mesh_inst)
+    return root
+
+
 static func _pickup_color(kind: String) -> Color:
     match kind:
         "coin_yellow": return Color(1.0, 0.85, 0.1)

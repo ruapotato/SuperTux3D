@@ -69,7 +69,7 @@ var _intended_h_vel: Vector3 = Vector3.ZERO
 # have a non-trivial value.
 var water_level_y: float = -INF
 
-signal star_collected
+signal star_collected(star_name: String)
 
 # Latest raycast observations, read by main.gd for HUD.
 var debug_ray_down_hit: String = "(no hit)"
@@ -552,10 +552,13 @@ func _on_pickup(other: Area3D) -> void:
             lives += 1
             _play_sfx("oneup")
         "star":
-            star_count += 1
+            # Emit the star's marker name (set by level_manager when
+            # spawning) so main.gd / save_data can record this exact
+            # star as collected and not double-count it next visit.
+            var star_id: String = str(other.get_meta("star_id", ""))
             _play_sfx("star")
             _play_sfx("star_yahoo")
-            emit_signal("star_collected")
+            emit_signal("star_collected", star_id)
         "cap_wing":
             power_cap = "wing"
             power_cap_time = 20.0

@@ -163,18 +163,17 @@ func _on_mario_died() -> void:
         _respawn_after(1.5)
 
 
-func _on_star_collected() -> void:
+func _on_star_collected(star_name: String) -> void:
+    """A star was just picked up. Record it per-level so it spawns as
+    a blue ghost next visit (and so its name doesn't double-count
+    Mario's global star_count). Stay in the level — earlier we
+    auto-warped back to the hub on every star, but Mario 64-style
+    free-collection feels better and lets the player chase multiple
+    stars in one trip."""
     if _save != null:
-        _save.record_star(_level_manager.current_level)
-    _respawn_after(2.5)
-    # After a short star fanfare, warp back to the grass hub so each
-    # level trip feels like a round-trip from a home base.
-    var t := Timer.new()
-    t.wait_time = 2.4
-    t.one_shot = true
-    add_child(t)
-    t.timeout.connect(_go_to_hub)
-    t.start()
+        var was_new: bool = _save.collect_star(_level_manager.current_level, star_name)
+        if was_new:
+            mario.star_count = _save.stars
 
 
 func _go_to_hub() -> void:

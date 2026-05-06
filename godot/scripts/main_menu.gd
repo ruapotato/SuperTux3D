@@ -6,8 +6,10 @@ extends Control
 # the editor grabs the viewport. Swapping to another scene discards
 # this one entirely (no overlay, no physics ticking).
 
-const LEVEL_SELECT_SCENE := "res://scenes/level_select.tscn"
+const GAME_SCENE := "res://scenes/main.tscn"
 const EDITOR_SCENE := "res://scenes/blueprint_editor.tscn"
+const HUB_LEVEL := "grass_hub"
+const LevelSelectScript := preload("res://scripts/level_select.gd")
 
 
 func _ready() -> void:
@@ -19,7 +21,12 @@ func _ready() -> void:
 
 
 func _play() -> void:
-	get_tree().change_scene_to_file(LEVEL_SELECT_SCENE)
+	# Mario-64-style: drop straight into the hub world. From there
+	# the player walks to one of the painting/door warps to enter
+	# a themed level. The old level-list select is still reachable
+	# from the editor but isn't the default play path anymore.
+	LevelSelectScript.pending_level = HUB_LEVEL
+	get_tree().change_scene_to_file(GAME_SCENE)
 
 
 func _editor() -> void:

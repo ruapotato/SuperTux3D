@@ -1,33 +1,29 @@
 #!/usr/bin/env python3
-"""Author the eight themed worlds (grass_hub, mountain, snow, water,
-lava, sand, sky, bowser) as JSON blueprints. Each one gets:
+"""Author the eight themed worlds + hub as JSON blueprints.
 
-    - A terrain patch sized for the level's marker extents, sculpted
-      with a theme-appropriate heightmap formula, and painted with
-      the right surface_kinds (snow / sand / water / lava / quicksand /
-      ice).
-    - A spawn_point near the origin.
-    - Theme-coloured sky + an apt bgm track.
-    - All enemies / pickups / warps from `blueprints/imported/`,
-      lifted onto the new heightmap so they don't sit underground.
-    - One or two rooms / extras where it makes sense (the hub gets a
-      small castle; bowser gets a tower).
+Design goals (after the first marker-only pass):
 
-Run once to seed the world:
+- One coherent hub level (`grass_hub`) with named warp doors to each
+  themed world. Warps are progressively star-gated: snow needs 1,
+  water 3, lava 6, sand 12, sky 25, bowser 50.
+- Multiple stars per themed world (5-7), placed at distinctive spots
+  (peak / island / hidden lava platform / etc.) so collecting them is
+  a small navigation puzzle, not just walking to one waypoint.
+- Stars carry STABLE NAMES across levels (the save_data.collected_stars
+  map keys on level + name) so a regen here doesn't lose progress —
+  unless we add or rename stars.
+- Sky / bgm / water_level_y per theme.
+- Less reliance on imported markers: we keep enemies + non-star
+  pickups from the imported set, but stars come from this script so
+  positions are intentional.
+
+Run:
 
     python3 tools/build_initial_levels.py
-
-Then:
-
     for f in blueprints/{grass_hub,mountain,snow,water,lava,sand,sky,bowser}.json; do
         python3 tools/build_from_blueprint.py "$f" \
             "godot/assets/levels/$(basename ${f%.json}).tscn"
     done
-
-The output is meant as a starting point for hand-tuning in the editor —
-heightmap formulas can't compete with author intent for every gameplay
-beat. Open each blueprint in the editor (or press F4 in-game) and
-sculpt / paint / re-place markers until the level feels right.
 """
 from __future__ import annotations
 import json
@@ -57,24 +53,13 @@ def base_blueprint(doc: str) -> dict:
         "spawn_point": [0, 1, 0],
         "materials": dict(DEFAULT_MATERIALS),
         "wall_thickness": 0.4,
-        "rooms": [],
-        "connectors": [],
-        "locks": [],
-        "keys": [],
-        "blocks": [],
-        "extras": [],
-        "terrain_patches": [],
-        "enemies": [],
-        "pickups": [],
-        "volumes": [],
-        "warps": [],
+        "rooms": [], "connectors": [], "locks": [], "keys": [],
+        "blocks": [], "extras": [], "terrain_patches": [],
+        "enemies": [], "pickups": [], "volumes": [], "warps": [],
     }
 
 
 def heightmap(size_x: float, size_z: float, res: int, fn) -> list[float]:
-    """Sample fn(x_local, z_local) over a res×res grid spanning the
-    patch's local space (0..size_x, 0..size_z). Returns flat row-major
-    list."""
     cx = size_x / float(res - 1)
     cz = size_z / float(res - 1)
     out = []
@@ -85,8 +70,6 @@ def heightmap(size_x: float, size_z: float, res: int, fn) -> list[float]:
 
 
 def paint(size_x: float, size_z: float, res: int, fn) -> list[str]:
-    """Same idea but for surface_grid: (res-1)² cells, fn returns a
-    surface-kind string (or "" for default)."""
     cx = size_x / float(res - 1)
     cz = size_z / float(res - 1)
     out = []
@@ -98,66 +81,15 @@ def paint(size_x: float, size_z: float, res: int, fn) -> list[str]:
     return out
 
 
-def lift_markers(bp: dict, base_y: float, get_height) -> None:
-    """Walk every marker (enemy / pickup / warp) and set its world Y
-    to (terrain_height_under_marker + base_y) so it sits on the
-    sculpted ground rather than at the imported flat-world Y. Works
-    in patch-local x/z space, assuming the patch is centered at
-    origin and we've already added it to the blueprint."""
-    patch = bp["terrain_patches"][0]
-    ox, oy, oz = patch["origin"]
-    sx = float(patch["size_x"]); sz = float(patch["size_z"])
-    res = int(patch["resolution"])
-    heights = patch["heights"]
-    def sample(wx: float, wz: float) -> float:
-        lx = wx - ox
-        lz = wz - oz
-        if not (0 <= lx <= sx and 0 <= lz <= sz):
-            return 0.0
-        cx = sx / float(res - 1)
-        cz = sz / float(res - 1)
-        i = max(0, min(res - 1, int(round(lx / cx))))
-        j = max(0, min(res - 1, int(round(lz / cz))))
-        return float(heights[i * res + j])
-    for kind in ("enemies", "pickups", "warps"):
-        for item in bp.get(kind, []):
-            p = item.get("pos", [0, 0, 0])
-            wx, _wy, wz = float(p[0]), float(p[1]), float(p[2])
-            new_y = oy + sample(wx, wz) + base_y
-            item["pos"] = [wx, new_y, wz]
-
-
-def merge_imported(bp: dict, level: str) -> None:
-    """Copy enemies / pickups / warps + sky / water_level_y / bgm
-    from the marker-only extracted file. Skips the geometry and
-    materials sections — those come from the new blueprint we
-    authored."""
-    src_path = os.path.join(IMPORTED_DIR, f"{level}.json")
-    if not os.path.exists(src_path):
-        return
-    src = json.load(open(src_path))
-    for kind in ("enemies", "pickups", "warps"):
-        bp[kind] = [dict(e) for e in src.get(kind, [])]
-    if "water_level_y" in src and "water_level_y" not in bp:
-        bp["water_level_y"] = src["water_level_y"]
-    if "bgm" in src and "bgm" not in bp:
-        bp["bgm"] = src["bgm"]
-
-
-def add_terrain(bp: dict, *,
-                origin: list[float],
-                size_x: float, size_z: float,
-                res: int,
+def add_terrain(bp: dict, *, origin: list[float],
+                size_x: float, size_z: float, res: int,
                 heights: list[float],
                 surface_grid: list[str] | None = None,
-                flat_color=None,
-                slope_color=None) -> None:
+                flat_color=None, slope_color=None) -> None:
     patch = {
         "name": "Ground",
         "origin": origin,
-        "size_x": size_x,
-        "size_z": size_z,
-        "resolution": res,
+        "size_x": size_x, "size_z": size_z, "resolution": res,
         "heights": heights,
         "surface_grid": surface_grid or [""] * ((res - 1) * (res - 1)),
         "material": "",
@@ -167,12 +99,84 @@ def add_terrain(bp: dict, *,
     bp["terrain_patches"].append(patch)
 
 
+def sample_height(bp: dict, wx: float, wz: float) -> float:
+    """Look up the height of the (single) terrain patch at world xz."""
+    if not bp["terrain_patches"]:
+        return 0.0
+    p = bp["terrain_patches"][0]
+    ox, oy, oz = p["origin"]
+    sx = float(p["size_x"]); sz = float(p["size_z"])
+    res = int(p["resolution"])
+    heights = p["heights"]
+    lx = wx - ox; lz = wz - oz
+    if not (0 <= lx <= sx and 0 <= lz <= sz):
+        return float(oy)
+    cx = sx / float(res - 1); cz = sz / float(res - 1)
+    i = max(0, min(res - 1, int(round(lx / cx))))
+    j = max(0, min(res - 1, int(round(lz / cz))))
+    return float(oy) + float(heights[i * res + j])
+
+
+def add_star(bp: dict, name: str, x: float, z: float,
+             y_offset: float = 1.5, *, world_y: float | None = None) -> None:
+    """Place a star pickup at (x, sampled_terrain_y + y_offset, z),
+    or at an explicit world_y when supplied (for star-on-platform)."""
+    y = world_y if world_y is not None else sample_height(bp, x, z) + y_offset
+    bp["pickups"].append({
+        "name": name, "kind": "star", "pos": [x, y, z],
+    })
+
+
+def add_coin_ring(bp: dict, prefix: str, cx: float, cz: float,
+                  radius: float = 6.0, n: int = 8,
+                  y_offset: float = 1.0) -> None:
+    """Drop a ring of yellow coins around a point — used to hint at
+    landmarks (the painting at the centre, the star above, etc.)."""
+    for k in range(n):
+        ang = 2.0 * math.pi * k / n
+        x = cx + radius * math.cos(ang)
+        z = cz + radius * math.sin(ang)
+        y = sample_height(bp, x, z) + y_offset
+        bp["pickups"].append({
+            "name": f"{prefix}{k}", "kind": "coin_yellow",
+            "pos": [x, y, z],
+        })
+
+
+def merge_imported_minus_stars(bp: dict, level: str) -> None:
+    """Pull enemies + non-star pickups from the marker extraction so
+    the level still has its hand-placed combat / coin loadout, but
+    skip imported stars — those are now scripted to land at deliberate
+    spots. Lifts y to terrain + small offset."""
+    src_path = os.path.join(IMPORTED_DIR, f"{level}.json")
+    if not os.path.exists(src_path):
+        return
+    src = json.load(open(src_path))
+    for e in src.get("enemies", []):
+        p = e.get("pos", [0, 0, 0])
+        wx, _, wz = float(p[0]), float(p[1]), float(p[2])
+        wy = sample_height(bp, wx, wz) + 0.4
+        entry = dict(e); entry["pos"] = [wx, wy, wz]
+        bp["enemies"].append(entry)
+    for pk in src.get("pickups", []):
+        if str(pk.get("kind", "")) == "star":
+            continue
+        p = pk.get("pos", [0, 0, 0])
+        wx, _, wz = float(p[0]), float(p[1]), float(p[2])
+        wy = sample_height(bp, wx, wz) + 1.2
+        entry = dict(pk); entry["pos"] = [wx, wy, wz]
+        bp["pickups"].append(entry)
+    if "water_level_y" in src and "water_level_y" not in bp:
+        bp["water_level_y"] = src["water_level_y"]
+
+
 # --------------------------------------------------------------------
-# Per-level builders. Each is small + opinionated; meant to be a
-# starting point, not the final design.
+# Themed world builders. Each adds 5-7 stars at landmark positions.
 
 def make_grass_hub() -> dict:
-    bp = base_blueprint("Grass hub: outdoor courtyard with a small castle keep.")
+    """Castle courtyard hub. Doors warp to each themed world; doors
+    are progressively star-gated."""
+    bp = base_blueprint("Hub courtyard. Walk to a painting to enter that world.")
     bp["spawn_point"] = [0, 2, 30]
     bp["bgm"] = "bgm_castle"
     bp["sky"] = {
@@ -181,29 +185,25 @@ def make_grass_hub() -> dict:
         "ambient_energy": 0.85,
     }
     SX, SZ, R = 220.0, 220.0, 256
-    cx = SX * 0.5; cz = SZ * 0.5
+    cx_h = SX * 0.5; cz_h = SZ * 0.5
     def h(x, z):
-        # Gentle rolling hills, central plaza flat.
-        dx = x - cx; dz = z - cz
+        # Flat plaza; gentle outer lawn.
+        dx = x - cx_h; dz = z - cz_h
         r = math.hypot(dx, dz)
-        plaza = max(0.0, 1.0 - r / 18.0)  # 0..1, 1 in centre
-        rolling = 0.8 * math.sin(x * 0.07) * math.cos(z * 0.05) + 0.4 * math.sin(z * 0.11)
+        plaza = max(0.0, 1.0 - r / 22.0)
+        rolling = 0.5 * math.sin(x * 0.06) * math.cos(z * 0.05)
         return rolling * (1.0 - plaza)
     add_terrain(bp,
-                origin=[-cx, 0, -cz],
+                origin=[-cx_h, 0, -cz_h],
                 size_x=SX, size_z=SZ, res=R,
                 heights=heightmap(SX, SZ, R, h))
-    # Castle keep — single big room with a door facing the spawn.
+    # Castle keep — 1 big room, door facing south.
     bp["rooms"].append({
         "name": "CastleHall",
-        "origin": [-15, 0, -15],
-        "size": [30, 8, 22],
-        "material": "brick",
-        "floor_material": "floor",
+        "origin": [-15, 0, -10], "size": [30, 8, 22],
+        "material": "brick", "floor_material": "floor",
         "walls": {
-            "south": {"openings": [
-                {"type": "door", "x": 13.5, "width": 3, "height": 4},
-            ]},
+            "south": {"openings": [{"type": "door", "x": 13.5, "width": 3, "height": 4}]},
             "east": {"openings": [
                 {"type": "window", "x": 6, "width": 1.5, "height": 2, "sill": 2.5},
                 {"type": "window", "x": 18, "width": 1.5, "height": 2, "sill": 2.5},
@@ -215,20 +215,41 @@ def make_grass_hub() -> dict:
             "north": {"openings": []},
         },
     })
-    # Pillars in front of the castle.
-    bp["extras"].extend([
-        {"type": "pillar", "name": "P1", "pos": [-10, 0, -10],
-         "radius": 0.4, "height": 4.0, "material": "wood"},
-        {"type": "pillar", "name": "P2", "pos": [10, 0, -10],
-         "radius": 0.4, "height": 4.0, "material": "wood"},
-    ])
-    merge_imported(bp, "grass_hub")
-    lift_markers(bp, base_y=0.6, get_height=h)
+    # Eight painting-doors arranged in an arc at the south / east /
+    # west edges of the courtyard. Star requirements escalate.
+    PAINTINGS = [
+        ("ToMountain", "mountain",  -32,  20, 0,
+         "Mountain — climb to the peak"),
+        ("ToSnow",     "snow",      -36,   0, 1,
+         "Snow — 1 star to enter"),
+        ("ToWater",    "water",     -32, -20, 3,
+         "Water — 3 stars to enter"),
+        ("ToLava",     "lava",       32,  20, 6,
+         "Lava — 6 stars to enter"),
+        ("ToSand",     "sand",       36,   0, 12,
+         "Sand — 12 stars to enter"),
+        ("ToSky",      "sky",        32, -20, 25,
+         "Sky — 25 stars to enter"),
+        ("ToBowser",   "bowser",      0, -45, 50,
+         "Bowser's keep — 50 stars to enter"),
+    ]
+    for name, target, wx, wz, star_req, doc in PAINTINGS:
+        bp["warps"].append({
+            "name": name, "target_level": target,
+            "pos": [wx, sample_height(bp, wx, wz), wz],
+            "size": [3.5, 4.5, 0.4],
+            "requires_stars": star_req,
+            "_doc": doc,
+        })
+        # Coins ring out from each portal so they're easy to find.
+        add_coin_ring(bp, f"{name}_ring", wx, wz, radius=4.0, n=6)
+    # Hub welcome star (free) on top of the keep.
+    add_star(bp, "HubWelcome", 0, -8, world_y=9.5)
     return bp
 
 
 def make_mountain() -> dict:
-    bp = base_blueprint("Mountain: climb to the peak. Rocky slopes, narrow paths.")
+    bp = base_blueprint("Mountain: a peak to climb. Five stars hidden along the way.")
     bp["spawn_point"] = [0, 2, 60]
     bp["bgm"] = "bgm_course"
     bp["sky"] = {
@@ -237,27 +258,30 @@ def make_mountain() -> dict:
         "ambient_energy": 0.75,
     }
     SX, SZ, R = 180.0, 180.0, 256
-    cx = SX * 0.5; cz = SZ * 0.5
+    cx_h = SX * 0.5; cz_h = SZ * 0.5
     def h(x, z):
-        # Cone with a cosine roll-off, plus low-amplitude rocky noise.
-        dx = x - cx; dz = z - cz
+        dx = x - cx_h; dz = z - cz_h
         r = math.hypot(dx, dz)
-        peak = 30.0 * max(0.0, 1.0 - r / 70.0) ** 1.6
-        noise = 1.2 * (math.sin(x * 0.27) * math.cos(z * 0.31)
-                       + math.sin((x + z) * 0.13))
+        peak = 32.0 * max(0.0, 1.0 - r / 70.0) ** 1.5
+        noise = 1.0 * math.sin(x * 0.27) + 0.8 * math.cos(z * 0.31)
         return peak + noise
     add_terrain(bp,
-                origin=[-cx, 0, -cz],
+                origin=[-cx_h, 0, -cz_h],
                 size_x=SX, size_z=SZ, res=R,
                 heights=heightmap(SX, SZ, R, h),
                 slope_color=[0.45, 0.30, 0.20])
-    merge_imported(bp, "mountain")
-    lift_markers(bp, base_y=0.6, get_height=h)
+    # Stars: peak, midway clockwise band, hidden behind (-x side).
+    add_star(bp, "MountainPeak",       0,  0, y_offset=2.5)
+    add_star(bp, "MidwayEast",        25, 10)
+    add_star(bp, "MidwayWest",       -22, -8)
+    add_star(bp, "HiddenNorth",       -2, -32)
+    add_star(bp, "BaseSouth",          0, 55, y_offset=1.5)
+    merge_imported_minus_stars(bp, "mountain")
     return bp
 
 
 def make_snow() -> dict:
-    bp = base_blueprint("Snow: rolling slippery drifts. Watch your footing.")
+    bp = base_blueprint("Snow: rolling slippery drifts with five stars across the ridges.")
     bp["spawn_point"] = [0, 2, 50]
     bp["bgm"] = "bgm_course"
     bp["sky"] = {
@@ -266,33 +290,32 @@ def make_snow() -> dict:
         "ambient_energy": 0.95,
     }
     SX, SZ, R = 220.0, 220.0, 256
-    cx = SX * 0.5; cz = SZ * 0.5
+    cx_h = SX * 0.5; cz_h = SZ * 0.5
     def h(x, z):
-        dx = x - cx; dz = z - cz
         return (3.5 * math.sin(x * 0.08) * math.cos(z * 0.06)
-                + 1.5 * math.sin((x + z) * 0.05)
                 + 2.0 * math.sin(z * 0.04))
     def kind(x, z):
-        # Snow everywhere except around the spawn so the player isn't
-        # immediately sliding.
-        dx = x - cx; dz = z - cz - 50
-        r = math.hypot(dx, dz)
-        if r < 8.0:
-            return ""
+        dx = x - cx_h; dz = z - cz_h - 50
+        if math.hypot(dx, dz) < 8.0:
+            return ""           # spawn pad — no slip
         return "snow"
     add_terrain(bp,
-                origin=[-cx, 0, -cz],
+                origin=[-cx_h, 0, -cz_h],
                 size_x=SX, size_z=SZ, res=R,
                 heights=heightmap(SX, SZ, R, h),
                 surface_grid=paint(SX, SZ, R, kind),
                 flat_color=[0.85, 0.92, 0.95])
-    merge_imported(bp, "snow")
-    lift_markers(bp, base_y=0.6, get_height=h)
+    add_star(bp, "DriftEast",        30,  10, y_offset=1.5)
+    add_star(bp, "DriftNorth",        0, -30)
+    add_star(bp, "RidgeWest",       -30,   5)
+    add_star(bp, "FarPeak",          15, -55)
+    add_star(bp, "HiddenValley",    -25, -50)
+    merge_imported_minus_stars(bp, "snow")
     return bp
 
 
 def make_water() -> dict:
-    bp = base_blueprint("Water: lake with sandy island shores. Swim between landmarks.")
+    bp = base_blueprint("Water: a lake with islands. Most stars require swimming.")
     bp["spawn_point"] = [0, 2, 60]
     bp["bgm"] = "bgm_water"
     bp["sky"] = {
@@ -301,39 +324,39 @@ def make_water() -> dict:
         "ambient_energy": 0.80,
     }
     SX, SZ, R = 220.0, 220.0, 256
-    cx = SX * 0.5; cz = SZ * 0.5
+    cx_h = SX * 0.5; cz_h = SZ * 0.5
     def h(x, z):
-        dx = x - cx; dz = z - cz
+        dx = x - cx_h; dz = z - cz_h
         r = math.hypot(dx, dz)
-        # Lake basin: depressed in centre, raised banks beyond r=60.
         basin = -3.5 * max(0.0, 1.0 - r / 60.0)
-        bank = 0.0
-        if r > 60.0:
-            bank = 1.5 * min(1.0, (r - 60.0) / 30.0)
-        # Couple of islands inside the basin.
+        bank = 1.2 * min(1.0, max(0.0, (r - 60.0) / 30.0))
         for ix, iz in [(-15, -15), (15, 18), (-22, 20)]:
-            d = math.hypot(x - cx - ix, z - cz - iz)
+            d = math.hypot(x - cx_h - ix, z - cz_h - iz)
             if d < 6.0:
                 bank += (6.0 - d) * 0.6
         return basin + bank
     def kind(x, z):
-        dx = x - cx; dz = z - cz
-        r = math.hypot(dx, dz)
-        if r < 55.0 and h(x, z) < -0.5:
+        dx = x - cx_h; dz = z - cz_h
+        if math.hypot(dx, dz) < 55.0 and h(x, z) < -0.5:
             return "water"
         return ""
     add_terrain(bp,
-                origin=[-cx, 0, -cz],
+                origin=[-cx_h, 0, -cz_h],
                 size_x=SX, size_z=SZ, res=R,
                 heights=heightmap(SX, SZ, R, h),
                 surface_grid=paint(SX, SZ, R, kind))
-    merge_imported(bp, "water")
-    lift_markers(bp, base_y=0.6, get_height=h)
+    # Stars: shore, three islands, deep lake.
+    add_star(bp, "ShoreSouth",        0,  55)
+    add_star(bp, "Island1",         -15, -15, y_offset=2.0)
+    add_star(bp, "Island2",          15,  18, y_offset=2.0)
+    add_star(bp, "Island3",         -22,  20, y_offset=2.0)
+    add_star(bp, "DeepBasin",         5,   0, world_y=-2.0)
+    merge_imported_minus_stars(bp, "water")
     return bp
 
 
 def make_lava() -> dict:
-    bp = base_blueprint("Lava: stone islands across a magma pool. Don't fall.")
+    bp = base_blueprint("Lava: stone islands across magma. One star per island, one above.")
     bp["spawn_point"] = [0, 2, 50]
     bp["bgm"] = "bgm_course"
     bp["sky"] = {
@@ -342,39 +365,38 @@ def make_lava() -> dict:
         "ambient_energy": 0.95,
     }
     SX, SZ, R = 200.0, 200.0, 256
-    cx = SX * 0.5; cz = SZ * 0.5
+    cx_h = SX * 0.5; cz_h = SZ * 0.5
+    ISLANDS = [(-10, -5), (12, 0), (0, 14), (-18, 12), (16, -16)]
     def h(x, z):
-        dx = x - cx; dz = z - cz
+        dx = x - cx_h; dz = z - cz_h
         r = math.hypot(dx, dz)
-        # Crater: edges raised, floor low. Stone islands at fixed
-        # positions sticking up out of the lava floor.
         rim = 2.0 * max(0.0, (r - 70.0) / 30.0)
         floor = -1.5 if r < 70.0 else 0.0
         islands = 0.0
-        for ix, iz in [(-10, -5), (12, 0), (0, 14), (-18, 12), (16, -16)]:
-            d = math.hypot(x - cx - ix, z - cz - iz)
+        for ix, iz in ISLANDS:
+            d = math.hypot(x - cx_h - ix, z - cz_h - iz)
             if d < 5.0:
                 islands += (5.0 - d) * 0.7
         return floor + rim + islands
     def kind(x, z):
-        dx = x - cx; dz = z - cz
-        r = math.hypot(dx, dz)
-        if r < 65.0 and h(x, z) < -0.3:
+        dx = x - cx_h; dz = z - cz_h
+        if math.hypot(dx, dz) < 65.0 and h(x, z) < -0.3:
             return "burning"
         return ""
     add_terrain(bp,
-                origin=[-cx, 0, -cz],
+                origin=[-cx_h, 0, -cz_h],
                 size_x=SX, size_z=SZ, res=R,
                 heights=heightmap(SX, SZ, R, h),
                 surface_grid=paint(SX, SZ, R, kind),
                 flat_color=[0.35, 0.20, 0.15])
-    merge_imported(bp, "lava")
-    lift_markers(bp, base_y=0.6, get_height=h)
+    for k, (ix, iz) in enumerate(ISLANDS):
+        add_star(bp, f"LavaIsland{k}", ix, iz, y_offset=2.5)
+    merge_imported_minus_stars(bp, "lava")
     return bp
 
 
 def make_sand() -> dict:
-    bp = base_blueprint("Sand: dunes with quicksand pits. Step carefully.")
+    bp = base_blueprint("Sand: dunes with quicksand traps and five stars across the desert.")
     bp["spawn_point"] = [0, 2, 60]
     bp["bgm"] = "bgm_course"
     bp["sky"] = {
@@ -383,32 +405,35 @@ def make_sand() -> dict:
         "ambient_energy": 0.95,
     }
     SX, SZ, R = 220.0, 220.0, 256
-    cx = SX * 0.5; cz = SZ * 0.5
+    cx_h = SX * 0.5; cz_h = SZ * 0.5
+    QUICK_PITS = [(-15, -10), (20, 5), (-5, 25)]
     def h(x, z):
-        # Long dunes running diagonally.
         return (3.0 * math.sin(x * 0.05 + z * 0.03)
                 + 1.5 * math.sin(x * 0.11)
                 + 1.0 * math.cos(z * 0.09))
     def kind(x, z):
-        dx = x - cx; dz = z - cz
-        # Quicksand pits at fixed positions.
-        for ix, iz in [(-15, -10), (20, 5), (-5, 25)]:
-            if math.hypot(x - cx - ix, z - cz - iz) < 5.0:
+        dx = x - cx_h; dz = z - cz_h
+        for ix, iz in QUICK_PITS:
+            if math.hypot(dx - ix, dz - iz) < 5.0:
                 return "shallow_quicksand"
         return "sand"
     add_terrain(bp,
-                origin=[-cx, 0, -cz],
+                origin=[-cx_h, 0, -cz_h],
                 size_x=SX, size_z=SZ, res=R,
                 heights=heightmap(SX, SZ, R, h),
                 surface_grid=paint(SX, SZ, R, kind),
                 flat_color=[0.92, 0.80, 0.45])
-    merge_imported(bp, "sand")
-    lift_markers(bp, base_y=0.6, get_height=h)
+    add_star(bp, "DuneEast",         32,  10)
+    add_star(bp, "DuneWest",        -28,  -5)
+    add_star(bp, "OasisCenter",      -2, -15, y_offset=2.0)
+    add_star(bp, "FarSouth",          0,  55)
+    add_star(bp, "FarNorth",          5, -55)
+    merge_imported_minus_stars(bp, "sand")
     return bp
 
 
 def make_sky() -> dict:
-    bp = base_blueprint("Sky: scattered floating platforms. Don't miss your jumps.")
+    bp = base_blueprint("Sky: cloud base + floating platforms. Stars on the high ones.")
     bp["spawn_point"] = [0, 2, 35]
     bp["bgm"] = "bgm_course"
     bp["sky"] = {
@@ -416,37 +441,39 @@ def make_sky() -> dict:
         "ambient_color": [0.85, 0.92, 1.00],
         "ambient_energy": 1.00,
     }
-    # Sky world: a small cloud-base terrain at low elevation, plus a
-    # collection of platform extras at varying heights.
     SX, SZ, R = 140.0, 140.0, 192
-    cx = SX * 0.5; cz = SZ * 0.5
+    cx_h = SX * 0.5; cz_h = SZ * 0.5
     def h(x, z):
-        dx = x - cx; dz = z - cz
+        dx = x - cx_h; dz = z - cz_h
         r = math.hypot(dx, dz)
-        # Very gentle dome so the cloud has a feeling of mass.
         return max(0.0, 1.5 - r / 50.0)
     add_terrain(bp,
-                origin=[-cx, 0, -cz],
+                origin=[-cx_h, 0, -cz_h],
                 size_x=SX, size_z=SZ, res=R,
                 heights=heightmap(SX, SZ, R, h),
                 flat_color=[0.95, 0.97, 1.00])
-    # Floating stone platforms.
-    for i, (x, y, z) in enumerate([
+    PLATS = [
         (-20, 4, -10), (10, 6, -20), (-5, 9, -30),
         (15, 12, -35), (-15, 14, -45), (5, 17, -50),
-    ]):
+    ]
+    for i, (x, y, z) in enumerate(PLATS):
         bp["extras"].append({
             "type": "platform", "name": f"Plat{i}",
             "pos": [x - 2.5, y, z - 2.5],
             "size": [5.0, 0.4, 5.0], "material": "floor",
         })
-    merge_imported(bp, "sky")
-    lift_markers(bp, base_y=0.6, get_height=h)
+    # Star on every other platform — top-most pair are the bonus targets.
+    add_star(bp, "PlatStar1", -20, -10, world_y=5.5)
+    add_star(bp, "PlatStar2",  -5, -30, world_y=10.5)
+    add_star(bp, "PlatStar3", -15, -45, world_y=15.5)
+    add_star(bp, "PlatStar4",   5, -50, world_y=18.5)
+    add_star(bp, "CloudStar",   0,   0, y_offset=3.0)
+    merge_imported_minus_stars(bp, "sky")
     return bp
 
 
 def make_bowser() -> dict:
-    bp = base_blueprint("Bowser's keep: dark stone halls over a lava moat.")
+    bp = base_blueprint("Bowser's keep — final star at the top of the tower.")
     bp["spawn_point"] = [0, 2, 30]
     bp["bgm"] = "bgm_bowser"
     bp["sky"] = {
@@ -454,48 +481,39 @@ def make_bowser() -> dict:
         "ambient_color": [0.55, 0.40, 0.45],
         "ambient_energy": 0.55,
     }
-    # Square lava moat with a stone keep on top — the keep is a tall
-    # tower with three floors. Player spawns at the south edge and
-    # has to walk to the keep.
     SX, SZ, R = 100.0, 140.0, 256
-    cx = SX * 0.5; cz = SZ * 0.5
+    cx_h = SX * 0.5; cz_h = SZ * 0.5
     def h(x, z):
-        dx = x - cx; dz = z - cz
+        dx = x - cx_h; dz = z - cz_h
         r = math.hypot(dx, dz)
-        # Outer rim raised, inner area dipped (lava moat ring),
-        # very-inner area raised again (the keep platform).
-        if r < 18.0:
-            return 1.5
-        if r < 35.0:
-            return -2.0
+        if r < 18.0: return 1.5
+        if r < 35.0: return -2.0
         return 0.0
     def kind(x, z):
-        dx = x - cx; dz = z - cz
+        dx = x - cx_h; dz = z - cz_h
         r = math.hypot(dx, dz)
         if 18.0 < r < 35.0:
             return "burning"
         return ""
     add_terrain(bp,
-                origin=[-cx, 0, -cz],
+                origin=[-cx_h, 0, -cz_h],
                 size_x=SX, size_z=SZ, res=R,
                 heights=heightmap(SX, SZ, R, h),
                 surface_grid=paint(SX, SZ, R, kind),
                 flat_color=[0.32, 0.25, 0.30])
-    # Bridge across the moat (south side).
     bp["extras"].append({
         "type": "platform", "name": "MoatBridge",
         "pos": [-2.0, 1.4, -36.0],
         "size": [4.0, 0.4, 22.0], "material": "wood",
     })
-    # Tower: 3-floor keep at the centre with a spiral stair.
     bp["rooms"].append({
         "name": "KeepGround", "origin": [-12, 1.5, -12],
         "size": [24, 6, 24], "material": "brick", "floor_material": "floor",
         "walls": {
             "south": {"openings": [{"type": "door", "x": 10.5, "width": 3, "height": 4}]},
             "north": {"openings": [{"type": "window", "x": 10.5, "width": 1.5, "height": 2, "sill": 2}]},
-            "east": {"openings": [{"type": "window", "x": 10.5, "width": 1.5, "height": 2, "sill": 2}]},
-            "west": {"openings": [{"type": "window", "x": 10.5, "width": 1.5, "height": 2, "sill": 2}]},
+            "east":  {"openings": [{"type": "window", "x": 10.5, "width": 1.5, "height": 2, "sill": 2}]},
+            "west":  {"openings": [{"type": "window", "x": 10.5, "width": 1.5, "height": 2, "sill": 2}]},
         },
     })
     bp["rooms"].append({
@@ -515,8 +533,8 @@ def make_bowser() -> dict:
         "depth": 0.6, "angle": 0.42, "material": "floor",
         "punch_through": "KeepUpper",
     })
-    merge_imported(bp, "bowser")
-    lift_markers(bp, base_y=0.6, get_height=h)
+    add_star(bp, "BowserCrown", 0, 0, world_y=14.0)
+    merge_imported_minus_stars(bp, "bowser")
     return bp
 
 
@@ -543,11 +561,12 @@ def main() -> int:
         n_terrain = len(bp["terrain_patches"])
         n_rooms = len(bp["rooms"])
         n_enemy = len(bp["enemies"])
-        n_pickup = len(bp["pickups"])
+        n_star = sum(1 for p in bp["pickups"] if p.get("kind") == "star")
+        n_other = sum(1 for p in bp["pickups"] if p.get("kind") != "star")
         n_warp = len(bp["warps"])
         print(f"{name:<10} → {path}  "
-              f"(terrain {n_terrain}, rooms {n_rooms}, "
-              f"enemies {n_enemy}, pickups {n_pickup}, warps {n_warp})")
+              f"(rooms {n_rooms}, enemies {n_enemy}, "
+              f"stars {n_star}, other-pickups {n_other}, warps {n_warp})")
     return 0
 
 

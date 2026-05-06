@@ -36,6 +36,11 @@ var _mesh: Node3D   # the instantiated enemy visual scene
 var _mode: String = "patrol"     # patrol / chase / static / bomb / pop
 var _fuse: float = 0.0
 var _exploded: bool = false
+# Snapshot of where the cuttlefish committed to dive at the end of
+# its telegraph phase. Reset every cycle. Storing this means the
+# dive trajectory is FIXED — Mario who runs sideways during the
+# dive itself escapes; Mario who stands still gets hit.
+var _dive_target: Vector3 = Vector3.ZERO
 
 
 func _ready() -> void:
@@ -61,7 +66,7 @@ func _ready() -> void:
         "static":   speed = 0.0
         "pop":      speed = 0.0
         "friendly": speed = 0.0
-        "glide":    speed = 4.5  # aerial predator moves faster than ground walkers
+        "glide":    speed = 3.2  # aerial predator — slow enough that Mario can outrun
         "chomp":    speed = 5.5  # bursts forward when lunging
 
 
@@ -233,16 +238,21 @@ func _physics_process(delta: float) -> void:
                     sin(angle2) * patrol_radius, 0, cos(angle2) * patrol_radius
                 ) - global_position
         "bomb":
+            # Bombs detonate on fuse-timer expiry only — proximity
+            # contact alone used to insta-explode the moment Mario
+            # got close, leaving him no time to react. Now the bomb
+            # ignites when in range, chases, and pulses faster as the
+            # 3-second fuse runs down. Player can outrun it, stomp it,
+            # or just stay outside its 6m engagement radius until it
+            # cools off.
             if mario != null and global_position.distance_to(mario.global_position) < 6.0:
                 dir = mario.global_position - global_position
                 _fuse += delta
-                # Pulse scale + wobble as the fuse ticks. Scale tightens
-                # visibly as the bomb nears detonation.
                 if _mesh != null:
                     var flash_hz: float = clamp(3.0 + _fuse * 12.0, 3.0, 30.0)
                     var puls: float = 1.0 + sin(_time * flash_hz) * (_fuse * 0.28)
                     _mesh.scale = Vector3(puls, puls, puls)
-                if _fuse > 3.0 or global_position.distance_to(mario.global_position) < 1.0:
+                if _fuse > 3.0:
                     _explode(mario)
                     return
             else:
@@ -283,38 +293,48 @@ func _physics_process(delta: float) -> void:
                     pump = 1.0 + sin(_time * 14.0) * 0.08
                 _mesh.scale = _mesh.scale.lerp(Vector3(pump, pump, pump), 0.2)
         "glide":
-            # Aerial predator with proper separation + swoop cycle.
-            #   0..4s   hover + orbit idly around spawn
-            #   4..6s   approach player horizontally
-            #   6..7.5s DIVE (drop to player height, fast, damaging)
-            #   7.5..9s retreat (climb back to hover altitude)
+            # Aerial predator with separation + telegraphed swoop. The
+            # 9-second cycle gives the player a clear window to dodge:
+            #   0..3s    Idle orbit around spawn point
+            #   3..5s    Approach: drift to a position above the player
+            #   5..5.5s  TELEGRAPH: hover in place, tilt forward,
+            #            snapshot the player's CURRENT position as the
+            #            dive target. Visible cue.
+            #   5.5..6.4s DIVE: hard-target the snapshotted point at
+            #            constant speed. Mario who moved during the
+            #            telegraph escapes; standing still gets hit.
+            #   6.4..9s  Retreat: climb back to hover altitude, body
+            #            level out.
             var hover_y: float = _center.y + 2.2
             var target: Vector3 = _center
             target.y = hover_y + sin(_time * 1.6) * 0.35
-            # Drift in a wide orbit around spawn when idle so multiple
-            # cuttlefish don't converge on a single point.
-            var idle_angle: float = _time * 0.6 + _time * 0.0
+            var idle_angle: float = _time * 0.6
             target.x = _center.x + cos(idle_angle) * 3.0
             target.z = _center.z + sin(idle_angle) * 3.0
             var aggressive: bool = false
+            var diving: bool = false
             if mario != null:
                 var cycle: float = fposmod(_time, 9.0)
                 var dist: float = global_position.distance_to(mario.global_position)
-                if cycle > 4.0 and cycle < 6.0 and dist < 14.0:
-                    # Approach phase — hover at altitude above player.
+                if cycle > 3.0 and cycle < 5.0 and dist < 14.0:
+                    # Approach: hover above player at altitude.
                     target = mario.global_position
                     target.y = hover_y
-                elif cycle >= 6.0 and cycle < 7.5 and dist < 14.0:
-                    # Dive — drop to player height.
-                    target = mario.global_position
-                    target.y = mario.global_position.y + 0.3
+                elif cycle >= 5.0 and cycle < 5.5 and dist < 14.0:
+                    # Telegraph: hold position, tilt down, lock target.
+                    target = global_position
+                    if _mesh != null:
+                        _mesh.rotation.x = lerp(_mesh.rotation.x, -1.1, 0.25)
+                    _dive_target = mario.global_position + Vector3(0, 0.3, 0)
+                elif cycle >= 5.5 and cycle < 6.4:
+                    # Commit dive — fixed target, constant speed.
+                    target = _dive_target
                     aggressive = true
-                # Tilt the body forward during dive for visual intent.
-                if _mesh != null:
-                    var tilt: float = -0.7 if aggressive else 0.0
-                    _mesh.rotation.x = lerp(_mesh.rotation.x, tilt, 0.15)
-            # Separation — scan nearby cuttlefish and push away so we
-            # don't clump into a single blob.
+                    diving = true
+                else:
+                    # Idle / approach / retreat — body level.
+                    if _mesh != null:
+                        _mesh.rotation.x = lerp(_mesh.rotation.x, 0.0, 0.10)
             var separation: Vector3 = Vector3.ZERO
             for node in get_tree().get_nodes_in_group("cuttlefish"):
                 if node == self:
@@ -328,7 +348,11 @@ func _physics_process(delta: float) -> void:
             var move_dir: Vector3 = to_target.normalized() + separation * 0.6
             if move_dir.length() > 0.01:
                 move_dir = move_dir.normalized()
-            var dive_speed: float = speed * (2.6 if aggressive else 1.0)
+            # Dive multiplier kept moderate so Mario can outrun the
+            # cuttlefish horizontally even mid-dive — gameplay relies
+            # on dodging the FIXED dive trajectory, not winning a
+            # speed race.
+            var dive_speed: float = speed * (1.6 if diving else 1.0)
             var move_step: float = dive_speed * delta
             global_position += move_dir * move_step
             if to_target.length() > 0.01:

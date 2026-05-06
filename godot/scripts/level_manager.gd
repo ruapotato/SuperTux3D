@@ -61,10 +61,13 @@ func load_level(level_name: String, area: int = 1) -> bool:
     mario.global_position = spawn
     mario.velocity = Vector3.ZERO
 
-    _spawn_markers(level_root)
-
+    # current_level set BEFORE marker spawn so the spawner can ask
+    # save_data which stars are already collected for this level
+    # and substitute ghost-star visuals.
     current_level = level_name
     current_area = area
+
+    _spawn_markers(level_root)
     # Blueprint-authored levels can override bgm + water via root
     # metadata (`metadata/bgm`, `metadata/water_level_y`). Fall back
     # to the hardcoded dicts for hand-authored levels.
@@ -149,7 +152,19 @@ func _spawn_markers(level_root: Node) -> void:
             if n.has_meta("pickup_kind"):
                 var kind: String = str(n.get_meta("pickup_kind"))
                 var world_pos_p: Vector3 = n3.global_position
-                var p: Node3D = ObjectSpawner._make_pickup(kind)
+                var star_id: String = n.name if kind == "star" else ""
+                # Stars: render previously-collected ones as ghosts.
+                # The ghost has no Area3D, so Mario can't pick it up
+                # again — but the player still sees the marker so
+                # they know what they've gathered in this level.
+                var p: Node3D
+                if kind == "star" and save_data != null \
+                        and save_data.is_star_collected(current_level, star_id):
+                    p = ObjectSpawner._make_ghost_star()
+                else:
+                    p = ObjectSpawner._make_pickup(kind)
+                    if star_id != "":
+                        p.set_meta("star_id", star_id)
                 world_root.add_child(p)
                 p.global_position = world_pos_p
                 spawn_count.pickup += 1
